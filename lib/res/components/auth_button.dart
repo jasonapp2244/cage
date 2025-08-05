@@ -1,6 +1,7 @@
 
 import 'package:cage/res/components/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class AuthButton extends StatelessWidget {
@@ -14,14 +15,17 @@ class AuthButton extends StatelessWidget {
     return GestureDetector(
       onTap: onPress,
       child: Container(
-        width: MediaQuery.sizeOf(context).width * 0.8,
+        width:MediaQuery.sizeOf(context).width*1,
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18), color:AppColor.black),
-        child: Center(
-          child:loading?CustomLoadingAnimation(): Text(
-            buttontext.toString(),
-            style: TextStyle(color: AppColor.white),
-          )
+            borderRadius: BorderRadius.circular(24), color:AppColor.red),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical:  12.0),
+          child: Center(
+            child:loading?CustomLoadingAnimation(): Text(
+              buttontext.toString(),
+              style: GoogleFonts.dmSans(color: AppColor.white,fontWeight: FontWeight.bold,fontSize: 16),
+            )
+          ),
         ),
       ),
     );

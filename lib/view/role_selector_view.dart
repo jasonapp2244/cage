@@ -1,20 +1,118 @@
+// import 'package:cage/fonts/fonts.dart';
+// import 'package:cage/res/components/app_color.dart';
+// import 'package:cage/utils/routes/routes_name.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_svg/flutter_svg.dart';
+
+// class RoleSelectionScreen extends StatefulWidget {
+//   @override
+//   _RoleSelectionScreenState createState() => _RoleSelectionScreenState();
+// }
+
+// class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
+//   String selectedRole = "Fighter";
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.black,
+//       body: SafeArea(
+//         child: Padding(
+//           padding: const EdgeInsets.all(24.0),
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               const Text(
+//                 'Select your role',
+//                 style: TextStyle(
+//                   fontFamily: AppFonts.appFont,
+//                   fontSize: 32,
+//                   color: AppColor.white,
+//                   fontWeight: FontWeight.bold,
+//                 ),
+//               ),
+//               const SizedBox(height: 8),
+//               const Text(
+//                 'Choose your role to continue and personalize your experience.',
+//                 style: TextStyle(
+//                   fontFamily: AppFonts.appFont,
+//                   fontSize: 16,
+//                   color: AppColor.white,
+//                 ),
+//               ),
+//               const SizedBox(height: 20),
+//               // Fighter option
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceAround,
+//                 children: [
+//                   RoleSelectionCard(
+//                     svgImage: "assets/icons/advertising_4318884 1 (1).svg",
+//                     title: "I’m a Fighter",
+//                     isSelected: selectedRole == "Fighter",
+//                     onTap: () {
+//                       setState(() {
+//                         selectedRole = "Fighter";
+//                       });
+//                     },
+//                   ),
+//                   const SizedBox(height: 20),
+
+//                   // Promoter option
+//                   RoleSelectionCard(
+//                     svgImage: "assets/icons/boxing.svg",
+//                     title: "I'm a Promoter",
+//                     isSelected: selectedRole == "Promoter",
+//                     onTap: () {
+//                       setState(() {
+//                         selectedRole = "Promoter";
+//                       });
+//                     },
+//                   ),
+//                 ],
+//               ),
+
+//               const Spacer(),
+
+//               ElevatedButton(
+//                 onPressed: selectedRole == null
+//                     ? null
+//                     : () {
+//                         // Proceed with the selected role
+//                         print('Selected role: $selectedRole');
+//                         Navigator.pushNamed(context, RoutesName.nameview);
+//                       },
+//                 child: const Text('Continue', style: TextStyle(fontSize: 18)),
+//                 style: ElevatedButton.styleFrom(
+//                   backgroundColor: AppColor.red,
+//                   foregroundColor: AppColor.white,
+//                   minimumSize: const Size(double.infinity, 50),
+//                   shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(22),
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/provider/role_provider.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/res/components/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
-class RoleSelectionScreen extends StatefulWidget {
-  @override
-  _RoleSelectionScreenState createState() => _RoleSelectionScreenState();
-}
-
-class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
-  String selectedRole = "Fighter";
-
+class RoleSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final roleProvider = Provider.of<RoleProvider>(context);
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -42,46 +140,30 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Fighter option
+              // Role selection cards
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   RoleSelectionCard(
                     svgImage: "assets/icons/advertising_4318884 1 (1).svg",
-                    title: "I’m a Fighter",
-                    isSelected: selectedRole == "Fighter",
-                    onTap: () {
-                      setState(() {
-                        selectedRole = "Fighter";
-                      });
-                    },
+                    title: "I'm a Fighter",
+                    isSelected: roleProvider.selectedRole == "Fighter",
+                    onTap: () => roleProvider.selectRole("Fighter"),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Promoter option
                   RoleSelectionCard(
                     svgImage: "assets/icons/boxing.svg",
                     title: "I'm a Promoter",
-                    isSelected: selectedRole == "Promoter",
-                    onTap: () {
-                      setState(() {
-                        selectedRole = "Promoter";
-                      });
-                    },
+                    isSelected: roleProvider.selectedRole == "Promoter",
+                    onTap: () => roleProvider.selectRole("Promoter"),
                   ),
                 ],
               ),
-
               const Spacer(),
-
               ElevatedButton(
-                onPressed: selectedRole == null
-                    ? null
-                    : () {
-                        // Proceed with the selected role
-                        print('Selected role: $selectedRole');
-                        Navigator.pushNamed(context, RoutesName.nameview);
-                      },
+                onPressed: () {
+                  print('Selected role: ${roleProvider.selectedRole}');
+                  Navigator.pushNamed(context, RoutesName.nameview);
+                },
                 child: const Text('Continue', style: TextStyle(fontSize: 18)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.red,
@@ -100,6 +182,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   }
 }
 
+// RoleSelectionCard remains the same as in your original code
 class RoleSelectionCard extends StatelessWidget {
   final String title;
   final String svgImage;
@@ -146,17 +229,6 @@ class RoleSelectionCard extends StatelessWidget {
             ),
           ],
         ),
-
-        //  Center(
-        //   child: Text(
-        //     title,
-        //     style: TextStyle(
-        //       fontSize: 18,
-        //       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        //       color: isSelected ? Colors.black : Colors.grey.shade600,
-        //     ),
-        //   ),
-        // ),
       ),
     );
   }

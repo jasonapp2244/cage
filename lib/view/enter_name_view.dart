@@ -3,7 +3,9 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/res/components/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/utils/routes/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class EnterNameView extends StatelessWidget {
@@ -11,18 +13,28 @@ class EnterNameView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController fullNameController = TextEditingController();
+
     Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: Responsive.h(1)),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: SvgPicture.asset("assets/icons/arrow-left-01.svg",color:AppColor.red ,),
+                  ),
+                  SizedBox(height: Responsive.h(2)),
                   Text(
                     "Enter your full name",
                     style: TextStyle(
@@ -42,6 +54,7 @@ class EnterNameView extends StatelessWidget {
                   ),
                   SizedBox(height: 30),
                   TextFormField(
+                    controller: fullNameController,
                     style: TextStyle(color: AppColor.white),
                     // controller: emailController,
                     // focusNode: emailFoucsNode,
@@ -69,7 +82,7 @@ class EnterNameView extends StatelessWidget {
                       // ),
                       filled: true,
                       fillColor: AppColor.white.withValues(alpha: 0.08),
-                      hintText: "Email Address",
+                      hintText: "Enter Full Name",
                       hintStyle: GoogleFonts.dmSans(
                         color: AppColor.white,
                         fontWeight: FontWeight.normal,
@@ -91,7 +104,24 @@ class EnterNameView extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
-                  Navigator.pushNamed(context, RoutesName.namecoachview);
+                  if (fullNameController.text.isEmpty) {
+                    Utils.flushBarErrorMassage(
+                      "Please Enter Full Name First",
+                      context,
+                    );
+                  } else {
+                    Navigator.pushNamed(context, RoutesName.namecoachview);
+                    // Map<String, String> headr = {
+                    //   "x-api-key": "reqres-free-v1",
+                    // };
+                    // Map data = {
+                    //   'email': emailController.text.toString(),
+                    //   'password': passwordController.text.toString(),
+                    // };
+                    // authViewmodel.loginApi(data, headr, context);
+
+                    // Navigator.pushNamed(context, RoutesName.namecoachview);
+                  }
                 },
               ),
             ],

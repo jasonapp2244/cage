@@ -1,8 +1,11 @@
+import 'package:cage/provider/role_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/hight_view.dart';
-import 'package:cage/view/role_selector_view.dart';
+import 'package:cage/view/bottom_wraper.dart';
+import 'package:cage/view/darwer.dart';
+import 'package:cage/view/homeview.dart';
+import 'package:cage/view/updateProfle_view.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +13,10 @@ import 'package:provider/provider.dart';
 void main() {
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthViewmodel())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => RoleProvider()),
+        ChangeNotifierProvider(create: (_) => AuthViewmodel()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -35,9 +41,9 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       // You should use either home or initialRoute, not both
-      // home: RoleSelectionScreen(),
-      initialRoute: RoutesName.spalsh, // Fixed typo from 'spalsh' to 'splash'
-      onGenerateRoute: Routes.generateRoutes,
+      home: MainWrapper(),
+      // initialRoute: RoutesName.spalsh, // Fixed typo from 'spalsh' to 'splash'
+      // onGenerateRoute: Routes.generateRoutes,
     );
   }
 }

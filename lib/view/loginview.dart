@@ -172,7 +172,9 @@ class _LoginviewState extends State<Loginview> {
                             _obsecurePassword.value
                                 ? Icons.visibility_off
                                 : Icons.visibility,
-                            color: AppColor.white,
+                            color: _obsecurePassword.value
+                                ? AppColor.white
+                                : AppColor.red,
                             size: Responsive.sp(20),
                           ),
                         ),
@@ -203,6 +205,13 @@ class _LoginviewState extends State<Loginview> {
                     if (emailController.text.isEmpty) {
                       Utils.flushBarErrorMassage(
                         "Please Enter Email First",
+                        context,
+                      );
+                    } else if (!RegExp(
+                      r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$",
+                    ).hasMatch(emailController.text)) {
+                      Utils.flushBarErrorMassage(
+                        "Please Enter Correct Email First",
                         context,
                       );
                     } else if (passwordController.text.isEmpty) {

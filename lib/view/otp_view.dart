@@ -41,10 +41,11 @@ class OtpScreen extends StatelessWidget {
                   const OtpForm(),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.2),
                   TextButton(
+                    
                     onPressed: () {},
-                    child: const Text(
+                    child:  Text(
                       "Resend OTP Code",
-                      style: TextStyle(color: Color(0xFF757575)),
+                      style: TextStyle(color:AppColor.red),
                     ),
                   ),
                 ],
@@ -89,7 +90,8 @@ class OtpForm extends StatelessWidget {
                     LengthLimitingTextInputFormatter(1),
                     FilteringTextInputFormatter.digitsOnly,
                   ],
-                  style: Theme.of(context).textTheme.titleLarge,
+                  // style: TextStyle(color: AppColor.white,fontSize: 18,fontWeight: FontWeight.bold),
+                  style:Theme.of(context).textTheme.titleLarge,
                   textAlign: TextAlign.center,
                   decoration: InputDecoration(
                     filled: true,

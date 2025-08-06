@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class CoachNameView extends StatelessWidget {
-  const CoachNameView({super.key});
+class LastPhysicalExamView extends StatelessWidget {
+  const LastPhysicalExamView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,7 @@ class CoachNameView extends StatelessWidget {
                   ),
                   SizedBox(height: Responsive.h(2)),
                   Text(
-                    "Coach/Manager's name",
+                    "When was your last physical exam?",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
@@ -45,7 +45,7 @@ class CoachNameView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Enter the name of the person managing your profile or bookings.",
+                    "This helps promoters ensure you're fit to fight.",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
@@ -82,7 +82,7 @@ class CoachNameView extends StatelessWidget {
                       // ),
                       filled: true,
                       fillColor: AppColor.white.withValues(alpha: 0.08),
-                      hintText: "Enter Manger Full Name",
+                      hintText: "Description",
                       hintStyle: GoogleFonts.dmSans(
                         color: AppColor.white,
                         fontWeight: FontWeight.normal,
@@ -102,7 +102,7 @@ class CoachNameView extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
-                  Navigator.pushNamed(context, RoutesName.cocahContact_view);
+                  Navigator.pushNamed(context, RoutesName.eyeTest_view);
                 },
               ),
               // SizedBox(height: Responsive.h(3)),

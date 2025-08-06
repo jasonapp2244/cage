@@ -1,6 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/res/components/button.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 
 class FightKnockoutView extends StatefulWidget {
@@ -58,7 +59,6 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
                       // Wheel picker with selection lines
                       Container(
                         decoration: BoxDecoration(color: AppColor.black),
@@ -125,6 +125,7 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
                         text: "Next",
                         onTap: () {
                           print('Selected Age: $selectedHeight');
+                          Navigator.pushNamed(context, RoutesName.fightStyle_view);
                         },
                       ),
 

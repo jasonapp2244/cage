@@ -39,7 +39,7 @@ class Utils {
         backgroundColor: AppColor.red,
         title: "Error",
         titleColor: AppColor.white,
-        messageColor: AppColor.black,
+        messageColor: AppColor.white,
         positionOffset: 20,
         flushbarPosition: FlushbarPosition.TOP,
         icon: Icon(Icons.error, size: 28, color: Colors.white),

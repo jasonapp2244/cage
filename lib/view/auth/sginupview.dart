@@ -1,7 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/res/components/auth_button.dart';
-import 'package:cage/res/components/social_button.dart';
+import 'package:cage/widgets/auth_button.dart';
+import 'package:cage/widgets/social_button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:flutter/gestures.dart';
@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/auth_viewmodel.dart';
+import '../../viewmodel/auth_viewmodel.dart';
 
 class Sginupview extends StatefulWidget {
   const Sginupview({super.key});

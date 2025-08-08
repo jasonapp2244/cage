@@ -1,9 +1,9 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/res/components/button.dart';
+import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/profile_pic.dart';
+import 'package:cage/view/Profile/fighter/profile_pic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 

@@ -1,7 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/res/components/auth_button.dart';
-import 'package:cage/res/components/social_button.dart';
+import 'package:cage/widgets/auth_button.dart';
+import 'package:cage/widgets/social_button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:flutter/gestures.dart';
@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/auth_viewmodel.dart';
+import '../../viewmodel/auth_viewmodel.dart';
 
 class Loginview extends StatefulWidget {
   const Loginview({super.key});
@@ -56,10 +56,22 @@ class _LoginviewState extends State<Loginview> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: Responsive.h(2)), // 2% of screen height
-                SvgPicture.asset(
-                  "assets/images/Frame 1171275875 (2).svg",
-                  width: Responsive.w(25), // 50% of screen width
+                // SvgPicture.asset(
+                //   "assets/images/Frame 1171275875 (2).svg",
+                //   width: Responsive.w(25), // 50% of screen width
+                // ),
+                Hero(
+                  tag: 'app-logo',
+                  child: SizedBox(
+                    width: 100, // Smaller size for login screen
+                    height: 100,
+                    child: SvgPicture.asset(
+                      "assets/images/icon.svg",
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
+
                 SizedBox(height: Responsive.h(2)),
                 Text(
                   "Welcome Back!",
@@ -183,16 +195,21 @@ class _LoginviewState extends State<Loginview> {
                   },
                 ),
                 SizedBox(height: Responsive.h(1.5)),
-                Padding(
-                  padding: EdgeInsets.only(right: Responsive.w(5)),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      "Forgot Password?",
-                      style: GoogleFonts.dmSans(
-                        color: AppColor.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: Responsive.sp(10),
+                GestureDetector(
+                  onTap: () {
+                    _showForgotPasswordBottomSheet(context,emailController);
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.only(right: Responsive.w(5)),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        "Forgot Password?",
+                        style: GoogleFonts.dmSans(
+                          color: AppColor.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.sp(10),
+                        ),
                       ),
                     ),
                   ),
@@ -317,6 +334,101 @@ class _LoginviewState extends State<Loginview> {
       ),
     );
   }
+}
+
+void _showForgotPasswordBottomSheet(
+  BuildContext context,
+  TextEditingController email,
+) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+    ),
+    backgroundColor: AppColor.black,
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: Responsive.w(5),
+          right: Responsive.w(5),
+          top: Responsive.h(3),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Forgot Password?",
+              style: GoogleFonts.dmSans(
+                color: AppColor.white,
+                fontSize: Responsive.sp(18),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              "Enter your registered email address. We’ll send you a link to reset your password.",
+              style: GoogleFonts.dmSans(
+                color: AppColor.white,
+                fontSize: Responsive.sp(10),
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+            SizedBox(height: Responsive.h(2)),
+            SizedBox(height: Responsive.h(6),
+              child: TextFormField(
+                style: TextStyle(color: AppColor.white),
+                controller: email,
+                cursorColor: AppColor.red,
+                cursorErrorColor: AppColor.red,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      Responsive.w(12),
+                    ), // 6% of width
+                    borderSide: BorderSide(color: AppColor.red),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(Responsive.w(12)),
+                    borderSide: BorderSide(color: AppColor.red),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColor.red),
+                    borderRadius: BorderRadius.circular(Responsive.w(12)),
+                  ),
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.all(Responsive.w(3)), // 2% of width
+                    child: SvgPicture.asset("assets/icons/mail-02.svg"),
+                  ),
+                  filled: true,
+                  fillColor: AppColor.white.withValues(alpha: 0.08),
+                  hintText: "Email Address",
+                  hintStyle: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontWeight: FontWeight.normal,
+                    fontSize: Responsive.sp(15),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: Responsive.h(2)),
+            AuthButton(
+              buttontext: "Continue",
+              onPress: () {
+                Navigator.pop(context);
+                Utils.flushBarErrorMassage("Reset link sent!", context);
+              },
+              loading: false,
+            ),
+            SizedBox(height: Responsive.h(2)),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 class Responsive {

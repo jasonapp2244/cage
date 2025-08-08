@@ -1,8 +1,16 @@
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/view/Payment_View.dart';
+import 'package:cage/view/Profile/fighter/eidt_profile.dart';
+import 'package:cage/view/Profile/fighter/fighter_profile.dart';
 import 'package:cage/view/age_view.dart';
+import 'package:cage/view/bottom_wraper.dart';
+import 'package:cage/view/change_password_view.dart';
 import 'package:cage/view/coach_conatct.dart';
 import 'package:cage/view/coach_view.dart';
+import 'package:cage/view/createnew_ticticket_view.dart';
 import 'package:cage/view/enter_name_view.dart';
+import 'package:cage/view/exploer/Promoters_view.dart';
+import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/eye_test_view.dart';
 import 'package:cage/view/fight_knockout_view.dart';
 import 'package:cage/view/fight_lose_view.dart';
@@ -12,12 +20,15 @@ import 'package:cage/view/hight_view.dart';
 import 'package:cage/view/homeview.dart';
 import 'package:cage/view/lastBT_view.dart';
 import 'package:cage/view/last_physical_exam_view.dart';
-import 'package:cage/view/loginview.dart';
+import 'package:cage/view/auth/loginview.dart';
+import 'package:cage/view/notification_view.dart';
 import 'package:cage/view/otp_view.dart';
 import 'package:cage/view/role_selector_view.dart';
-import 'package:cage/view/sginupview.dart';
-import 'package:cage/view/splash_view.dart';
+import 'package:cage/view/auth/sginupview.dart';
+import 'package:cage/view/auth/splash_view.dart';
+import 'package:cage/view/support_view.dart';
 import 'package:cage/view/tapalogy_view.dart';
+import 'package:cage/view/term_condition_view.dart';
 import 'package:cage/view/updateProfle_view.dart';
 import 'package:flutter/material.dart';
 
@@ -78,7 +89,44 @@ class Routes {
         return MaterialPageRoute(
           builder: (BuildContext context) => FightLoseView(),
         );
+      case RoutesName.notificationView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => NotificationView(),
+        );
+      case RoutesName.eventsView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => EventsView(),
+        );
+      case RoutesName.CreatenewTicticketView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => CreatenewTicticketView(),
+        );
+      case RoutesName.EidtProfile:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => EidtProfile(),
+        );
 
+      case RoutesName.fighterprofileView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => FighterProfile(),
+        );
+      case RoutesName.PaymentView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PaymentView(),
+        );
+      case RoutesName.Change_Password_View:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ChangePasswordView(),
+        );
+      case RoutesName.TermConditionView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => TermConditionView(),
+        );
+
+      case RoutesName.promoterView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PromotersView(),
+        );
       case RoutesName.fightKnouckout:
         return MaterialPageRoute(
           builder: (BuildContext context) => FightKnockoutView(),
@@ -102,8 +150,15 @@ class Routes {
           builder: (BuildContext context) => RoleSelectionScreen(),
         );
 
+         case RoutesName.supportView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => SupportView(),
+        );
+
       case RoutesName.home:
-        return MaterialPageRoute(builder: (BuildContext context) => Homeview());
+        return MaterialPageRoute(
+          builder: (BuildContext context) => MainWrapper(),
+        );
 
       case RoutesName.namecoachview:
         return MaterialPageRoute(

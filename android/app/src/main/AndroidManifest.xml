@@ -10,7 +10,7 @@
 
 
     <application
-        android:label="cage"
+        android:label="Cage Connect"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

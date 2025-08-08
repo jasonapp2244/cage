@@ -1,6 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/darwer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -24,14 +25,7 @@ class _HomeviewState extends State<Homeview> {
       backdrop: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          // gradient: LinearGradient(
-          //   begin: Alignment.topLeft,
-          //   end: Alignment.bottomRight,
-          //   colors: [Colors.blueGrey, Colors.blueGrey.withOpacity(0.2)],
-          // ),
-          color: AppColor.red,
-        ),
+        decoration: BoxDecoration(color: AppColor.red),
       ),
       controller: _advancedDrawerController,
       animationCurve: Curves.easeInOut,
@@ -48,34 +42,28 @@ class _HomeviewState extends State<Homeview> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
               children: [
-                // Your drawer content here
-                // Container(
-                //   width: 128.0,
-                //   height: 128.0,
-                //   margin: const EdgeInsets.only(top: 24.0, bottom: 64.0),
-                //   clipBehavior: Clip.antiAlias,
-                //   decoration: BoxDecoration(
-                //     color: Colors.black26,
-                //     shape: BoxShape.circle,
-                //   ),
-                //   child: Image.asset('assets/images/flutter_logo.png'),
-                // ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: SvgPicture.asset("assets/icons/Group 9 (1).svg"),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.home);
+                  },
                   leading: SvgPicture.asset("assets/icons/home.svg"),
                   title: Text('Home'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.PaymentView);
+                  },
                   leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
                   title: Text('Subscription'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.supportView);
+                  },
                   leading: SvgPicture.asset(
                     "assets/icons/customer-service.svg",
                   ),
@@ -88,12 +76,16 @@ class _HomeviewState extends State<Homeview> {
                   title: Text('Settings'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.TermConditionView);
+                  },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
                   title: Text('Terms & Conditions'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.spalsh);
+                  },
                   leading: SvgPicture.asset("assets/icons/logout-03.svg"),
                   title: Text('Logout'),
                 ),
@@ -363,8 +355,8 @@ class _HomeviewState extends State<Homeview> {
                           fontSize: Responsive.sp(10),
                         ),
                       ),
-                      SizedBox(height: Responsive.h(5)),
 
+                      // SizedBox(width: Responsive.w(5)),
                       Row(
                         children: [
                           Text(
@@ -450,7 +442,6 @@ class _HomeviewState extends State<Homeview> {
                           ),
                         );
                       },
-                      // separatorBuilder: (context, index) => const Divider(),
                     ),
                   ),
                 ],

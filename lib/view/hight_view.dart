@@ -1,8 +1,11 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HightView extends StatefulWidget {
   @override
@@ -28,6 +31,7 @@ class _HightViewState extends State<HightView> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
     return Scaffold(
       backgroundColor: AppColor.black,
       appBar: AppBar(backgroundColor: AppColor.black),
@@ -38,7 +42,7 @@ class _HightViewState extends State<HightView> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [],),
+              Row(children: []),
               const Text(
                 'What\'s your height?',
                 style: TextStyle(
@@ -57,7 +61,6 @@ class _HightViewState extends State<HightView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
                     // Wheel picker with selection lines
                     Container(
                       decoration: BoxDecoration(color: AppColor.black),
@@ -144,6 +147,12 @@ class _HightViewState extends State<HightView> {
                       text: "Next",
                       onTap: () {
                         print('Selected height: $selectedHeight cm');
+                        var uid = Utils.getCurrentUid();
+                        authProvider.updateUserField(
+                          uid: uid,
+                          fieldName: 'height',
+                          value: selectedHeight.toString(),
+                        );
                         Navigator.pushNamed(context, RoutesName.fightwon);
                       },
                     ),

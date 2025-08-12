@@ -1,18 +1,40 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
-class CoachNameView extends StatelessWidget {
-  const CoachNameView({super.key});
+class CoachNameView extends StatefulWidget {
+  @override
+  _CoachNameViewState createState() => _CoachNameViewState();
+}
+
+class _CoachNameViewState extends State<CoachNameView> {
+  late TextEditingController _managerNameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _managerNameController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _managerNameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
     Responsive.init(context);
+
     return Scaffold(
       backgroundColor: AppColor.black,
       body: SafeArea(
@@ -23,7 +45,6 @@ class CoachNameView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: Responsive.h(2)),
@@ -53,19 +74,15 @@ class CoachNameView extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: Responsive.h(2)),
-
                   TextFormField(
                     style: TextStyle(color: AppColor.white),
-                    // controller: emailController,
-                    // focusNode: emailFoucsNode,
+                    controller: _managerNameController,
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.name,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          Responsive.w(12),
-                        ), // 6% of width
+                        borderRadius: BorderRadius.circular(Responsive.w(12)),
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       errorBorder: OutlineInputBorder(
@@ -76,36 +93,34 @@ class CoachNameView extends StatelessWidget {
                         borderSide: BorderSide(color: AppColor.red),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
                       ),
-                      // prefixIcon: Padding(
-                      //   padding: EdgeInsets.all(Responsive.w(3)), // 2% of width
-                      //   child: SvgPicture.asset("assets/icons/mail-02.svg"),
-                      // ),
                       filled: true,
                       fillColor: AppColor.white.withValues(alpha: 0.08),
-                      hintText: "Enter Manger Full Name",
+                      hintText: "Enter Manager Full Name",
                       hintStyle: GoogleFonts.dmSans(
                         color: AppColor.white,
                         fontWeight: FontWeight.normal,
                         fontSize: Responsive.sp(15),
                       ),
                     ),
-                    // onFieldSubmitted: (value) {
-                    //   Utils.fieldFoucsChange(
-                    //     context,
-                    //     emailFoucsNode,
-                    //     passwordFoucsNode,
-                    //   );
-                    // },
                   ),
                 ],
               ),
               Button(
                 text: "Next",
                 onTap: () {
-                  Navigator.pushNamed(context, RoutesName.cocahContact_view);
+                  var uid = Utils.getCurrentUid();
+                  if (uid != null && _managerNameController.text.isNotEmpty) {
+                    authProvider.updateUserField(
+                      uid: uid,
+                      fieldName: 'coachName',
+                      value: _managerNameController.text,
+                    );
+                    Navigator.pushNamed(context, RoutesName.cocahContact_view);
+                  } else {
+                    // Show error message or handle empty input
+                  }
                 },
               ),
-              // SizedBox(height: Responsive.h(3)),
             ],
           ),
         ),

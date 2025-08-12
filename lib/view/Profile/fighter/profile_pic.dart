@@ -2,12 +2,16 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePic extends StatefulWidget {
-  const ProfilePic({super.key});
+  AuthViewmodel? model;
+  ProfilePic({super.key, this.model});
 
   @override
   State<ProfilePic> createState() => _ProfilePicState();
@@ -16,7 +20,6 @@ class ProfilePic extends StatefulWidget {
 class _ProfilePicState extends State<ProfilePic> {
   File? _pickedImage;
   final ImagePicker _picker = ImagePicker();
-
   Future<String?> _getProfileImage() async {
     // Replace this with your actual logic to get the profile image URL
     return "https://i.postimg.cc/0jqKB6mS/Profile-Image.png";
@@ -35,10 +38,22 @@ class _ProfilePicState extends State<ProfilePic> {
         setState(() {
           _pickedImage = File(image.path);
         });
+        // Upload image and get URL
+        var uid = await Utils.getCurrentUid();
 
-        // Here you would typically upload the image to your server
-        // await _uploadImage(_pickedImage!);
+        String? imageUrl = await widget.model!.uploadImage(_pickedImage!, uid);
+
+        if (imageUrl != null) {
+          // Optionally update state or reload image from Firebase URL
+          setState(() {
+            // Clear local file, so FutureBuilder loads fresh URL
+            _pickedImage = null;
+          });
+        }
       }
+
+      // Here you would typically upload the image to your server
+      // await _uploadImage(_pickedImage!);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to pick image: ${e.toString()}')),
@@ -112,4 +127,3 @@ class _ProfilePicState extends State<ProfilePic> {
     );
   }
 }
-

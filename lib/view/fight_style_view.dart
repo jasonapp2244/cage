@@ -1,17 +1,28 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
-class FightStyleView extends StatelessWidget {
+class FightStyleView extends StatefulWidget {
   const FightStyleView({super.key});
 
   @override
+  State<FightStyleView> createState() => _FightStyleViewState();
+}
+
+class _FightStyleViewState extends State<FightStyleView> {
+  var selectedFightStyle = 'Option 1';
+  @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
     Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -54,18 +65,14 @@ class FightStyleView extends StatelessWidget {
                   ),
                   SizedBox(height: Responsive.h(2)),
 
-                  TextFormField(
+                  DropdownButtonFormField<String>(
                     style: TextStyle(color: AppColor.white),
-                    // controller: emailController,
-                    // focusNode: emailFoucsNode,
-                    cursorColor: AppColor.red,
-                    cursorErrorColor: AppColor.red,
-                    keyboardType: TextInputType.emailAddress,
+                    dropdownColor: AppColor.white.withOpacity(
+                      0.1,
+                    ), // background of dropdown menu
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          Responsive.w(12),
-                        ), // 6% of width
+                        borderRadius: BorderRadius.circular(Responsive.w(12)),
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       errorBorder: OutlineInputBorder(
@@ -76,12 +83,8 @@ class FightStyleView extends StatelessWidget {
                         borderSide: BorderSide(color: AppColor.red),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
                       ),
-                      // prefixIcon: Padding(
-                      //   padding: EdgeInsets.all(Responsive.w(3)), // 2% of width
-                      //   child: SvgPicture.asset("assets/icons/mail-02.svg"),
-                      // ),
                       filled: true,
-                      fillColor: AppColor.white.withValues(alpha: 0.08),
+                      fillColor: AppColor.white.withOpacity(0.08),
                       hintText: "e.g www.taplogy.com",
                       hintStyle: GoogleFonts.dmSans(
                         color: AppColor.white,
@@ -89,23 +92,52 @@ class FightStyleView extends StatelessWidget {
                         fontSize: Responsive.sp(15),
                       ),
                     ),
-                    // onFieldSubmitted: (value) {
-                    //   Utils.fieldFoucsChange(
-                    //     context,
-                    //     emailFoucsNode,
-                    //     passwordFoucsNode,
-                    //   );
-                    // },
+                    iconEnabledColor: AppColor.white, // arrow color
+                    items: [
+                      DropdownMenuItem(
+                        value: "option1",
+                        child: Text("Option 1"),
+                      ),
+                      DropdownMenuItem(
+                        value: "option2",
+                        child: Text("Option 2"),
+                      ),
+                      DropdownMenuItem(
+                        value: "option3",
+                        child: Text("Option 3"),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        selectedFightStyle = value!;
+                      });
+
+                      // handle value change here
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select an option';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 30),
+
+                  Button(
+                    text: "Next",
+                    onTap: () {
+                      var uid = Utils.getCurrentUid();
+                      authProvider.updateUserField(
+                        uid: uid,
+                        fieldName: 'fightsStyle',
+                        value: selectedFightStyle.toString(),
+                      );
+
+                      Navigator.pushNamed(context, RoutesName.tapalogy_view);
+                    },
                   ),
                 ],
-              ),
-              Button(
-                text: "Next",
-                onTap: () {
-                  Navigator.pushNamed(context, RoutesName.tapalogy_view);
-                },
-              ),
-              // SizedBox(height: Responsive.h(3)),
+              ), // SizedBox(height: Responsive.h(3)),
             ],
           ),
         ),

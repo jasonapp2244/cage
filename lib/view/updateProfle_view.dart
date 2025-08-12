@@ -1,17 +1,19 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/profile_pic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 class UpdateprofleView extends StatelessWidget {
-  const UpdateprofleView({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
+
     Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -53,18 +55,16 @@ class UpdateprofleView extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: Responsive.h(2)),
-                  Row(mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ProfilePic(),
-                    ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [ProfilePic(model: authProvider)],
                   ),
-               
                 ],
               ),
               Button(
                 text: "Next",
                 onTap: () {
-                  Navigator.pushNamed(context, RoutesName.home);
+                  Navigator.pushNamed(context, RoutesName.selectLocation);
                 },
               ),
               // SizedBox(height: Responsive.h(3)),

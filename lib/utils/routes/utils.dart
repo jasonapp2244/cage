@@ -1,6 +1,7 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:another_flushbar/flushbar_route.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -28,7 +29,6 @@ class Utils {
     showFlushbar(
       context: context,
       flushbar: Flushbar(
-        
         forwardAnimationCurve: Curves.decelerate,
         reverseAnimationCurve: Curves.easeInOut,
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -46,6 +46,15 @@ class Utils {
         duration: Duration(seconds: 3),
       )..show(context),
     );
+  }
+
+  static String getCurrentUid() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return user.uid; // This is the uid you pass to updateUserField
+    } else {
+      throw Exception('User not logged in');
+    }
   }
 }
 

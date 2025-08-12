@@ -1,18 +1,23 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class LastbloodtestView extends StatelessWidget {
-  const LastbloodtestView({super.key});
+  TextEditingController lastBloodController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
+    final authProvider = Provider.of<AuthViewmodel>(context);
+
     return Scaffold(
       backgroundColor: AppColor.black,
       body: SafeArea(
@@ -56,7 +61,7 @@ class LastbloodtestView extends StatelessWidget {
 
                   TextFormField(
                     style: TextStyle(color: AppColor.white),
-                    // controller: emailController,
+                    controller: lastBloodController,
                     // focusNode: emailFoucsNode,
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
@@ -102,6 +107,13 @@ class LastbloodtestView extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
+                  var uid = Utils.getCurrentUid();
+                  authProvider.updateUserField(
+                    uid: uid,
+                    fieldName: 'lastBlood',
+                    value: lastBloodController.text.toString(),
+                  );
+
                   Navigator.pushNamed(context, RoutesName.physicalText_view);
                 },
               ),

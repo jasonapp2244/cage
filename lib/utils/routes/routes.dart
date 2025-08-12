@@ -21,6 +21,7 @@ import 'package:cage/view/homeview.dart';
 import 'package:cage/view/lastBT_view.dart';
 import 'package:cage/view/last_physical_exam_view.dart';
 import 'package:cage/view/auth/loginview.dart';
+import 'package:cage/view/map_screen.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:cage/view/otp_view.dart';
 import 'package:cage/view/role_selector_view.dart';
@@ -150,7 +151,7 @@ class Routes {
           builder: (BuildContext context) => RoleSelectionScreen(),
         );
 
-         case RoutesName.supportView:
+      case RoutesName.supportView:
         return MaterialPageRoute(
           builder: (BuildContext context) => SupportView(),
         );
@@ -173,6 +174,10 @@ class Routes {
       case RoutesName.spalsh:
         return MaterialPageRoute(
           builder: (BuildContext context) => SplashView(),
+        );
+      case RoutesName.selectLocation:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => SelectLocationView(),
         );
 
       default:

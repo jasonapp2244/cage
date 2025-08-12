@@ -197,7 +197,7 @@ class _LoginviewState extends State<Loginview> {
                 SizedBox(height: Responsive.h(1.5)),
                 GestureDetector(
                   onTap: () {
-                    _showForgotPasswordBottomSheet(context,emailController);
+                    _showForgotPasswordBottomSheet(context, emailController);
                   },
                   child: Padding(
                     padding: EdgeInsets.only(right: Responsive.w(5)),
@@ -242,15 +242,12 @@ class _LoginviewState extends State<Loginview> {
                         context,
                       );
                     } else {
+                      authViewmodel.loginWithEmailPassword(
+                        emailController.text,
+                        passwordController.text,
+                        context,
+                      );
                       Navigator.pushNamed(context, RoutesName.otp);
-                      // Map<String, String> headr = {
-                      //   "x-api-key": "reqres-free-v1",
-                      // };
-                      // Map data = {
-                      //   'email': emailController.text.toString(),
-                      //   'password': passwordController.text.toString(),
-                      // };
-                      // authViewmodel.loginApi(data, headr, context);
                     }
                   },
                 ),
@@ -377,7 +374,8 @@ void _showForgotPasswordBottomSheet(
               ),
             ),
             SizedBox(height: Responsive.h(2)),
-            SizedBox(height: Responsive.h(6),
+            SizedBox(
+              height: Responsive.h(6),
               child: TextFormField(
                 style: TextStyle(color: AppColor.white),
                 controller: email,

@@ -1,8 +1,11 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AgeView extends StatefulWidget {
   @override
@@ -28,6 +31,7 @@ class _AgeViewState extends State<AgeView> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
     return Scaffold(
       backgroundColor: AppColor.black,
       appBar: AppBar(backgroundColor: AppColor.black),
@@ -57,7 +61,6 @@ class _AgeViewState extends State<AgeView> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
                       // Wheel picker with selection lines
                       Container(
                         decoration: BoxDecoration(color: AppColor.black),
@@ -123,7 +126,12 @@ class _AgeViewState extends State<AgeView> {
                       Button(
                         text: "Next",
                         onTap: () {
-                          print('Selected Age: $selectedHeight');
+                          var uid = Utils.getCurrentUid();
+                          authProvider.updateUserField(
+                            uid: uid,
+                            fieldName: 'age',
+                            value: selectedHeight.toString(),
+                          );
                           Navigator.pushNamed(context, RoutesName.hightview);
                         },
                       ),

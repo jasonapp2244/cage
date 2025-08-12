@@ -99,11 +99,13 @@
 //   }
 // }
 
-
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/provider/role_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -112,6 +114,7 @@ class RoleSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final roleProvider = Provider.of<RoleProvider>(context);
+    final authProvider = Provider.of<AuthViewmodel>(context);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -160,8 +163,17 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const Spacer(),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   print('Selected role: ${roleProvider.selectedRole}');
+
+                  var uid = await Utils.getCurrentUid();
+                  print(uid);
+                  authProvider.updateUserField(
+                    uid: uid,
+                    fieldName: 'role',
+                    value: roleProvider.selectedRole,
+                  );
+
                   Navigator.pushNamed(context, RoutesName.nameview);
                 },
                 child: const Text('Continue', style: TextStyle(fontSize: 18)),

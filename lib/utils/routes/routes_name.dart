@@ -64,4 +64,5 @@ class RoutesName {
   static const String Change_Password_View = "Change_Password_View";
 
   static const String TermConditionView = "Term_Condition_View";
+  static const String selectLocation = "Select_Location";
 }

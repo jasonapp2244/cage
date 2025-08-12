@@ -1,17 +1,20 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class LastPhysicalExamView extends StatelessWidget {
-  const LastPhysicalExamView({super.key});
-
+  TextEditingController _lastExamController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
     Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -56,7 +59,7 @@ class LastPhysicalExamView extends StatelessWidget {
 
                   TextFormField(
                     style: TextStyle(color: AppColor.white),
-                    // controller: emailController,
+                    controller: _lastExamController,
                     // focusNode: emailFoucsNode,
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
@@ -102,6 +105,12 @@ class LastPhysicalExamView extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
+                  var uid = Utils.getCurrentUid();
+                  authProvider.updateUserField(
+                    uid: uid,
+                    fieldName: 'lastExam',
+                    value: _lastExamController.text.toString(),
+                  );
                   Navigator.pushNamed(context, RoutesName.eyeTest_view);
                 },
               ),

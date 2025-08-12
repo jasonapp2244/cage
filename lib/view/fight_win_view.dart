@@ -1,8 +1,11 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class FightWinView extends StatefulWidget {
   const FightWinView({super.key});
@@ -30,6 +33,7 @@ class _FightWinViewState extends State<FightWinView> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
     return Scaffold(
       backgroundColor: AppColor.black,
       appBar: AppBar(backgroundColor: AppColor.black),
@@ -41,7 +45,7 @@ class _FightWinViewState extends State<FightWinView> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [],),
+                Row(children: []),
                 const Text(
                   'How many fights have you won?',
                   style: TextStyle(
@@ -126,6 +130,14 @@ class _FightWinViewState extends State<FightWinView> {
                         text: "Next",
                         onTap: () {
                           print('Selected Age: $selectedHeight');
+
+                          var uid = Utils.getCurrentUid();
+                          authProvider.updateUserField(
+                            uid: uid,
+                            fieldName: 'fightsWin',
+                            value: selectedHeight.toString(),
+                          );
+
                           Navigator.pushNamed(context, RoutesName.fightlose);
                         },
                       ),

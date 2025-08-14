@@ -1,29 +1,30 @@
 // main_wrapper.dart
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/view/Profile/fighter/fighter_profile.dart';
+import 'package:cage/view/Profile/Promoter/promoter_home.dart';
+import 'package:cage/view/Profile/Promoter/test.dart';
+import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
 import 'package:cage/view/exploer/events_view.dart';
-import 'package:cage/view/homeview.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
 
-class MainWrapper extends StatefulWidget {
-  const MainWrapper({Key? key}) : super(key: key);
+class PromotorBottomNavBar extends StatefulWidget {
+  const PromotorBottomNavBar({Key? key}) : super(key: key);
 
   @override
-  State<MainWrapper> createState() => _MainWrapperState();
+  State<PromotorBottomNavBar> createState() => _PromotorBottomNavBarState();
 }
 
-class _MainWrapperState extends State<MainWrapper> {
+class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    Homeview(),
-    EventsView(),
+    PromoterHome(),
+    ExploreFighters(),
     NotificationView(),
-    FighterProfile()
+    PromoterView(),
   ];
 
   void _handleMenuButtonPressed() {
@@ -36,9 +37,7 @@ class _MainWrapperState extends State<MainWrapper> {
       backdrop: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColor.red,
-        ),
+        decoration: BoxDecoration(color: AppColor.red),
       ),
       controller: _drawerController,
       animationCurve: Curves.easeInOut,
@@ -151,19 +150,6 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // // main_wrapper.dart
 // import 'package:cage/res/components/app_color.dart';
 // import 'package:cage/view/homeview.dart';
@@ -171,14 +157,14 @@ class _MainWrapperState extends State<MainWrapper> {
 // import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 // import 'package:flutter_svg/svg.dart';
 
-// class MainWrapper extends StatefulWidget {
-//   const MainWrapper({Key? key}) : super(key: key);
+// class PromotorBottomNavBar extends StatefulWidget {
+//   const PromotorBottomNavBar({Key? key}) : super(key: key);
 
 //   @override
-//   State<MainWrapper> createState() => _MainWrapperState();
+//   State<PromotorBottomNavBar> createState() => _PromotorBottomNavBarState();
 // }
 
-// class _MainWrapperState extends State<MainWrapper> {
+// class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
 //   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
 //   int _currentIndex = 0;
 

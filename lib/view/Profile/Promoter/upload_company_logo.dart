@@ -62,7 +62,7 @@ class UploadCompanyLogo extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
-                  Navigator.pushNamed(context, RoutesName.home);
+                  Navigator.pushNamed(context, RoutesName.PromotorBottomNavBar);
                 },
               ),
               // SizedBox(height: Responsive.h(3)),

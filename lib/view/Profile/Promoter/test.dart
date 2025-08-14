@@ -77,7 +77,7 @@ class _PromoterViewState extends State<PromoterView>
                       ),
                     ),
                     Text(
-                      "Profile",
+                      "Profi",
                       style: TextStyle(
                         fontSize: Responsive.textScaleFactor * 24,
                         color: AppColor.white,

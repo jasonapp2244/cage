@@ -57,11 +57,27 @@ class RoutesName {
 
   static const String eventsView = "events_view";
 
-  static const String fighterprofileView = "fighter_profile_view";
+  static const String fighterpersonalprofileView = "fighter_perosnal_profile_view";
+  static const String FighterPublicProfile = "FighterPublicProfile";
 
   static const String promoterprofileView = "promoter_profile_view";
 
   static const String Change_Password_View = "Change_Password_View";
 
   static const String TermConditionView = "Term_Condition_View";
+
+  static const String PromotorSubcribtionView = "PromotorSubcribtionView";
+
+  static const String WhoThepromoterView = "WhoThepromoterView";
+  static const String PromoterView = "PromoterView";
+  static const String PromotorBottomNavBar = "PromotorBottomNavBar";
+
+  static const String aboutCompanayName = "AboutCompanayName";
+  static const String UploadCompanyLogo = "UploadCompanyLogo";
+  static const String CompanyNameView = "CompanyNameView";
+  static const String ContactEmailView = "ContactEmailView";
+  static const String ContactNumberView = "ContactNumberView";
+  static const String EventHistory = "EventHistory";
+  static const String PromoterHome = "PromoterHome";
+  static const String PromoterProfileView = "PromoterProfileView";
 }

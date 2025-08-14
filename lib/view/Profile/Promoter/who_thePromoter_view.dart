@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class EnterNameView extends StatelessWidget {
-  const EnterNameView({super.key});
+class WhoThepromoterView extends StatelessWidget {
+  const WhoThepromoterView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -109,11 +109,11 @@ class EnterNameView extends StatelessWidget {
                 onTap: () {
                   if (fullNameController.text.isEmpty) {
                     Utils.flushBarErrorMassage(
-                      "Please Enter Full Name First",
+                      "Please Enter Who’s The Promoter",
                       context,
                     );
                   } else {
-                    Navigator.pushNamed(context, RoutesName.namecoachview);
+                    Navigator.pushNamed(context, RoutesName.ContactEmailView);
                     // Map<String, String> headr = {
                     //   "x-api-key": "reqres-free-v1",
                     // };

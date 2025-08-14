@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class EnterNameView extends StatelessWidget {
-  const EnterNameView({super.key});
+class ContactNumberView extends StatelessWidget {
+  const ContactNumberView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +113,7 @@ class EnterNameView extends StatelessWidget {
                       context,
                     );
                   } else {
-                    Navigator.pushNamed(context, RoutesName.namecoachview);
+                    Navigator.pushNamed(context, RoutesName.UploadCompanyLogo);
                     // Map<String, String> headr = {
                     //   "x-api-key": "reqres-free-v1",
                     // };

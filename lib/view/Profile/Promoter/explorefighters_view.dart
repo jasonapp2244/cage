@@ -1,11 +1,12 @@
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class PromotersView extends StatelessWidget {
-  const PromotersView({super.key});
+class ExploreFighters extends StatelessWidget {
+  const ExploreFighters({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -196,24 +197,30 @@ class PromotersView extends StatelessWidget {
                           ),
                           SizedBox(height: Responsive.h(1)),
 
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(22),
-                              color: AppColor.white.withValues(alpha: 0.05),
+                          GestureDetector(
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              RoutesName.FighterPublicProfile,
                             ),
-                            width: double.infinity,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5.0,
-                                vertical: 4.5,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(22),
+                                color: AppColor.white.withValues(alpha: 0.09),
                               ),
-                              child: Center(
-                                child: Text(
-                                  "View Profile",
-                                  style: GoogleFonts.dmSans(
-                                    color: AppColor.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.textScaleFactor * 12,
+                              width: double.infinity,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5.0,
+                                  vertical: 4.5,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "View Profile",
+                                    style: GoogleFonts.dmSans(
+                                      color: AppColor.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.textScaleFactor * 12,
+                                    ),
                                   ),
                                 ),
                               ),

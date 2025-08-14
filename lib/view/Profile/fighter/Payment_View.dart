@@ -184,7 +184,7 @@ class PaymentView extends StatelessWidget {
                       SizedBox(height: Responsive.h(0.5)),
 
                       Row(
-                        children: [
+                       children : [
                           SvgPicture.asset("assets/icons/right.svg"),
                           SizedBox(width: Responsive.w(2)),
                           Text(

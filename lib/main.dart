@@ -3,20 +3,7 @@ import 'package:cage/provider/tab_controller.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/Payment_View.dart';
-import 'package:cage/view/Profile/Promoter/promoter_home.dart';
-import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
-import 'package:cage/view/Profile/Promoter/tab_controller.dart';
 import 'package:cage/view/Profile/Promoter/test.dart';
-import 'package:cage/view/Profile/fighter/fighter_profile.dart';
-import 'package:cage/view/Profile/fighter/eidt_profile.dart';
-import 'package:cage/view/change_password_view.dart';
-import 'package:cage/view/createnew_ticticket_view.dart';
-import 'package:cage/view/auth/loginview.dart';
-import 'package:cage/view/exploer/events_view.dart';
-import 'package:cage/view/notification_view.dart';
-import 'package:cage/view/support_view.dart';
-import 'package:cage/view/term_condition_view.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -53,9 +40,9 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       // You should use either home or initialRoute, not both
-      home: PromoterView(),
-      // initialRoute: RoutesName.spalsh, // Fixed typo from 'spalsh' to 'splash'
-      // onGenerateRoute: Routes.generateRoutes,
+      // home: PromoterView(),
+      initialRoute: RoutesName.spalsh, // Fixed typo from 'spalsh' to 'splash'
+      onGenerateRoute: Routes.generateRoutes,
     );
   }
 }

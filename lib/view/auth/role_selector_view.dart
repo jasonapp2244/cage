@@ -99,7 +99,6 @@
 //   }
 // }
 
-
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/provider/role_provider.dart';
 import 'package:cage/res/components/app_color.dart';
@@ -162,7 +161,11 @@ class RoleSelectionScreen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   print('Selected role: ${roleProvider.selectedRole}');
-                  Navigator.pushNamed(context, RoutesName.nameview);
+                  if (roleProvider.selectedRole == "Fighter") {
+                    Navigator.pushNamed(context, RoutesName.nameview);
+                  } else {
+                    Navigator.pushNamed(context, RoutesName.CompanyNameView);
+                  } 
                 },
                 child: const Text('Continue', style: TextStyle(fontSize: 18)),
                 style: ElevatedButton.styleFrom(

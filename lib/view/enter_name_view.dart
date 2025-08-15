@@ -116,7 +116,8 @@ class EnterNameView extends StatelessWidget {
                     );
                   } else {
                     var uid = Utils.getCurrentUid();
-                    authProvider.updateUserField(
+                    authProvider.addUserFieldByRole
+(
                       uid: uid,
                       fieldName: 'fullName',
                       value: fullNameController.text.toString(),

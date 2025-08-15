@@ -116,6 +116,9 @@ class RoleSelectionScreen extends StatelessWidget {
     final roleProvider = Provider.of<RoleProvider>(context);
     final authProvider = Provider.of<AuthViewmodel>(context);
 
+    // Debug: Print current role
+    print('Current selected role: ${roleProvider.selectedRole}');
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -151,30 +154,69 @@ class RoleSelectionScreen extends StatelessWidget {
                     svgImage: "assets/icons/advertising_4318884 1 (1).svg",
                     title: "I'm a Fighter",
                     isSelected: roleProvider.selectedRole == "Fighter",
-                    onTap: () => roleProvider.selectRole("Fighter"),
+                    onTap: () {
+                      print('Fighter selected');
+                      roleProvider.selectRole("Fighter");
+                    },
                   ),
                   RoleSelectionCard(
                     svgImage: "assets/icons/boxing.svg",
                     title: "I'm a Promoter",
                     isSelected: roleProvider.selectedRole == "Promoter",
-                    onTap: () => roleProvider.selectRole("Promoter"),
+                    onTap: () {
+                      print('Promoter selected');
+                      roleProvider.selectRole("Promoter");
+                    },
                   ),
                 ],
               ),
               const Spacer(),
               ElevatedButton(
                 onPressed: () async {
-                  print('Selected role: ${roleProvider.selectedRole}');
+                  print('Button pressed!');
+                  try {
+                    print('Selected role: ${roleProvider.selectedRole}');
+                    print(
+                      'Role type: ${roleProvider.selectedRole.runtimeType}',
+                    );
 
-                  var uid = await Utils.getCurrentUid();
-                  print(uid);
-                  authProvider.updateUserField(
-                    uid: uid,
-                    fieldName: 'role',
-                    value: roleProvider.selectedRole,
-                  );
+                    var uid = Utils.getCurrentUid();
+                    print('User UID: $uid');
 
-                  Navigator.pushNamed(context, RoutesName.nameview);
+                    await authProvider.addRole(
+                      uid: uid,
+                      fieldName: 'role',
+                      value: roleProvider.selectedRole,
+                    );
+
+                    // Navigate based on selected role
+                    print(
+                      'About to navigate. Role is: "${roleProvider.selectedRole}"',
+                    );
+                    if (roleProvider.selectedRole == 'Fighter') {
+                      print(
+                        'Navigating to Fighter screen: ${RoutesName.nameview}',
+                      );
+                      Navigator.pushNamed(context, RoutesName.nameview);
+                    } else if (roleProvider.selectedRole == 'Promoter') {
+                      print(
+                        'Navigating to Promoter screen: ${RoutesName.companyName}',
+                      );
+                      Navigator.pushNamed(context, RoutesName.companyName);
+                    } else {
+                      print('Unknown role: "${roleProvider.selectedRole}"');
+                      Utils.flushBarErrorMassage(
+                        'Unknown role selected: ${roleProvider.selectedRole}',
+                        context,
+                      );
+                    }
+                  } catch (e) {
+                    print('Error: $e');
+                    Utils.flushBarErrorMassage(
+                      'An error occurred: $e',
+                      context,
+                    );
+                  }
                 },
                 child: const Text('Continue', style: TextStyle(fontSize: 18)),
                 style: ElevatedButton.styleFrom(
@@ -218,9 +260,7 @@ class RoleSelectionCard extends StatelessWidget {
         height: 120,
         padding: const EdgeInsets.all(0),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColor.black
-              : AppColor.white.withValues(alpha: 0.5),
+          color: isSelected ? AppColor.black : AppColor.white.withOpacity(0.5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.red : Colors.grey.shade300,

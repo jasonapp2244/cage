@@ -148,7 +148,8 @@ class _HightViewState extends State<HightView> {
                       onTap: () {
                         print('Selected height: $selectedHeight cm');
                         var uid = Utils.getCurrentUid();
-                        authProvider.updateUserField(
+                        authProvider.addUserFieldByRole
+(
                           uid: uid,
                           fieldName: 'height',
                           value: selectedHeight.toString(),

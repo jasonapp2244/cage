@@ -106,7 +106,8 @@ class LastPhysicalExamView extends StatelessWidget {
                 text: "Next",
                 onTap: () {
                   var uid = Utils.getCurrentUid();
-                  authProvider.updateUserField(
+                  authProvider.addUserFieldByRole
+(
                     uid: uid,
                     fieldName: 'lastExam',
                     value: _lastExamController.text.toString(),

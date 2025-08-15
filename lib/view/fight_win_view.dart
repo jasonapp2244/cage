@@ -132,9 +132,10 @@ class _FightWinViewState extends State<FightWinView> {
                           print('Selected Age: $selectedHeight');
 
                           var uid = Utils.getCurrentUid();
-                          authProvider.updateUserField(
+                          authProvider.addUserFieldByRole
+(
                             uid: uid,
-                            fieldName: 'fightsWin',
+                            fieldName: 'fightWin',
                             value: selectedHeight.toString(),
                           );
 

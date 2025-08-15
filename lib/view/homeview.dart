@@ -1,4 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/models/fighter_model.dart';
+import 'package:cage/models/user_model.dart';
+import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
@@ -102,245 +105,125 @@ class _HomeviewState extends State<Homeview> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SvgPicture.asset("assets/icons/Group 9.svg"),
-                      Column(
+                  StreamBuilder<UserModel>(
+                    stream: UserRepository.fetchCurrentUserStream(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+
+                      final user = snapshot.data!;
+                      if (user.roleData is! FighterDataModel) {
+                        return Center(child: Text("No fighter data"));
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error loading data'));
+                      }
+
+                      final fighter = user.roleData as FighterDataModel;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Hi👋Jhon Doe",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.sp(18),
-                            ),
-                          ),
-                          Text(
-                            "San Francisco, California 94124",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.normal,
-                              fontSize: Responsive.sp(10.5),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      GestureDetector(
-                        onTap: _handleMenuButtonPressed,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColor.white.withValues(alpha: 0.1),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: SvgPicture.asset("assets/icons/menu-11.svg"),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // SvgPicture.asset("assets/icons/Mask group (1).svg"),
-                  Container(
-                    // width: Responsive.w(70),
-                    // height: Responsive.h(65),
-                    color: AppColor.black,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 0.0),
-                          child: Image(
-                            width: Responsive.w(70),
-                            // height: Responsive.h(65),
-                            image: AssetImage("assets/icons/Mask group.png"),
-                          ),
-                        ),
-                        RotatedBox(
-                          quarterTurns: 3,
-                          child: Text(
-                            '143.3 LBS',
-                            style: TextStyle(
-                              color: AppColor.white.withValues(alpha: 0.18),
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.normal,
-                              fontSize: Responsive.sp(40),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        width: Responsive.w(27),
-                        height: Responsive.w(22),
-                        decoration: BoxDecoration(
-                          color: AppColor.black,
-
-                          border: BoxBorder.all(
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          // Greeting
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "Wins",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(10.5),
-                                ),
+                              SvgPicture.asset("assets/icons/Group 9.svg"),
+                              Column(
+                                children: [
+                                  Text(
+                                    "Hi👋 ${fighter.fullName}",
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontFamily: AppFonts.appFont,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.sp(18),
+                                    ),
+                                  ),
+                                  Text(
+                                    "San Francisco, California 94124", // static or dynamic if you have location
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontFamily: AppFonts.appFont,
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: Responsive.sp(10.5),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                "12",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(24),
+                              GestureDetector(
+                                onTap: _handleMenuButtonPressed,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColor.white.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: SvgPicture.asset(
+                                      "assets/icons/menu-11.svg",
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                      Container(
-                        width: Responsive.w(27),
-                        height: Responsive.w(22),
-                        decoration: BoxDecoration(
-                          color: AppColor.black,
 
-                          border: BoxBorder.all(
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          // Wins, Losses, Knockouts
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "Losses",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(10.5),
-                                ),
-                              ),
-                              Text(
-                                "05",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(24),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: Responsive.w(27),
-                        height: Responsive.w(22),
-                        decoration: BoxDecoration(
-                          color: AppColor.black,
-
-                          border: BoxBorder.all(
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
+                              statCard("Wins", fighter.fightWin.toString()),
+                              statCard("Losses", fighter.fightsLose.toString()),
+                              statCard(
                                 "Knockouts",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(10.5),
-                                ),
-                              ),
-                              Text(
-                                "01",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(24),
-                                ),
+                                fighter.fightsKnockout.toString(),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: Responsive.h(2)),
 
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColor.black,
+                          SizedBox(height: Responsive.h(2)),
 
-                      border: BoxBorder.all(
-                        color: AppColor.white.withValues(alpha: 0.1),
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Coach Name",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.normal,
-                              fontSize: Responsive.sp(10),
+                          // Coach Info
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: AppColor.black,
+                              border: BoxBorder.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Coach Name",
+                                    style: TextStyle(color: AppColor.white),
+                                  ),
+                                  Text(
+                                    fighter.coachName,
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          Text(
-                            "Kianna Septimus",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.sp(12),
-                            ),
-                          ),
+
+                          // Add any other fighter-specific widgets here
                         ],
-                      ),
-                    ),
+                      );
+                    },
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -454,5 +337,45 @@ class _HomeviewState extends State<Homeview> {
 
   void _handleMenuButtonPressed() {
     _advancedDrawerController.showDrawer();
+  }
+
+  Widget statCard(String title, String value) {
+    return Container(
+      width: Responsive.w(27),
+      height: Responsive.w(22),
+      decoration: BoxDecoration(
+        color: AppColor.black,
+        border: BoxBorder.all(
+          color: AppColor.white.withValues(alpha: 0.1),
+          width: 2,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: AppColor.white,
+                fontWeight: FontWeight.normal,
+                fontSize: Responsive.sp(10.5),
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                color: AppColor.white,
+                fontWeight: FontWeight.normal,
+                fontSize: Responsive.sp(24),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

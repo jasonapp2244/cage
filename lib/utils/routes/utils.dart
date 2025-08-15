@@ -4,6 +4,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class Utils {
   static tosatMassage(String massage) {
@@ -48,10 +49,19 @@ class Utils {
     );
   }
 
+  static FlutterSecureStorage storage = const FlutterSecureStorage();
+  static Future<void> saveSavedRole(String key, String value) async {
+    await storage.write(key: key, value: value);
+  }
+
+  static Future<String?> getSavedRole(String key) async {
+    return await storage.read(key: key);
+  }
+
   static String getCurrentUid() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      return user.uid; // This is the uid you pass to updateUserField
+      return user.uid; // This is the uid you pass to addUserFieldByRole
     } else {
       throw Exception('User not logged in');
     }

@@ -1,19 +1,17 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/profile_pic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
 
-class UpdateprofleView extends StatelessWidget {
+class UploadCompanyLogo extends StatelessWidget {
+  const UploadCompanyLogo({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthViewmodel>(context);
-
     Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -38,7 +36,7 @@ class UpdateprofleView extends StatelessWidget {
                   ),
                   SizedBox(height: Responsive.h(2)),
                   Text(
-                    "Upload profile photo",
+                    "Upload company logo",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
@@ -47,7 +45,7 @@ class UpdateprofleView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Upload a clear photo of yourself so promoters and fighters can recognize and trust your profile.",
+                    "Add a clear image that represents your company or brand.",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
@@ -64,10 +62,9 @@ class UpdateprofleView extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
-                  Navigator.pushNamed(context, RoutesName.selectLocation);
+                  Navigator.pushNamed(context, RoutesName.home);
                 },
               ),
-              // SizedBox(height: Responsive.h(3)),
             ],
           ),
         ),

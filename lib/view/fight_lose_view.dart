@@ -130,7 +130,8 @@ class _FightLoseViewState extends State<FightLoseView> {
                         onTap: () {
                           print('Selected Age: $selectedHeight');
                           var uid = Utils.getCurrentUid();
-                          authProvider.updateUserField(
+                          authProvider.addUserFieldByRole
+(
                             uid: uid,
                             fieldName: 'fightsLose',
                             value: selectedHeight.toString(),

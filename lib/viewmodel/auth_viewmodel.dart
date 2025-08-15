@@ -66,7 +66,7 @@ class AuthViewmodel extends ChangeNotifier {
     // );
   }
 
-  Future<void> updateUserField({
+  Future<void> addRole({
     required String uid,
     required String fieldName,
     required dynamic value,
@@ -74,14 +74,89 @@ class AuthViewmodel extends ChangeNotifier {
     try {
       final userRef = FirebaseFirestore.instance
           .collection('userData')
-          .doc(uid); // Must be same UID every time
+          .doc(uid);
 
-      await userRef.set(
-        {fieldName: value},
-        SetOptions(merge: true), // ensures we update, not overwrite
-      );
+      // Step 1: Update the requested field
+      await userRef.set({fieldName: value}, SetOptions(merge: true));
 
       print('Successfully updated $fieldName for user $uid');
+
+      await Utils.saveSavedRole('role', value);
+
+      // Step 2: If role is updated, handle role-specific fields
+      if (fieldName == 'role') {
+        await userRef.set({
+          'fighterData': {
+            'fullName': null,
+            'coachName': null,
+            'age': null,
+            'height': null,
+            'weight': null,
+            'fightWin': null,
+            'fightsLose': null,
+            'fightsKnockout': null,
+            'fightingStyle': null,
+            'urlProfile': null,
+            'uploadProfile': null,
+            'selectLocation': null,
+          },
+          'promoterData': {
+            'companyName': null,
+            'companyAbout': null,
+            'eventHistory': null,
+            'prompterName': null,
+            'contactEmail': null,
+            'contactNumber': null,
+            'companyLogo': null,
+          },
+        }, SetOptions(merge: true));
+      }
+    } catch (e) {
+      print('Error updating user field: $e');
+    }
+  }
+
+  Future<void> addUserFieldByRole({
+    required String uid,
+    required String fieldName,
+    required dynamic value,
+  }) async {
+    try {
+      // Step 1: Get role using Util.getSavedRole
+      String? role = await Utils.getSavedRole('role');
+
+      // If not in local storage, get from Firestore and save locally
+      if (role == null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('userData')
+            .doc(uid)
+            .get();
+
+        role = doc.data()?['role'];
+
+        if (role != null) {
+          await Utils.saveSavedRole('userRole', role);
+        }
+      }
+
+      if (role == null) {
+        print('Role not found for user $uid');
+        return;
+      }
+
+      // Step 2: Determine which section to update
+      String sectionKey = role == 'Fighter' ? 'fighterData' : 'promoterData';
+
+      // Step 3: Update specific field inside the section
+      final userRef = FirebaseFirestore.instance
+          .collection('userData')
+          .doc(uid);
+
+      await userRef.set({
+        sectionKey: {fieldName: value},
+      }, SetOptions(merge: true));
+
+      print('Updated $fieldName for $role ($uid)');
     } catch (e) {
       print('Error updating user field: $e');
     }
@@ -89,8 +164,7 @@ class AuthViewmodel extends ChangeNotifier {
 
   Future<String?> uploadImage(File imageFile, String Uid) async {
     try {
-      String uid =
-          "YOUR_USER_ID_HERE"; // replace with your logged-in user's UID
+      String uid = Uid;
 
       final storageRef = FirebaseStorage.instance
           .ref()
@@ -161,6 +235,9 @@ class AuthViewmodel extends ChangeNotifier {
           'email': email,
           //'phone': phoneCredential.smsCode,
           'createdAt': FieldValue.serverTimestamp(),
+          'role': null,
+          'fighterData': null,
+          'promoterData': null,
         });
 
     print("User data saved to Firestore!");

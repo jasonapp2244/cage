@@ -53,6 +53,7 @@ dependencies:
   firebase_auth: 
   firebase_storage:
   google_maps_flutter: ^2.6.0
+  flutter_secure_storage: ^9.2.4
 
 
 

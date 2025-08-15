@@ -64,5 +64,16 @@ class RoutesName {
   static const String Change_Password_View = "Change_Password_View";
 
   static const String TermConditionView = "Term_Condition_View";
-  static const String selectLocation = "Select_Location";
+
+  static const String selectLocation = 'Select_Location_View';
+
+  static const String companyName = 'Company_Enter_View';
+  static const String aboutCompany = 'About_Companay_Name_View';
+  static const String contactEmail = 'Contact_Email_View';
+
+  static const String historyEvents = 'history_events_View';
+
+  static const String whoThePrompter = 'who_the_prompter_View';
+  static const String contactNumber = 'contact_number';
+  static const String companyLogo = 'company_logo';
 }

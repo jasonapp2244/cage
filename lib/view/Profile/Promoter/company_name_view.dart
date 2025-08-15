@@ -1,23 +1,23 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/utils/routes/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class LastbloodtestView extends StatelessWidget {
-  TextEditingController lastBloodController = TextEditingController();
+class EnterCompanyNameView extends StatelessWidget {
+  const EnterCompanyNameView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Responsive.init(context);
+    TextEditingController companyNameController = TextEditingController();
     final authProvider = Provider.of<AuthViewmodel>(context);
-
+    Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
       body: SafeArea(
@@ -31,7 +31,7 @@ class LastbloodtestView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: Responsive.h(2)),
+                  SizedBox(height: Responsive.h(1)),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: SvgPicture.asset(
@@ -41,7 +41,7 @@ class LastbloodtestView extends StatelessWidget {
                   ),
                   SizedBox(height: Responsive.h(2)),
                   Text(
-                    "When was your last blood test?",
+                    "What’s your company name?",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
@@ -50,18 +50,17 @@ class LastbloodtestView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Select the date your blood was last drawn for medical clearance.",
+                    "Enter your official company or gym name.",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
-                  SizedBox(height: Responsive.h(2)),
-
+                  SizedBox(height: 30),
                   TextFormField(
                     style: TextStyle(color: AppColor.white),
-                    controller: lastBloodController,
+                    controller: companyNameController,
                     // focusNode: emailFoucsNode,
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
@@ -87,7 +86,7 @@ class LastbloodtestView extends StatelessWidget {
                       // ),
                       filled: true,
                       fillColor: AppColor.white.withValues(alpha: 0.08),
-                      hintText: "Select Date",
+                      hintText: "Company Name",
                       hintStyle: GoogleFonts.dmSans(
                         color: AppColor.white,
                         fontWeight: FontWeight.normal,
@@ -104,21 +103,38 @@ class LastbloodtestView extends StatelessWidget {
                   ),
                 ],
               ),
+
+              SizedBox(height: 40),
               Button(
                 text: "Next",
                 onTap: () {
-                  var uid = Utils.getCurrentUid();
-                  authProvider.addUserFieldByRole
-(
-                    uid: uid,
-                    fieldName: 'lastBlood',
-                    value: lastBloodController.text.toString(),
-                  );
+                  if (companyNameController.text.isEmpty) {
+                    Utils.flushBarErrorMassage(
+                      "Please Enter Company Name First",
+                      context,
+                    );
+                  } else {
+                    var uid = Utils.getCurrentUid();
+                    authProvider.addUserFieldByRole(
+                      uid: uid,
+                      fieldName: 'companyName',
+                      value: companyNameController.text.toString(),
+                    );
+                    Navigator.pushNamed(context, RoutesName.aboutCompany);
 
-                  Navigator.pushNamed(context, RoutesName.physicalText_view);
+                    // Map<String, String> headr = {
+                    //   "x-api-key": "reqres-free-v1",
+                    // };
+                    // Map data = {
+                    //   'email': emailController.text.toString(),
+                    //   'password': passwordController.text.toString(),
+                    // };
+                    // authViewmodel.loginApi(data, headr, context);
+
+                    // Navigator.pushNamed(context, RoutesName.namecoachview);
+                  }
                 },
               ),
-              // SizedBox(height: Responsive.h(3)),
             ],
           ),
         ),

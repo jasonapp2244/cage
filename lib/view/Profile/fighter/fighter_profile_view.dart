@@ -2,12 +2,11 @@ import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
-import 'package:cage/widgets/share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-class FighterProfile extends StatelessWidget {
-  const FighterProfile({super.key});
+class FighterProfileView extends StatelessWidget {
+  const FighterProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +29,7 @@ class FighterProfile extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      "Profile",
+                      "Fighter Profile",
                       style: TextStyle(
                         fontSize: Responsive.textScaleFactor * 24,
                         color: AppColor.white,
@@ -43,7 +42,8 @@ class FighterProfile extends StatelessWidget {
 
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  spacing:10,
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CircleAvatar(
                       radius: 35,
@@ -97,15 +97,6 @@ class FighterProfile extends StatelessWidget {
                         ),
                       ],
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => EidtProfile()),
-                        );
-                      },
-                      child: SvgPicture.asset("assets/icons/edits.svg"),
-                    ),
                   ],
                 ),
                 SizedBox(height: Responsive.h(1)),
@@ -144,7 +135,7 @@ class FighterProfile extends StatelessWidget {
                               style: TextStyle(
                                 color: AppColor.white,
                                 fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
+                                fontWeight: FontWeight.bold,
                                 fontSize: Responsive.sp(24),
                               ),
                             ),
@@ -186,7 +177,7 @@ class FighterProfile extends StatelessWidget {
                                 style: TextStyle(
                                   color: AppColor.white,
                                   fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
+                                  fontWeight: FontWeight.bold,
                                   fontSize: Responsive.sp(24),
                                 ),
                               ),
@@ -229,7 +220,7 @@ class FighterProfile extends StatelessWidget {
                                 style: TextStyle(
                                   color: AppColor.white,
                                   fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
+                                  fontWeight: FontWeight.bold,
                                   fontSize: Responsive.sp(24),
                                 ),
                               ),
@@ -277,7 +268,7 @@ class FighterProfile extends StatelessWidget {
                               style: TextStyle(
                                 color: AppColor.white,
                                 fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
+                                fontWeight: FontWeight.bold,
                                 fontSize: Responsive.sp(24),
                               ),
                             ),
@@ -306,7 +297,7 @@ class FighterProfile extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Losses",
+                                "Fighting Style",
                                 style: TextStyle(
                                   color: AppColor.white,
                                   fontFamily: AppFonts.appFont,
@@ -315,11 +306,11 @@ class FighterProfile extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                "05",
+                                "Boxing",
                                 style: TextStyle(
                                   color: AppColor.white,
                                   fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
+                                  fontWeight: FontWeight.bold,
                                   fontSize: Responsive.sp(24),
                                 ),
                               ),
@@ -371,6 +362,7 @@ class FighterProfile extends StatelessWidget {
                         ),
                         Row(children: [Expanded(child: Divider())]),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               "Phone No",
@@ -411,6 +403,7 @@ class FighterProfile extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           "Tapology URL ",
@@ -702,23 +695,21 @@ class FighterProfile extends StatelessWidget {
                 // Add your videos grid or list view here
                 // This is just a placeholder - you'll need to implement your actual videos display
                 Container(
-                      height: Responsive.h(20),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColor.white.withOpacity(0.1),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Videos will be displayed here",
-                          style: TextStyle(
-                            color: AppColor.white.withOpacity(0.5),
-                          ),
-                        ),
-                      ),
+                  height: Responsive.h(20),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppColor.white.withOpacity(0.1),
+                      width: 2,
                     ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Videos will be displayed here",
+                      style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

@@ -130,7 +130,8 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
                         onTap: () {
                           print('Selected Age: $selectedHeight');
                           var uid = Utils.getCurrentUid();
-                          authProvider.updateUserField(
+                          authProvider.addUserFieldByRole
+(
                             uid: uid,
                             fieldName: 'fightsKnockout',
                             value: selectedHeight.toString(),

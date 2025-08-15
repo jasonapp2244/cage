@@ -1,5 +1,12 @@
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Payment_View.dart';
+import 'package:cage/view/Profile/Promoter/about_company_name.dart';
+import 'package:cage/view/Profile/Promoter/company_name_view.dart';
+import 'package:cage/view/Profile/Promoter/contact_email_view.dart';
+import 'package:cage/view/Profile/Promoter/contact_number_view.dart';
+import 'package:cage/view/Profile/Promoter/event_history.dart';
+import 'package:cage/view/Profile/Promoter/upload_company_logo.dart';
+import 'package:cage/view/Profile/Promoter/who_thePromoter_view.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
 import 'package:cage/view/Profile/fighter/fighter_profile.dart';
 import 'package:cage/view/age_view.dart';
@@ -175,9 +182,44 @@ class Routes {
         return MaterialPageRoute(
           builder: (BuildContext context) => SplashView(),
         );
+
       case RoutesName.selectLocation:
         return MaterialPageRoute(
           builder: (BuildContext context) => SelectLocationView(),
+        );
+
+      case RoutesName.companyName:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => EnterCompanyNameView(),
+        );
+
+      case RoutesName.contactEmail:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ContactEmailView(),
+        );
+
+      case RoutesName.aboutCompany:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => AboutCompanyNameView(),
+        );
+
+      case RoutesName.historyEvents:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => EventHistoryView(),
+        );
+
+      case RoutesName.whoThePrompter:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => WhoThepromoterView(),
+        );
+      case RoutesName.contactNumber:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ContactNumberView(),
+        );
+
+      case RoutesName.companyLogo:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => UploadCompanyLogo(),
         );
 
       default:

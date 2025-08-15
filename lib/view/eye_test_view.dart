@@ -1,5 +1,6 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
@@ -106,6 +107,12 @@ class EyeTestView extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
+                  var uid = Utils.getCurrentUid();
+                  authProvider.addUserFieldByRole(
+                    uid: uid,
+                    fieldName: 'eyeExam',
+                    value: _eyeTestController.text.toString(),
+                  );
                   Navigator.pushNamed(context, RoutesName.updateProilePic_view);
                 },
               ),

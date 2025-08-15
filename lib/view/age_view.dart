@@ -127,7 +127,8 @@ class _AgeViewState extends State<AgeView> {
                         text: "Next",
                         onTap: () {
                           var uid = Utils.getCurrentUid();
-                          authProvider.updateUserField(
+                          authProvider.addUserFieldByRole
+(
                             uid: uid,
                             fieldName: 'age',
                             value: selectedHeight.toString(),

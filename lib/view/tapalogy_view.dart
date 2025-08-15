@@ -107,7 +107,7 @@ class TapalogyView extends StatelessWidget {
                 text: "Next",
                 onTap: () {
                   var uid = Utils.getCurrentUid();
-                  authProvider.updateUserField(
+                    authProvider.addUserFieldByRole                        (
                     uid: uid,
                     fieldName: 'urlProfile',
                     value: urlController.text.toString(),

@@ -3,6 +3,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/widgets/auth_button.dart';
+import 'package:cage/widgets/likes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -180,46 +181,56 @@ class EventsView extends StatelessWidget {
             bottom: MediaQuery.of(context).viewInsets.bottom,
             left: Responsive.w(5),
             right: Responsive.w(5),
-            top: Responsive.h(3),
+            top: Responsive.h(1),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                "Rate Promoter",
-                style: GoogleFonts.dmSans(
-                  color: AppColor.white,
-                  fontSize: Responsive.sp(18),
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Rate Promoter",
+                    style: GoogleFonts.dmSans(
+                      color: AppColor.white,
+                      fontSize: Responsive.sp(18),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: SvgPicture.asset("assets/icons/IC_cross.svg"),
+                  ),
+                ],
               ),
+              SizedBox(height: Responsive.h(2)),
 
               TextFormField(
                 maxLines: 5,
                 style: TextStyle(color: AppColor.white),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: AppColor.white.withValues(alpha: 0.05),
+                  fillColor: AppColor.white.withValues(alpha: 0.2),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: AppColor.black),
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: AppColor.red),
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                   errorBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: AppColor.black),
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                   disabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: AppColor.black),
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                   hint: Text(
-                    "Message",
+                    "Describe your experience",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
@@ -228,9 +239,28 @@ class EventsView extends StatelessWidget {
                 ),
               ),
               SizedBox(height: Responsive.h(2)),
+              Container(
+                width: MediaQuery.sizeOf(context).width * 1,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: AppColor.white.withValues(alpha: 0.2),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: CustomRatingBar(),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: Responsive.h(2)),
+
               AuthButton(
                 buttontext: "Submit",
                 onPress: () {
+                  Navigator.pop(context);
                   Navigator.pop(context);
                   Utils.flushBarErrorMassage("Reset link sent!", context);
                 },

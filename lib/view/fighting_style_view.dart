@@ -1,16 +1,20 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class FightingStyleView extends StatelessWidget {
-  const FightingStyleView({super.key});
+  TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
     Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -39,7 +43,7 @@ class FightingStyleView extends StatelessWidget {
               ),
               TextFormField(
                 style: TextStyle(color: AppColor.white),
-                // controller: emailController,
+                controller: controller,
                 // focusNode: emailFoucsNode,
                 cursorColor: AppColor.red,
                 cursorErrorColor: AppColor.red,
@@ -84,6 +88,12 @@ class FightingStyleView extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
+                  var uid = Utils.getCurrentUid();
+                  authProvider.addUserFieldByRole(
+                    uid: uid,
+                    fieldName: 'fightingStyle',
+                    value: controller.text.toString(),
+                  );
                   Navigator.pushNamed(context, RoutesName.ageview);
                 },
               ),

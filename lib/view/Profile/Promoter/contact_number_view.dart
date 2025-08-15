@@ -1,23 +1,23 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/utils/routes/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class LastbloodtestView extends StatelessWidget {
-  TextEditingController lastBloodController = TextEditingController();
+class ContactNumberView extends StatelessWidget {
+  const ContactNumberView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Responsive.init(context);
+    TextEditingController contactNumberController = TextEditingController();
     final authProvider = Provider.of<AuthViewmodel>(context);
-
+    Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
       body: SafeArea(
@@ -31,7 +31,7 @@ class LastbloodtestView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: Responsive.h(2)),
+                  SizedBox(height: Responsive.h(1)),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: SvgPicture.asset(
@@ -41,7 +41,7 @@ class LastbloodtestView extends StatelessWidget {
                   ),
                   SizedBox(height: Responsive.h(2)),
                   Text(
-                    "When was your last blood test?",
+                    "Add your contact number",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
@@ -50,19 +50,18 @@ class LastbloodtestView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Select the date your blood was last drawn for medical clearance.",
+                    "Add a number for urgent communication.",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
                       color: AppColor.white,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
-                  SizedBox(height: Responsive.h(2)),
-
+                  SizedBox(height: 30),
                   TextFormField(
+                    controller: contactNumberController,
                     style: TextStyle(color: AppColor.white),
-                    controller: lastBloodController,
-                    // focusNode: emailFoucsNode,
+
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
                     keyboardType: TextInputType.emailAddress,
@@ -81,44 +80,43 @@ class LastbloodtestView extends StatelessWidget {
                         borderSide: BorderSide(color: AppColor.red),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
                       ),
-                      // prefixIcon: Padding(
-                      //   padding: EdgeInsets.all(Responsive.w(3)), // 2% of width
-                      //   child: SvgPicture.asset("assets/icons/mail-02.svg"),
-                      // ),
+
                       filled: true,
                       fillColor: AppColor.white.withValues(alpha: 0.08),
-                      hintText: "Select Date",
+                      hintText: "Enter Phone Number",
                       hintStyle: GoogleFonts.dmSans(
                         color: AppColor.white,
                         fontWeight: FontWeight.normal,
                         fontSize: Responsive.sp(15),
                       ),
                     ),
-                    // onFieldSubmitted: (value) {
-                    //   Utils.fieldFoucsChange(
-                    //     context,
-                    //     emailFoucsNode,
-                    //     passwordFoucsNode,
-                    //   );
-                    // },
                   ),
                 ],
               ),
+
+              SizedBox(height: 40),
               Button(
                 text: "Next",
                 onTap: () {
-                  var uid = Utils.getCurrentUid();
-                  authProvider.addUserFieldByRole
-(
-                    uid: uid,
-                    fieldName: 'lastBlood',
-                    value: lastBloodController.text.toString(),
-                  );
-
-                  Navigator.pushNamed(context, RoutesName.physicalText_view);
+                  if (contactNumberController.text.isEmpty) {
+                    Utils.flushBarErrorMassage(
+                      "Please Contact Number First",
+                      context,
+                    );
+                  } else {
+                    var uid = Utils.getCurrentUid();
+                    authProvider.addUserFieldByRole(
+                      uid: uid,
+                      fieldName: 'contactNumber',
+                      value: contactNumberController.text.toString(),
+                    );
+                    Navigator.pushNamed(
+                      context,
+                      RoutesName.updateProilePic_view,
+                    );
+                  }
                 },
               ),
-              // SizedBox(height: Responsive.h(3)),
             ],
           ),
         ),

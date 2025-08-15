@@ -127,7 +127,8 @@ class _FightStyleViewState extends State<FightStyleView> {
                     text: "Next",
                     onTap: () {
                       var uid = Utils.getCurrentUid();
-                      authProvider.updateUserField(
+                      authProvider.addUserFieldByRole
+(
                         uid: uid,
                         fieldName: 'fightsStyle',
                         value: selectedFightStyle.toString(),

@@ -16,6 +16,7 @@ import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/fighter/age_view.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
+import 'package:cage/view/Profile/fighter/review_view.dart';
 import 'package:cage/view/change_password_view.dart';
 import 'package:cage/view/Profile/fighter/coach_conatct.dart';
 import 'package:cage/view/Profile/fighter/coach_view.dart';
@@ -127,7 +128,10 @@ class Routes {
         return MaterialPageRoute(
           builder: (BuildContext context) => FighterPublicProfile(),
         );
-
+      case RoutesName.review:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ReviewView(),
+        );
       case RoutesName.PaymentView:
         return MaterialPageRoute(
           builder: (BuildContext context) => PaymentView(),

@@ -1,6 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -42,7 +43,7 @@ class FighterPublicProfile extends StatelessWidget {
 
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing:10,
+                  spacing: 10,
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CircleAvatar(
@@ -557,20 +558,24 @@ class FighterPublicProfile extends StatelessWidget {
                         fontSize: Responsive.sp(10),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(10),
+                    GestureDetector(
+                      onTap: () =>
+                          Navigator.pushNamed(context, RoutesName.review),
+                      child: Row(
+                        children: [
+                          Text(
+                            "View All",
+                            style: TextStyle(
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(10),
+                            ),
                           ),
-                        ),
-                        SizedBox(width: Responsive.w(2)),
-                        SvgPicture.asset("assets/icons/Vector (2).svg"),
-                      ],
+                          SizedBox(width: Responsive.w(2)),
+                          SvgPicture.asset("assets/icons/Vector (2).svg"),
+                        ],
+                      ),
                     ),
                   ],
                 ),

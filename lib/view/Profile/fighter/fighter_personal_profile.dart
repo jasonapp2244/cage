@@ -1,6 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
 import 'package:cage/widgets/share.dart';
 import 'package:flutter/material.dart';
@@ -22,13 +23,7 @@ class FighterPersonalProfileView extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: SvgPicture.asset(
-                        "assets/icons/arrow-left-01.svg",
-                        color: AppColor.red,
-                      ),
-                    ),
+                   
                     Text(
                       "Profile",
                       style: TextStyle(
@@ -564,20 +559,23 @@ class FighterPersonalProfileView extends StatelessWidget {
                         fontSize: Responsive.sp(10),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(10),
+                    GestureDetector(
+                      onTap: ()=> Navigator.pushNamed(context, RoutesName.review),
+                      child: Row(
+                        children: [
+                          Text(
+                            "View All",
+                            style: TextStyle(
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(10),
+                            ),
                           ),
-                        ),
-                        SizedBox(width: Responsive.w(2)),
-                        SvgPicture.asset("assets/icons/Vector (2).svg"),
-                      ],
+                          SizedBox(width: Responsive.w(2)),
+                          SvgPicture.asset("assets/icons/Vector (2).svg"),
+                        ],
+                      ),
                     ),
                   ],
                 ),

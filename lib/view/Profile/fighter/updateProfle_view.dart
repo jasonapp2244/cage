@@ -64,7 +64,7 @@ class UpdateprofleView extends StatelessWidget {
               Button(
                 text: "Next",
                 onTap: () {
-                  Navigator.pushNamed(context, RoutesName.home);
+                  Navigator.pushNamedAndRemoveUntil(context, RoutesName.home, (route) => false);
                 },
               ),
               // SizedBox(height: Responsive.h(3)),

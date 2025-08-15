@@ -4,6 +4,8 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/Promoter/test.dart';
+import 'package:cage/view/Profile/fighter/review_view.dart';
+import 'package:cage/view/Profile/tab_controller.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,7 +42,7 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       // You should use either home or initialRoute, not both
-      // home: PromoterView(),
+      // home: ActivityView(),
       initialRoute: RoutesName.spalsh, // Fixed typo from 'spalsh' to 'splash'
       onGenerateRoute: Routes.generateRoutes,
     );

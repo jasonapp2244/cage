@@ -4,6 +4,7 @@ import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FightingStyleView extends StatelessWidget {
@@ -19,7 +20,15 @@ class FightingStyleView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            children: [ SizedBox(height: Responsive.h(2)),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: SvgPicture.asset(
+                  "assets/icons/arrow-left-01.svg",
+                  color: AppColor.red,
+                ),
+              ),
+              SizedBox(height: Responsive.h(2)),
               Text(
                 "What’s your fighting style?",
                 style: TextStyle(

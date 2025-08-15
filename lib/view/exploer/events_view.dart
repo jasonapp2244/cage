@@ -18,7 +18,7 @@ class EventsView extends StatelessWidget {
       backgroundColor: AppColor.black,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(
             children: [
               // Search Bar

@@ -72,6 +72,10 @@ class RoutesName {
   static const String PromoterView = "PromoterView";
   static const String PromotorBottomNavBar = "PromotorBottomNavBar";
 
+  static const String review = "review";
+
+
+
   static const String aboutCompanayName = "AboutCompanayName";
   static const String UploadCompanyLogo = "UploadCompanyLogo";
   static const String CompanyNameView = "CompanyNameView";

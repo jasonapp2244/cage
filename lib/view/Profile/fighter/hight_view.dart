@@ -1,8 +1,10 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/view/auth/loginview.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class HightView extends StatefulWidget {
   @override
@@ -28,9 +30,10 @@ class _HightViewState extends State<HightView> {
 
   @override
   Widget build(BuildContext context) {
+    Responsive.init(context);
+
     return Scaffold(
       backgroundColor: AppColor.black,
-      appBar: AppBar(backgroundColor: AppColor.black),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -38,7 +41,15 @@ class _HightViewState extends State<HightView> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [],),
+              SizedBox(height: Responsive.h(2)),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: SvgPicture.asset(
+                  "assets/icons/arrow-left-01.svg",
+                  color: AppColor.red,
+                ),
+              ),
+              SizedBox(height: Responsive.h(2)),
               const Text(
                 'What\'s your height?',
                 style: TextStyle(
@@ -57,7 +68,6 @@ class _HightViewState extends State<HightView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
                     // Wheel picker with selection lines
                     Container(
                       decoration: BoxDecoration(color: AppColor.black),

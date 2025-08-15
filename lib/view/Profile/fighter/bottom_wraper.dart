@@ -2,6 +2,7 @@
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
+import 'package:cage/view/Profile/tab_controller.dart';
 import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';
@@ -22,7 +23,7 @@ class _MainWrapperState extends State<MainWrapper> {
 
   final List<Widget> _pages = [
     Homeview(),
-    EventsView(),
+    ActivityView(),
     NotificationView(),
     FighterPersonalProfileView()
   ];

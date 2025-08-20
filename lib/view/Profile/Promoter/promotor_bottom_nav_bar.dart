@@ -122,14 +122,35 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
       backgroundColor: Colors.black,
       selectedItemColor: Colors.red,
       unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'Stats'),
+      items: [
         BottomNavigationBarItem(
-          icon: Icon(Icons.fitness_center),
-          label: 'Training',
+          // assets/icons/home_seleted.svg
+          activeIcon: SvgPicture.asset("assets/icons/Group 1000002074.svg"),
+          icon: SvgPicture.asset("assets/icons/home_unseleted.svg"),
+          label: '',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        BottomNavigationBarItem(
+          activeIcon: SvgPicture.asset("assets/icons/fighetr_selected.svg"),
+          icon: SvgPicture.asset("assets/icons/fighter_unselected.svg"),
+          label: '',
+        ),
+        // assets/icons/home_unseleted.svg
+        BottomNavigationBarItem(
+          activeIcon: SvgPicture.asset(
+            "assets/icons/notification_selected.svg",
+          ),
+          icon: SvgPicture.asset("assets/icons/notification.svg"),
+          label: '',
+        ),
+        BottomNavigationBarItem(
+          // activeIcon: SvgPicture.asset("assets/icons/notification.svg"),
+          icon: CircleAvatar(
+            radius: 15,
+            backgroundColor: AppColor.white,
+            backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
+          ),
+          label: '',
+        ),
       ],
     );
   }

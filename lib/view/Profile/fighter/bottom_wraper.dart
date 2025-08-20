@@ -1,4 +1,5 @@
 // main_wrapper.dart
+import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
@@ -9,6 +10,7 @@ import 'package:cage/view/notification_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({Key? key}) : super(key: key);
@@ -25,7 +27,7 @@ class _MainWrapperState extends State<MainWrapper> {
     Homeview(),
     ActivityView(),
     NotificationView(),
-    FighterPersonalProfileView()
+    FighterPersonalProfileView(),
   ];
 
   void _handleMenuButtonPressed() {
@@ -34,15 +36,14 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final drawerProvider = Provider.of<DrawerControllerProvider>(context);
     return AdvancedDrawer(
       backdrop: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColor.red,
-        ),
+        decoration: BoxDecoration(color: AppColor.red),
       ),
-      controller: _drawerController,
+      controller: drawerProvider.controller,
       animationCurve: Curves.easeInOut,
       animationDuration: const Duration(milliseconds: 300),
       childDecoration: const BoxDecoration(
@@ -123,16 +124,36 @@ class _MainWrapperState extends State<MainWrapper> {
       onTap: (index) => setState(() => _currentIndex = index),
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.black,
-      selectedItemColor: Colors.red,
+      selectedItemColor: AppColor.white,
       unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'Stats'),
+      items: [
         BottomNavigationBarItem(
-          icon: Icon(Icons.fitness_center),
-          label: 'Training',
+          // assets/icons/home_seleted.svg
+          activeIcon: SvgPicture.asset("assets/icons/Group 1000002074.svg"),
+          icon: SvgPicture.asset("assets/icons/home_unseleted.svg"),
+          label: '',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        BottomNavigationBarItem(
+          activeIcon: SvgPicture.asset("assets/icons/exploer_seleted.svg"),
+          icon: SvgPicture.asset("assets/icons/exploer.svg"),
+          label: '',
+        ),
+        // assets/icons/home_unseleted.svg
+        BottomNavigationBarItem(
+          activeIcon: SvgPicture.asset("assets/icons/notification_selected.svg"),
+          icon: SvgPicture.asset("assets/icons/notification.svg"),
+          label: '',
+        ),
+        BottomNavigationBarItem(
+          // activeIcon: SvgPicture.asset("assets/icons/notification.svg"),
+          icon: CircleAvatar(
+            radius: 15,
+            backgroundColor: AppColor.white,
+            foregroundColor: AppColor.red,
+            backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
+          ),
+          label: '',
+        ),
       ],
     );
   }
@@ -152,19 +173,6 @@ class _MainWrapperState extends State<MainWrapper> {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // // main_wrapper.dart
 // import 'package:cage/res/components/app_color.dart';

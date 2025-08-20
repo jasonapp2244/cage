@@ -170,13 +170,14 @@
 //-----------responsive ui
 
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/provider/tab_controller.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/view/Profile/fighter/enter_name_view.dart';
 import 'package:cage/view/Profile/fighter/exploer_promoter.dart';
 import 'package:cage/view/exploer/events_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -217,6 +218,11 @@ class _ActivityViewState extends State<ActivityView>
 
   @override
   Widget build(BuildContext context) {
+    final drawerProvider = Provider.of<DrawerControllerProvider>(
+      context,
+      listen: false,
+    );
+
     Responsive.init(context);
 
     return Scaffold(
@@ -227,7 +233,7 @@ class _ActivityViewState extends State<ActivityView>
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
+              child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "Profile",
@@ -236,6 +242,19 @@ class _ActivityViewState extends State<ActivityView>
                       color: AppColor.white,
                       fontFamily: AppFonts.appFont,
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: drawerProvider.toggleDrawer,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColor.white.withValues(alpha: 0.1),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: SvgPicture.asset("assets/icons/menu-11.svg"),
+                      ),
                     ),
                   ),
                 ],

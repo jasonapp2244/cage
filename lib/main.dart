@@ -1,11 +1,9 @@
+import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/provider/role_provider.dart';
 import 'package:cage/provider/tab_controller.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/Profile/Promoter/test.dart';
-import 'package:cage/view/Profile/fighter/review_view.dart';
-import 'package:cage/view/Profile/tab_controller.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +12,7 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => DrawerControllerProvider()),
         ChangeNotifierProvider(create: (_) => RoleProvider()),
         ChangeNotifierProvider(create: (_) => AuthViewmodel()),
         ChangeNotifierProvider(create: (_) => TabProvider()),

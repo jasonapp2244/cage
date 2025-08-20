@@ -22,7 +22,6 @@ import 'package:cage/view/Profile/fighter/coach_conatct.dart';
 import 'package:cage/view/Profile/fighter/coach_view.dart';
 import 'package:cage/view/Profile/fighter/createnew_ticticket_view.dart';
 import 'package:cage/view/Profile/fighter/enter_name_view.dart';
-import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
 import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/Profile/fighter/eye_test_view.dart';
 import 'package:cage/view/Profile/fighter/fight_knockout_view.dart';

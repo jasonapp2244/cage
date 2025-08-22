@@ -110,7 +110,7 @@ class _CoachNameViewState extends State<CoachNameView> {
                 onTap: () {
                   var uid = Utils.getCurrentUid();
                   if (uid != null && _managerNameController.text.isNotEmpty) {
-                      authProvider.addUserFieldByRole(
+                    authProvider.addUserFieldByRole(
                       uid: uid,
                       fieldName: 'coachName',
                       value: _managerNameController.text,

@@ -1,3 +1,4 @@
+import 'package:cage/provider/fighter_provider.dart';
 import 'package:cage/provider/role_provider.dart';
 import 'package:cage/provider/tab_controller.dart';
 import 'package:cage/res/components/app_color.dart';
@@ -21,6 +22,7 @@ import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart'; // if using FlutterFire CLI
 
 void main() async {
@@ -38,6 +40,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RoleProvider()),
         ChangeNotifierProvider(create: (_) => AuthViewmodel()),
         ChangeNotifierProvider(create: (_) => TabProvider()),
+        ChangeNotifierProvider(create: (_) => FighterProvider()),
       ],
       child: const MyApp(),
     ),
@@ -54,7 +57,7 @@ class MyApp extends StatelessWidget {
         textSelectionTheme: TextSelectionThemeData(
           cursorColor: AppColor.red,
           selectionColor: AppColor.red.withValues(
-            alpha: 0.5,                                                              
+            alpha: 0.5,
           ), // Changed from withValues to withOpacity
           selectionHandleColor: AppColor.red,
         ),

@@ -3,6 +3,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
+import 'package:cage/widgets/custom_calendar.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +11,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class EyeTestView extends StatelessWidget {
+class EyeTestView extends StatefulWidget {
+  @override
+  State<EyeTestView> createState() => _EyeTestViewState();
+}
+
+class _EyeTestViewState extends State<EyeTestView> {
   TextEditingController _eyeTestController = TextEditingController();
+  DateTime? selectedDate;
 
   @override
   Widget build(BuildContext context) {
@@ -59,64 +66,73 @@ class EyeTestView extends StatelessWidget {
                   ),
                   SizedBox(height: Responsive.h(2)),
 
-                  TextFormField(
-                    style: TextStyle(color: AppColor.white),
-                    // controller: emailController,
-                    // focusNode: emailFoucsNode,
-                    cursorColor: AppColor.red,
-                    cursorErrorColor: AppColor.red,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          Responsive.w(12),
-                        ), // 6% of width
-                        borderSide: BorderSide(color: AppColor.red),
-                      ),
-                      errorBorder: OutlineInputBorder(
+                  GestureDetector(
+                    onTap: () async {
+                      final date = await showCustomCalendar(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now().subtract(
+                          const Duration(days: 365),
+                        ),
+                        lastDate: DateTime.now(),
+                      );
+                      if (date != null) {
+                        setState(() {
+                          selectedDate = date;
+                          _eyeTestController.text =
+                              "${date.day}/${date.month}/${date.year}";
+                        });
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColor.red),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
-                        borderSide: BorderSide(color: AppColor.red),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: AppColor.red),
-                        borderRadius: BorderRadius.circular(Responsive.w(12)),
-                      ),
-                      // prefixIcon: Padding(
-                      //   padding: EdgeInsets.all(Responsive.w(3)), // 2% of width
-                      //   child: SvgPicture.asset("assets/icons/mail-02.svg"),
-                      // ),
-                      filled: true,
-                      fillColor: AppColor.white.withValues(alpha: 0.08),
-                      hintText: "Select Date",
-                      hintStyle: GoogleFonts.dmSans(
-                        color: AppColor.white,
-                        fontWeight: FontWeight.normal,
-                        fontSize: Responsive.sp(15),
+                      child: TextFormField(
+                        style: TextStyle(color: AppColor.white),
+                        controller: _eyeTestController,
+                        enabled: false, // Make it read-only
+                        cursorColor: AppColor.red,
+                        cursorErrorColor: AppColor.red,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Responsive.w(12),
+                            ),
+                            borderSide: BorderSide.none,
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Responsive.w(12),
+                            ),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(
+                              Responsive.w(12),
+                            ),
+                          ),
+                          suffixIcon: Icon(
+                            Icons.calendar_today,
+                            color: AppColor.red,
+                            size: 20,
+                          ),
+                          filled: true,
+                          fillColor: AppColor.white.withValues(alpha: 0.08),
+                          hintText: "Select Date",
+                          hintStyle: GoogleFonts.dmSans(
+                            color: AppColor.white,
+                            fontWeight: FontWeight.normal,
+                            fontSize: Responsive.sp(15),
+                          ),
+                        ),
                       ),
                     ),
-                    // onFieldSubmitted: (value) {
-                    //   Utils.fieldFoucsChange(
-                    //     context,
-                    //     emailFoucsNode,
-                    //     passwordFoucsNode,
-                    //   );
-                    // },
                   ),
                 ],
               ),
-              Button(
-                text: "Next",
-                onTap: () {
-                  var uid = Utils.getCurrentUid();
-                  authProvider.addUserFieldByRole(
-                    uid: uid,
-                    fieldName: 'eyeExam',
-                    value: _eyeTestController.text.toString(),
-                  );
-                  Navigator.pushNamed(context, RoutesName.updateProilePic_view);
-                },
-              ),
-              // SizedBox(height: Responsive.h(3)),
             ],
           ),
         ),

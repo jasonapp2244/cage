@@ -9,11 +9,13 @@ class FighterDataModel {
   final String fightsStyle;
   final String fullName;
   final String height;
-  final int lastBlood;
+  final String lastBlood;
   final String lastExam;
+  final String? eyeExam;
   final String? uploadProfile;
   final String urlProfile;
   final String? weight;
+  final String? location;
 
   FighterDataModel({
     required this.age,
@@ -28,9 +30,11 @@ class FighterDataModel {
     required this.height,
     required this.lastBlood,
     required this.lastExam,
+    this.eyeExam,
     this.uploadProfile,
     required this.urlProfile,
     this.weight,
+    this.location,
   });
 
   factory FighterDataModel.fromMap(Map<String, dynamic> map) {
@@ -42,16 +46,18 @@ class FighterDataModel {
       fightWin: int.tryParse(map['fightWin']?.toString() ?? '0') ?? 0,
       fightsKnockout:
           int.tryParse(map['fightsKnockout']?.toString() ?? '0') ?? 0,
-      fightsLose: int.tryParse(map['fightslose']?.toString() ?? '0') ?? 0,
+      fightsLose: int.tryParse(map['fightsLose']?.toString() ?? '0') ?? 0,
       fightsStyle: map['fightsStyle'] ?? 'options',
       fullName: map['fullName'] ?? '',
       height: map['height'] ?? '',
       //weight image location
-      lastBlood: int.tryParse(map['lastBlood']?.toString() ?? '0') ?? 0,
-      lastExam: map['lastExam'] ?? '0',
+      lastBlood: map['lastBlood'] ?? 'Not set',
+      lastExam: map['lastExam'] ?? 'Not set',
+      eyeExam: map['eyeExam'],
       uploadProfile: map['uploadProfile'],
       urlProfile: map['urlProfile'] ?? 'https',
       weight: map['weight'],
+      location: map['location'],
     );
   }
 }

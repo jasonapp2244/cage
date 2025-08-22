@@ -1,532 +1,455 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/fighter_profile_view.dart';
 import 'package:cage/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 class PromoterHome extends StatefulWidget {
-  const PromoterHome({super.key});
+  final AdvancedDrawerController? drawerController;
+  const PromoterHome({super.key, this.drawerController});
 
   @override
   State<PromoterHome> createState() => _PromoterHomeState();
 }
 
 class _PromoterHomeState extends State<PromoterHome> {
-  final _advancedDrawerController =
-      AdvancedDrawerController(); // Add controller
-
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
-    return AdvancedDrawer(
-      backdrop: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(color: AppColor.red),
-      ),
-      controller: _advancedDrawerController,
-      animationCurve: Curves.easeInOut,
-      animationDuration: const Duration(milliseconds: 300),
-      childDecoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-      ),
-      drawer: SafeArea(
-        child: Container(
-          child: ListTileTheme(
-            textColor: Colors.white,
-            iconColor: Colors.white,
+    return Scaffold(
+      backgroundColor: AppColor.black,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: SvgPicture.asset("assets/icons/Group 9 (1).svg"),
-                ),
-                ListTile(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.home);
-                  },
-                  leading: SvgPicture.asset("assets/icons/home.svg"),
-                  title: Text('Home'),
-                ),
-                ListTile(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.PaymentView);
-                  },
-                  leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
-                  title: Text('Subscription'),
-                ),
-                ListTile(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.supportView);
-                  },
-                  leading: SvgPicture.asset(
-                    "assets/icons/customer-service.svg",
-                  ),
-                  title: Text('Support'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SvgPicture.asset("assets/icons/Group 9.svg"),
+                    Column(
+                      children: [
+                        Text(
+                          "Hi👋Jhon Doe",
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontFamily: AppFonts.appFont,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Responsive.sp(18),
+                          ),
+                        ),
+                        Text(
+                          "San Francisco, California 94124",
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontFamily: AppFonts.appFont,
+                            fontWeight: FontWeight.normal,
+                            fontSize: Responsive.sp(10.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Menu button for drawer
+                    GestureDetector(
+                      onTap: () {
+                        widget.drawerController?.showDrawer();
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColor.white.withValues(alpha: 0.1),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: SvgPicture.asset("assets/icons/menu-11.svg"),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
 
-                ListTile(
-                  onTap: () {},
-                  leading: SvgPicture.asset("assets/icons/setting.svg"),
-                  title: Text('Settings'),
+                SizedBox(height: Responsive.h(2)),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColor.black,
+
+                          border: BoxBorder.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Wins",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: Responsive.sp(10.5),
+                                ),
+                              ),
+                              Text(
+                                "12",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: Responsive.textScaleFactor * 32,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: Responsive.w(4)),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColor.black,
+                          border: BoxBorder.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Knockouts",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: Responsive.sp(10.5),
+                                ),
+                              ),
+                              Text(
+                                "01",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: Responsive.textScaleFactor * 32,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                ListTile(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.TermConditionView);
-                  },
-                  leading: SvgPicture.asset("assets/icons/term_condition.svg"),
-                  title: Text('Terms & Conditions'),
+                SizedBox(height: Responsive.h(2)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Recent Fights",
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.normal,
+                        fontSize: Responsive.textScaleFactor * 14,
+                      ),
+                    ),
+
+                    // SizedBox(width: Responsive.w(5)),
+                    Row(
+                      children: [
+                        Text(
+                          "View All",
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontFamily: AppFonts.appFont,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Responsive.textScaleFactor * 14,
+                          ),
+                        ),
+                        SizedBox(width: Responsive.w(2)),
+                        SvgPicture.asset("assets/icons/Vector (2).svg"),
+                      ],
+                    ),
+                  ],
                 ),
-                ListTile(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.spalsh);
-                  },
-                  leading: SvgPicture.asset("assets/icons/logout-03.svg"),
-                  title: Text('Logout'),
+                SizedBox(height: Responsive.h(2)),
+
+                Container(
+                  height: 300,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 10,
+                    padding: EdgeInsets.symmetric(horizontal: 0),
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                        child: Container(
+                          child: Container(
+                            width: Responsive.w(80),
+                            height: Responsive.h(100),
+
+                            decoration: BoxDecoration(
+                              border: BoxBorder.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                // width: Responsive.w(0),
+                              ),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Image(
+                                    image: AssetImage(
+                                      "assets/images/Frame 1000002190.png",
+                                    ),
+                                  ),
+                                  SizedBox(height: Responsive.h(1)),
+
+                                  Text(
+                                    "Jake “The Beast” Miller - 🏆 Win (KO)",
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontFamily: AppFonts.appFont,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.textScaleFactor * 18,
+                                    ),
+                                  ),
+                                  SizedBox(height: Responsive.h(1)),
+                                  GestureDetector(
+                                    onTap: () =>
+                                        _showEventDetailsBottomSheet(context),
+                                    child: Container(
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadiusDirectional.circular(
+                                              22,
+                                            ),
+                                        color: AppColor.white.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "View Details",
+                                            style: GoogleFonts.dmSans(
+                                              color: AppColor.white,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize:
+                                                  Responsive.textScaleFactor *
+                                                  12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-                // Add more drawer items as needed
+                SizedBox(height: Responsive.h(2)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Fighter Scouting",
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.normal,
+                        fontSize: Responsive.textScaleFactor * 14,
+                      ),
+                    ),
+
+                    // SizedBox(width: Responsive.w(5)),
+                    Row(
+                      children: [
+                        Text(
+                          "View All",
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontFamily: AppFonts.appFont,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Responsive.textScaleFactor * 14,
+                          ),
+                        ),
+                        SizedBox(width: Responsive.w(2)),
+                        SvgPicture.asset("assets/icons/Vector (2).svg"),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(2)),
+                Container(
+                  height: Responsive.h(28),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 10,
+                    padding: EdgeInsets.symmetric(horizontal: 0),
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                        child: Container(
+                          child: Container(
+                            width: Responsive.w(50),
+                            height: Responsive.h(50),
+
+                            decoration: BoxDecoration(
+                              border: BoxBorder.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                // width: Responsive.w(0),
+                              ),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: Responsive.sp(34),
+                                        backgroundImage: AssetImage(
+                                          "assets/images/Frame 1000002190.png",
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            "4.7",
+                                            style: TextStyle(
+                                              color: AppColor.white,
+                                              fontFamily: AppFonts.appFont,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize:
+                                                  Responsive.textScaleFactor *
+                                                  14,
+                                            ),
+                                          ),
+                                          SizedBox(width: Responsive.w(1)),
+                                          SvgPicture.asset(
+                                            "assets/icons/Vector (3).svg",
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: Responsive.h(2)),
+                                  Text(
+                                    "Corey Herwitz",
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontFamily: AppFonts.appFont,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.textScaleFactor * 14,
+                                    ),
+                                  ),
+                                  SizedBox(height: Responsive.h(1)),
+
+                                  Row(
+                                    children: [
+                                      SvgPicture.asset(
+                                        "assets/icons/location-05 (1).svg",
+                                      ),
+                                      SizedBox(width: Responsive.w(1)),
+                                      Text(
+                                        "Corey Herwitz",
+                                        style: TextStyle(
+                                          color: AppColor.white,
+                                          fontFamily: AppFonts.appFont,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize:
+                                              Responsive.textScaleFactor * 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: Responsive.h(1)),
+                                  GestureDetector(
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => FighterProfileView(),
+                                      ),
+                                    ),
+                                    child: Container(
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadiusDirectional.circular(
+                                              22,
+                                            ),
+                                        color: AppColor.white.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "View Profile",
+                                            style: GoogleFonts.dmSans(
+                                              color: AppColor.white,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize:
+                                                  Responsive.textScaleFactor *
+                                                  12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
-      child: Scaffold(
-        backgroundColor: AppColor.black,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SvgPicture.asset("assets/icons/Group 9.svg"),
-                      Column(
-                        children: [
-                          Text(
-                            "Hi👋Jhon Doe",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.sp(18),
-                            ),
-                          ),
-                          Text(
-                            "San Francisco, California 94124",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.normal,
-                              fontSize: Responsive.sp(10.5),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      GestureDetector(
-                        onTap: _handleMenuButtonPressed,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColor.white.withValues(alpha: 0.1),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: SvgPicture.asset("assets/icons/menu-11.svg"),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: Responsive.h(2)),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColor.black,
-
-                            border: BoxBorder.all(
-                              color: AppColor.white.withValues(alpha: 0.1),
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Wins",
-                                  style: TextStyle(
-                                    color: AppColor.white,
-                                    fontFamily: AppFonts.appFont,
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: Responsive.sp(10.5),
-                                  ),
-                                ),
-                                Text(
-                                  "12",
-                                  style: TextStyle(
-                                    color: AppColor.white,
-                                    fontFamily: AppFonts.appFont,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.textScaleFactor * 32,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: Responsive.w(4)),
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColor.black,
-                            border: BoxBorder.all(
-                              color: AppColor.white.withValues(alpha: 0.1),
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Knockouts",
-                                  style: TextStyle(
-                                    color: AppColor.white,
-                                    fontFamily: AppFonts.appFont,
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: Responsive.sp(10.5),
-                                  ),
-                                ),
-                                Text(
-                                  "01",
-                                  style: TextStyle(
-                                    color: AppColor.white,
-                                    fontFamily: AppFonts.appFont,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.textScaleFactor * 32,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Recent Fights",
-                        style: TextStyle(
-                          color: AppColor.white,
-                          fontFamily: AppFonts.appFont,
-                          fontWeight: FontWeight.normal,
-                          fontSize: Responsive.textScaleFactor * 14,
-                        ),
-                      ),
-
-                      // SizedBox(width: Responsive.w(5)),
-                      Row(
-                        children: [
-                          Text(
-                            "View All",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.textScaleFactor * 14,
-                            ),
-                          ),
-                          SizedBox(width: Responsive.w(2)),
-                          SvgPicture.asset("assets/icons/Vector (2).svg"),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-
-                  Container(
-                    height: 300,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 10,
-                      padding: EdgeInsets.symmetric(horizontal: 0),
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                          child: Container(
-                            child: Container(
-                              width: Responsive.w(80),
-                              height: Responsive.h(100),
-
-                              decoration: BoxDecoration(
-                                border: BoxBorder.all(
-                                  color: AppColor.white.withValues(alpha: 0.1),
-                                  // width: Responsive.w(0),
-                                ),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Image(
-                                      image: AssetImage(
-                                        "assets/images/Frame 1000002190.png",
-                                      ),
-                                    ),
-                                    SizedBox(height: Responsive.h(1)),
-
-                                    Text(
-                                      "Jake “The Beast” Miller - 🏆 Win (KO)",
-                                      style: TextStyle(
-                                        color: AppColor.white,
-                                        fontFamily: AppFonts.appFont,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            Responsive.textScaleFactor * 18,
-                                      ),
-                                    ),
-                                    SizedBox(height: Responsive.h(1)),
-                                    GestureDetector(
-                                      onTap: () =>
-                                          _showEventDetailsBottomSheet(context),
-                                      child: Container(
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadiusDirectional.circular(
-                                                22,
-                                              ),
-                                          color: AppColor.white.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              "View Details",
-                                              style: GoogleFonts.dmSans(
-                                                color: AppColor.white,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize:
-                                                    Responsive.textScaleFactor *
-                                                    12,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Fighter Scouting",
-                        style: TextStyle(
-                          color: AppColor.white,
-                          fontFamily: AppFonts.appFont,
-                          fontWeight: FontWeight.normal,
-                          fontSize: Responsive.textScaleFactor * 14,
-                        ),
-                      ),
-
-                      // SizedBox(width: Responsive.w(5)),
-                      Row(
-                        children: [
-                          Text(
-                            "View All",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.textScaleFactor * 14,
-                            ),
-                          ),
-                          SizedBox(width: Responsive.w(2)),
-                          SvgPicture.asset("assets/icons/Vector (2).svg"),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-                  Container(
-                    height: Responsive.h(28),
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 10,
-                      padding: EdgeInsets.symmetric(horizontal: 0),
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                          child: Container(
-                            child: Container(
-                              width: Responsive.w(50),
-                              height: Responsive.h(50),
-
-                              decoration: BoxDecoration(
-                                border: BoxBorder.all(
-                                  color: AppColor.white.withValues(alpha: 0.1),
-                                  // width: Responsive.w(0),
-                                ),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        CircleAvatar(
-                                          radius: Responsive.sp(34),
-                                          backgroundImage: AssetImage(
-                                            "assets/images/Frame 1000002190.png",
-                                          ),
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "4.7",
-                                              style: TextStyle(
-                                                color: AppColor.white,
-                                                fontFamily: AppFonts.appFont,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize:
-                                                    Responsive.textScaleFactor *
-                                                    14,
-                                              ),
-                                            ),
-                                            SizedBox(width: Responsive.w(1)),
-                                            SvgPicture.asset(
-                                              "assets/icons/Vector (3).svg",
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: Responsive.h(2)),
-                                    Text(
-                                      "Corey Herwitz",
-                                      style: TextStyle(
-                                        color: AppColor.white,
-                                        fontFamily: AppFonts.appFont,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            Responsive.textScaleFactor * 14,
-                                      ),
-                                    ),
-                                    SizedBox(height: Responsive.h(1)),
-
-                                    Row(
-                                      children: [
-                                        SvgPicture.asset(
-                                          "assets/icons/location-05 (1).svg",
-                                        ),
-                                        SizedBox(width: Responsive.w(1)),
-                                        Text(
-                                          "Corey Herwitz",
-                                          style: TextStyle(
-                                            color: AppColor.white,
-                                            fontFamily: AppFonts.appFont,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize:
-                                                Responsive.textScaleFactor * 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: Responsive.h(1)),
-                                    GestureDetector(
-                                      onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (_)=>FighterProfileView())),
-                                      child: Container(
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadiusDirectional.circular(
-                                                22,
-                                              ),
-                                          color: AppColor.white.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              "View Profile",
-                                              style: GoogleFonts.dmSans(
-                                                color: AppColor.white,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize:
-                                                    Responsive.textScaleFactor *
-                                                    12,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
-  }
-
-  void _handleMenuButtonPressed() {
-    _advancedDrawerController.showDrawer();
   }
 }
 

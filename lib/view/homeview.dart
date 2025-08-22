@@ -10,7 +10,8 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
 
 class Homeview extends StatefulWidget {
-  const Homeview({super.key});
+  final bool showDrawer;
+  const Homeview({super.key, this.showDrawer = true});
 
   @override
   State<Homeview> createState() => _HomeviewState();
@@ -102,22 +103,103 @@ class _HomeviewState extends State<Homeview> {
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 16,
+              ),
               child: Column(
                 children: [
                   StreamBuilder<UserModel>(
                     stream: UserRepository.fetchCurrentUserStream(),
                     builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(color: AppColor.red),
+                              SizedBox(height: 16),
+                              Text(
+                                "Loading your profile...",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: AppColor.red,
+                                size: 48,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Error loading data',
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {}); // Retry
+                                },
+                                child: Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
                       if (!snapshot.hasData) {
-                        return Center(child: CircularProgressIndicator());
+                        return Center(
+                          child: Text(
+                            "No data available",
+                            style: TextStyle(color: AppColor.white),
+                          ),
+                        );
                       }
 
                       final user = snapshot.data!;
                       if (user.roleData is! FighterDataModel) {
-                        return Center(child: Text("No fighter data"));
-                      }
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Error loading data'));
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.person_off,
+                                color: AppColor.red,
+                                size: 48,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                "No fighter data found",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                "Please complete your profile setup",
+                                style: TextStyle(
+                                  color: AppColor.white.withOpacity(0.7),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
                       }
 
                       final fighter = user.roleData as FighterDataModel;
@@ -133,7 +215,7 @@ class _HomeviewState extends State<Homeview> {
                               Column(
                                 children: [
                                   Text(
-                                    "Hi👋 ${fighter.fullName}",
+                                    "Hi👋 ${fighter.fullName ?? 'Fighter'}",
                                     style: TextStyle(
                                       color: AppColor.white,
                                       fontFamily: AppFonts.appFont,
@@ -176,11 +258,17 @@ class _HomeviewState extends State<Homeview> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              statCard("Wins", fighter.fightWin.toString()),
-                              statCard("Losses", fighter.fightsLose.toString()),
+                              statCard(
+                                "Wins",
+                                fighter.fightWin?.toString() ?? "0",
+                              ),
+                              statCard(
+                                "Losses",
+                                fighter.fightsLose?.toString() ?? "0",
+                              ),
                               statCard(
                                 "Knockouts",
-                                fighter.fightsKnockout.toString(),
+                                fighter.fightsKnockout?.toString() ?? "0",
                               ),
                             ],
                           ),
@@ -209,7 +297,7 @@ class _HomeviewState extends State<Homeview> {
                                     style: TextStyle(color: AppColor.white),
                                   ),
                                   Text(
-                                    fighter.coachName,
+                                    fighter.coachName ?? "Not set",
                                     style: TextStyle(
                                       color: AppColor.white,
                                       fontWeight: FontWeight.bold,
@@ -290,7 +378,7 @@ class _HomeviewState extends State<Homeview> {
                                     SizedBox(height: Responsive.h(1)),
 
                                     Text(
-                                      "Jake “The Beast” Miller - 🏆 Win (KO)",
+                                      "Jake \"The Beast\" Miller - 🏆 Win (KO)",
                                       style: TextStyle(
                                         color: AppColor.white,
                                         fontFamily: AppFonts.appFont,

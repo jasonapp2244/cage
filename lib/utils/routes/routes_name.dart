@@ -76,4 +76,5 @@ class RoutesName {
   static const String whoThePrompter = 'who_the_prompter_View';
   static const String contactNumber = 'contact_number';
   static const String companyLogo = 'company_logo';
+  static const String promoterHome = 'promoter_home';
 }

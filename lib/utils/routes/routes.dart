@@ -7,6 +7,7 @@ import 'package:cage/view/Profile/Promoter/contact_number_view.dart';
 import 'package:cage/view/Profile/Promoter/event_history.dart';
 import 'package:cage/view/Profile/Promoter/upload_company_logo.dart';
 import 'package:cage/view/Profile/Promoter/who_thePromoter_view.dart';
+import 'package:cage/view/Profile/Promoter/promoter_home.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
 import 'package:cage/view/Profile/fighter/fighter_profile.dart';
 import 'package:cage/view/age_view.dart';
@@ -133,7 +134,7 @@ class Routes {
 
       case RoutesName.promoterView:
         return MaterialPageRoute(
-          builder: (BuildContext context) => PromotersView(),
+          builder: (BuildContext context) => FightersView(),
         );
       case RoutesName.fightKnouckout:
         return MaterialPageRoute(
@@ -220,6 +221,11 @@ class Routes {
       case RoutesName.companyLogo:
         return MaterialPageRoute(
           builder: (BuildContext context) => UploadCompanyLogo(),
+        );
+
+      case RoutesName.promoterHome:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => FightersView(),
         );
 
       default:

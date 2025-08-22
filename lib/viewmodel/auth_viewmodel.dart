@@ -113,6 +113,13 @@ class AuthViewmodel extends ChangeNotifier {
       }
     } catch (e) {
       print('Error updating user field: $e');
+      if (e.toString().contains('permission-denied')) {
+        print(
+          'Firestore permission denied. User might not be authenticated properly.',
+        );
+        // You might want to re-authenticate the user here
+      }
+      rethrow; // Re-throw so the UI can handle it
     }
   }
 
@@ -217,30 +224,118 @@ class AuthViewmodel extends ChangeNotifier {
     String phoneNumber,
     BuildContext context,
   ) async {
-    // Step 1: Create the email/password account
-    final userCredential = await FirebaseAuth.instance
-        .createUserWithEmailAndPassword(email: email, password: password);
-    print("verified phone!");
+    try {
+      // Step 1: Create the email/password account
+      final userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      print("verified phone!");
 
-    // Step 2: Link the phone credential
-    //  await userCredential.user!.linkWithCredential(phoneCredential);
+      // Step 2: Link the phone credential
+      //  await userCredential.user!.linkWithCredential(phoneCredential);
 
-    print("User signed up with email, password, and verified phone!");
+      print("User signed up with email, password, and verified phone!");
 
-    // Step 3: Store email and phone number in Firestore collection 'userData'
-    await FirebaseFirestore.instance
-        .collection('userData')
-        .doc(userCredential.user!.uid)
-        .set({
-          'email': email,
-          //'phone': phoneCredential.smsCode,
-          'createdAt': FieldValue.serverTimestamp(),
-          'role': null,
-          'fighterData': null,
-          'promoterData': null,
-        });
+      // Step 3: Store email and phone number in Firestore collection 'userData'
+      try {
+        await FirebaseFirestore.instance
+            .collection('userData')
+            .doc(userCredential.user!.uid)
+            .set({
+              'email': email,
+              //'phone': phoneCredential.smsCode,
+              'createdAt': FieldValue.serverTimestamp(),
+              'role': null,
+              'fighterData': null,
+              'promoterData': null,
+            });
 
-    print("User data saved to Firestore!");
+        print("User data saved to Firestore!");
+      } catch (firestoreError) {
+        print("Firestore Error: $firestoreError");
+        // If Firestore fails, we still have a user account, so we can continue
+        // but we should inform the user about the data sync issue
+        Utils.flushBarErrorMassage(
+          "Account created but there was an issue saving your profile data. Please try again later.",
+          context,
+        );
+        // Don't rethrow - let the user continue to role selection
+      }
+
+      // Navigate to role selector after successful signup
+      Navigator.pushNamed(context, RoutesName.roleView);
+    } on FirebaseAuthException catch (e) {
+      print("Firebase Auth Error Code: ${e.code}");
+      print("Firebase Auth Error Message: ${e.message}");
+
+      String errorMessage;
+
+      // Handle Firebase error codes (with and without prefix)
+      String errorCode = e.code;
+      if (errorCode.startsWith('firebase_auth/')) {
+        errorCode = errorCode.replaceFirst('firebase_auth/', '');
+      }
+
+      switch (errorCode) {
+        case 'email-already-in-use':
+          errorMessage =
+              "An account with this email already exists. Please try logging in instead.";
+          break;
+        case 'invalid-email':
+          errorMessage = "The email address is not valid.";
+          break;
+        case 'operation-not-allowed':
+          errorMessage =
+              "Email/password sign-up is not enabled. Please contact support.";
+          break;
+        case 'weak-password':
+          errorMessage =
+              "The password is too weak. Please choose a stronger password.";
+          break;
+        case 'network-request-failed':
+          errorMessage =
+              "Network error. Please check your internet connection.";
+          break;
+        case 'app-not-authorized':
+          errorMessage =
+              "App is not authorized. Please check your Firebase configuration.";
+          break;
+        case 'keychain-error':
+          errorMessage = "Authentication error. Please try again.";
+          break;
+        case 'internal-error':
+          errorMessage = "Internal authentication error. Please try again.";
+          break;
+        default:
+          errorMessage = "Sign up failed: ${e.message ?? 'Unknown error'}";
+      }
+
+      Utils.flushBarErrorMassage(errorMessage, context);
+      // Re-throw the exception so the UI can catch it and prevent navigation
+    } catch (e) {
+      // For unexpected errors
+      print("Unexpected Error: $e");
+      print("Error Type: ${e.runtimeType}");
+
+      String errorMessage;
+
+      // Handle specific credential errors that might not be FirebaseAuthException
+      if (e.toString().contains('credential') ||
+          e.toString().contains('expired')) {
+        errorMessage =
+            "Authentication credentials are invalid or expired. Please try again.";
+      } else if (e.toString().contains('network')) {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else if (e.toString().contains('timeout')) {
+        errorMessage = "Request timed out. Please try again.";
+      } else {
+        errorMessage =
+            "An unexpected error occurred during sign up. Please try again.";
+      }
+
+      Utils.flushBarErrorMassage(errorMessage, context);
+      // Re-throw the exception so the UI can catch it and prevent navigation
+      rethrow;
+    }
   }
 
   Future<void> loginWithEmailPassword(
@@ -253,16 +348,90 @@ class AuthViewmodel extends ChangeNotifier {
           .signInWithEmailAndPassword(email: email, password: password);
 
       print("User logged in: ${userCredential.user?.uid}");
+      // Don't navigate here - let the UI handle navigation on success
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        Utils.flushBarErrorMassage('No user found for that email.', context);
-      } else if (e.code == 'wrong-password') {
-        Utils.flushBarErrorMassage('Wrong password provided.', context);
-      } else {
-        Utils.flushBarErrorMassage('Login failed: ${e.message}', context);
+      print("Firebase Auth Error Code: ${e.code}");
+      print("Firebase Auth Error Message: ${e.message}");
+
+      String errorMessage;
+
+      // Handle Firebase error codes (with and without prefix)
+      String errorCode = e.code;
+      if (errorCode.startsWith('firebase_auth/')) {
+        errorCode = errorCode.replaceFirst('firebase_auth/', '');
       }
+
+      switch (errorCode) {
+        case 'invalid-email':
+          errorMessage = "The email address is not valid.";
+          break;
+        case 'user-disabled':
+          errorMessage = "This user account has been disabled.";
+          break;
+        case 'user-not-found':
+          errorMessage = "No user found with this email.";
+          break;
+        case 'wrong-password':
+          errorMessage = "Incorrect password. Please try again.";
+          break;
+        case 'too-many-requests':
+          errorMessage = "Too many login attempts. Try again later.";
+          break;
+        case 'invalid-credential':
+          errorMessage =
+              "Invalid email or password. Please check your credentials and try again.";
+          break;
+        case 'credential-already-in-use':
+          errorMessage =
+              "This account is already linked to another sign-in method.";
+          break;
+        case 'operation-not-allowed':
+          errorMessage =
+              "Email/password sign-in is not enabled. Please contact support.";
+          break;
+        case 'network-request-failed':
+          errorMessage =
+              "Network error. Please check your internet connection.";
+          break;
+        case 'app-not-authorized':
+          errorMessage =
+              "App is not authorized. Please check your Firebase configuration.";
+          break;
+        case 'keychain-error':
+          errorMessage = "Authentication error. Please try again.";
+          break;
+        case 'internal-error':
+          errorMessage = "Internal authentication error. Please try again.";
+          break;
+        default:
+          errorMessage = "Login failed: ${e.message ?? 'Unknown error'}";
+      }
+
+      Utils.flushBarErrorMassage(errorMessage, context);
+      // Re-throw the exception so the UI can catch it and prevent navigation
     } catch (e) {
-      Utils.flushBarErrorMassage('Unexpected error: $e', context);
+      // For unexpected errors
+      print("Unexpected Error: $e");
+      print("Error Type: ${e.runtimeType}");
+
+      String errorMessage;
+
+      // Handle specific credential errors that might not be FirebaseAuthException
+      if (e.toString().contains('credential') ||
+          e.toString().contains('expired')) {
+        errorMessage =
+            "Authentication credentials are invalid or expired. Please try logging in again.";
+      } else if (e.toString().contains('network')) {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else if (e.toString().contains('timeout')) {
+        errorMessage = "Request timed out. Please try again.";
+      } else {
+        errorMessage = "An unexpected error occurred. Please try again.";
+      }
+
+      Utils.flushBarErrorMassage(errorMessage, context);
+      // Re-throw the exception so the UI can catch it and prevent navigation
+      rethrow;
     }
   }
 }

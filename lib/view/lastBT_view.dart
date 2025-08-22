@@ -3,6 +3,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
+import 'package:cage/widgets/custom_calendar.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +11,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class LastbloodtestView extends StatelessWidget {
+class LastbloodtestView extends StatefulWidget {
+  @override
+  State<LastbloodtestView> createState() => _LastbloodtestViewState();
+}
+
+class _LastbloodtestViewState extends State<LastbloodtestView> {
   TextEditingController lastBloodController = TextEditingController();
+  DateTime? selectedDate;
 
   @override
   Widget build(BuildContext context) {
@@ -59,48 +66,70 @@ class LastbloodtestView extends StatelessWidget {
                   ),
                   SizedBox(height: Responsive.h(2)),
 
-                  TextFormField(
-                    style: TextStyle(color: AppColor.white),
-                    controller: lastBloodController,
-                    // focusNode: emailFoucsNode,
-                    cursorColor: AppColor.red,
-                    cursorErrorColor: AppColor.red,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          Responsive.w(12),
-                        ), // 6% of width
-                        borderSide: BorderSide(color: AppColor.red),
-                      ),
-                      errorBorder: OutlineInputBorder(
+                  GestureDetector(
+                    onTap: () async {
+                      final date = await showCustomCalendar(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now().subtract(
+                          const Duration(days: 365),
+                        ),
+                        lastDate: DateTime.now(),
+                      );
+                      if (date != null) {
+                        setState(() {
+                          selectedDate = date;
+                          lastBloodController.text =
+                              "${date.day}/${date.month}/${date.year}";
+                        });
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColor.red),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
-                        borderSide: BorderSide(color: AppColor.red),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: AppColor.red),
-                        borderRadius: BorderRadius.circular(Responsive.w(12)),
-                      ),
-                      // prefixIcon: Padding(
-                      //   padding: EdgeInsets.all(Responsive.w(3)), // 2% of width
-                      //   child: SvgPicture.asset("assets/icons/mail-02.svg"),
-                      // ),
-                      filled: true,
-                      fillColor: AppColor.white.withValues(alpha: 0.08),
-                      hintText: "Select Date",
-                      hintStyle: GoogleFonts.dmSans(
-                        color: AppColor.white,
-                        fontWeight: FontWeight.normal,
-                        fontSize: Responsive.sp(15),
+                      child: TextFormField(
+                        style: TextStyle(color: AppColor.white),
+                        controller: lastBloodController,
+                        enabled: false, // Make it read-only
+                        cursorColor: AppColor.red,
+                        cursorErrorColor: AppColor.red,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Responsive.w(12),
+                            ),
+                            borderSide: BorderSide.none,
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              Responsive.w(12),
+                            ),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(
+                              Responsive.w(12),
+                            ),
+                          ),
+                          suffixIcon: Icon(
+                            Icons.calendar_today,
+                            color: AppColor.red,
+                            size: 20,
+                          ),
+                          filled: true,
+                          fillColor: AppColor.white.withValues(alpha: 0.08),
+                          hintText: "Select Date",
+                          hintStyle: GoogleFonts.dmSans(
+                            color: AppColor.white,
+                            fontWeight: FontWeight.normal,
+                            fontSize: Responsive.sp(15),
+                          ),
+                        ),
                       ),
                     ),
-                    // onFieldSubmitted: (value) {
-                    //   Utils.fieldFoucsChange(
-                    //     context,
-                    //     emailFoucsNode,
-                    //     passwordFoucsNode,
-                    //   );
-                    // },
                   ),
                 ],
               ),
@@ -108,8 +137,7 @@ class LastbloodtestView extends StatelessWidget {
                 text: "Next",
                 onTap: () {
                   var uid = Utils.getCurrentUid();
-                  authProvider.addUserFieldByRole
-(
+                  authProvider.addUserFieldByRole(
                     uid: uid,
                     fieldName: 'lastBlood',
                     value: lastBloodController.text.toString(),
@@ -118,7 +146,6 @@ class LastbloodtestView extends StatelessWidget {
                   Navigator.pushNamed(context, RoutesName.physicalText_view);
                 },
               ),
-              // SizedBox(height: Responsive.h(3)),
             ],
           ),
         ),

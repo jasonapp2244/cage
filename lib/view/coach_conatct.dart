@@ -64,7 +64,7 @@ class CoachConatctView extends StatelessWidget {
                     // focusNode: emailFoucsNode,
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(
@@ -107,7 +107,7 @@ class CoachConatctView extends StatelessWidget {
                 text: "Next",
                 onTap: () {
                   var uid = Utils.getCurrentUid();
-                     authProvider.addUserFieldByRole(
+                  authProvider.addUserFieldByRole(
                     uid: uid,
                     fieldName: 'coachContact',
                     value: _coachContactController.text.toString(),

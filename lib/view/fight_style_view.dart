@@ -85,26 +85,33 @@ class _FightStyleViewState extends State<FightStyleView> {
                       ),
                       filled: true,
                       fillColor: AppColor.white.withOpacity(0.08),
-                      hintText: "e.g www.taplogy.com",
+
+                      hintText: "Select",
                       hintStyle: GoogleFonts.dmSans(
-                        color: AppColor.white,
-                        fontWeight: FontWeight.normal,
-                        fontSize: Responsive.sp(15),
+                        color: Colors.grey,
+                        fontSize: 15,
                       ),
                     ),
                     iconEnabledColor: AppColor.white, // arrow color
-                    items: [
+                    items: const [
+                      DropdownMenuItem(value: "Boxing", child: Text("Boxing")),
                       DropdownMenuItem(
-                        value: "option1",
-                        child: Text("Option 1"),
+                        value: "Muay Thai",
+                        child: Text("Muay Thai"),
                       ),
                       DropdownMenuItem(
-                        value: "option2",
-                        child: Text("Option 2"),
+                        value: "Kickboxing",
+                        child: Text("Kickboxing"),
                       ),
+                      DropdownMenuItem(value: "Karate", child: Text("Karate")),
                       DropdownMenuItem(
-                        value: "option3",
-                        child: Text("Option 3"),
+                        value: "Taekwondo",
+                        child: Text("Taekwondo"),
+                      ),
+                      DropdownMenuItem(value: "Savate", child: Text("Savate")),
+                      DropdownMenuItem(
+                        value: "Kung Fu",
+                        child: Text("Kung Fu"),
                       ),
                     ],
                     onChanged: (value) {
@@ -127,8 +134,7 @@ class _FightStyleViewState extends State<FightStyleView> {
                     text: "Next",
                     onTap: () {
                       var uid = Utils.getCurrentUid();
-                      authProvider.addUserFieldByRole
-(
+                      authProvider.addUserFieldByRole(
                         uid: uid,
                         fieldName: 'fightsStyle',
                         value: selectedFightStyle.toString(),

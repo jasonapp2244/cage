@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../viewmodel/auth_viewmodel.dart';
 
 class Loginview extends StatefulWidget {
@@ -218,7 +219,7 @@ class _LoginviewState extends State<Loginview> {
                 AuthButton(
                   buttontext: "Login",
                   loading: authViewmodel.loading,
-                  onPress: () {
+                  onPress: () async {
                     if (emailController.text.isEmpty) {
                       Utils.flushBarErrorMassage(
                         "Please Enter Email First",
@@ -242,12 +243,63 @@ class _LoginviewState extends State<Loginview> {
                         context,
                       );
                     } else {
-                      authViewmodel.loginWithEmailPassword(
-                        emailController.text,
-                        passwordController.text,
-                        context,
-                      );
-                      Navigator.pushNamed(context, RoutesName.otp);
+                      try {
+                        await authViewmodel.loginWithEmailPassword(
+                          emailController.text,
+                          passwordController.text,
+                          context,
+                        );
+
+                        // If login successful, check user role and navigate accordingly
+                        final uid = Utils.getCurrentUid();
+                        if (uid != null) {
+                          final userDoc = await FirebaseFirestore.instance
+                              .collection('userData')
+                              .doc(uid)
+                              .get();
+
+                          if (userDoc.exists) {
+                            final userData = userDoc.data();
+                            final role = userData?['role'];
+                            print('Login - User data: $userData');
+                            print('Login - Detected role: $role');
+
+                            if (role == 'Fighter') {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                RoutesName.home,
+                                (route) => false,
+                              );
+                            } else if (role == 'Promoter') {
+                              print(
+                                'Login - Navigating to promoter home route: ${RoutesName.promoterHome}',
+                              );
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                RoutesName.promoterHome,
+                                (route) => false,
+                              );
+                            } else {
+                              // No role set, go to role selection
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                RoutesName.roleView,
+                                (route) => false,
+                              );
+                            }
+                          } else {
+                            // No user data, go to role selection
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              RoutesName.roleView,
+                              (route) => false,
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        // Error is already handled in loginWithEmailPassword method
+                        print('Login failed: $e');
+                      }
                     }
                   },
                 ),

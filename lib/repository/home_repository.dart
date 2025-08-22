@@ -16,7 +16,7 @@ class UserRepository {
     }
   }
 
-  // Fetch current user data as a stream with proper role typing
+  // Fetch current user data as a stream with proper error handling
   static Stream<UserModel> fetchCurrentUserStream() {
     final userId = Utils.getCurrentUid();
 
@@ -31,16 +31,114 @@ class UserRepository {
 
           final data = doc.data()!;
 
+          // Safe date parsing
+          DateTime createdAt;
+          try {
+            if (data['createdAt'] is Timestamp) {
+              createdAt = (data['createdAt'] as Timestamp).toDate();
+            } else if (data['createdAt'] is DateTime) {
+              createdAt = data['createdAt'] as DateTime;
+            } else {
+              createdAt = DateTime.now(); // Fallback
+            }
+          } catch (e) {
+            createdAt = DateTime.now(); // Fallback
+          }
+
+          // Determine role data with better error handling
+          dynamic roleData;
+          try {
+            if (data['fighterData'] != null) {
+              roleData = FighterDataModel.fromMap(data['fighterData']);
+            } else if (data['promoterData'] != null) {
+              roleData = PromoterDataModel.fromMap(data['promoterData']);
+            } else {
+              roleData = null; // No role data yet
+            }
+          } catch (e) {
+            print('Error parsing role data: $e');
+            roleData = null;
+          }
+
           return UserModel(
             id: doc.id,
             email: data['email'] ?? '',
-            createdAt: (data['createdAt'] as Timestamp).toDate(),
-            roleData: data['fighterData'] != null
-                ? FighterDataModel.fromMap(data['fighterData'])
-                : (data['promoterData'] != null
-                      ? PromoterDataModel.fromMap(data['promoterData'])
-                      : null), // or a default PromoterDataModel()
+            createdAt: createdAt,
+            roleData: roleData,
+          );
+        })
+        .handleError((error) {
+          print('Error in user stream: $error');
+          // Return a default user model instead of throwing
+          return UserModel(
+            id: userId,
+            email: '',
+            createdAt: DateTime.now(),
+            roleData: null,
           );
         });
+  }
+
+  // Alternative: Fetch user data once (faster for initial load)
+  static Future<UserModel> fetchCurrentUserOnce() async {
+    final userId = Utils.getCurrentUid();
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('userData')
+          .doc(userId)
+          .get();
+
+      if (!doc.exists) {
+        throw Exception('User document not found');
+      }
+
+      final data = doc.data()!;
+
+      // Safe date parsing
+      DateTime createdAt;
+      try {
+        if (data['createdAt'] is Timestamp) {
+          createdAt = (data['createdAt'] as Timestamp).toDate();
+        } else if (data['createdAt'] is DateTime) {
+          createdAt = data['createdAt'] as DateTime;
+        } else {
+          createdAt = DateTime.now();
+        }
+      } catch (e) {
+        createdAt = DateTime.now();
+      }
+
+      // Determine role data
+      dynamic roleData;
+      try {
+        if (data['fighterData'] != null) {
+          roleData = FighterDataModel.fromMap(data['fighterData']);
+        } else if (data['promoterData'] != null) {
+          roleData = PromoterDataModel.fromMap(data['promoterData']);
+        } else {
+          roleData = null;
+        }
+      } catch (e) {
+        print('Error parsing role data: $e');
+        roleData = null;
+      }
+
+      return UserModel(
+        id: doc.id,
+        email: data['email'] ?? '',
+        createdAt: createdAt,
+        roleData: roleData,
+      );
+    } catch (e) {
+      print('Error fetching user data: $e');
+      // Return a default user model
+      return UserModel(
+        id: userId,
+        email: '',
+        createdAt: DateTime.now(),
+        roleData: null,
+      );
+    }
   }
 }

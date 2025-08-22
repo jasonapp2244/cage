@@ -64,7 +64,7 @@ class ContactNumberView extends StatelessWidget {
 
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(

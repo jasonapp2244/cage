@@ -251,14 +251,15 @@ class _SginupviewState extends State<Sginupview> {
                         context,
                       );
                     } else {
-                      Map<String, String> headr = {
-                        "x-api-key": "reqres-free-v1",
-                      };
-                      Map data = {
-                        'email': emailController.text.toString(),
-                        'password': passwordController.text.toString(),
-                      };
-                      authViewmodel.loginApi(data, headr, context);
+                      Navigator.pushNamed(context, RoutesName.otp);
+                      // Map<String, String> headr = {
+                      //   "x-api-key": "reqres-free-v1",
+                      // };
+                      // Map data = {
+                      //   'email': emailController.text.toString(),
+                      //   'password': passwordController.text.toString(),
+                      // };
+                      // authViewmodel.loginApi(data, headr, context);
                     }
                   },
                 ),

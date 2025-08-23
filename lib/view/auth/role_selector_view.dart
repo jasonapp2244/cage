@@ -164,8 +164,9 @@ class RoleSelectionScreen extends StatelessWidget {
                   if (roleProvider.selectedRole == "Fighter") {
                     Navigator.pushNamed(context, RoutesName.nameview);
                   } else {
-                    Navigator.pushNamed(context, RoutesName.CompanyNameView);
+                    Navigator.pushNamed(context, RoutesName.nameview);
                   } 
+                  // CompanyNameView
                 },
                 child: const Text('Continue', style: TextStyle(fontSize: 18)),
                 style: ElevatedButton.styleFrom(

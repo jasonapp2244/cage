@@ -3,6 +3,7 @@ import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/fighter_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/view/Profile/fighter/fighter_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -403,25 +404,38 @@ class _FightersViewState extends State<FightersView> {
 
                               SizedBox(height: Responsive.h(1)),
 
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(22),
-                                  color: AppColor.white.withValues(alpha: 0.05),
-                                ),
-                                width: double.infinity,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 5.0,
-                                    vertical: 4.5,
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          FighterProfile(userData: user),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(22),
+                                    color: AppColor.white.withValues(
+                                      alpha: 0.05,
+                                    ),
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      "View Profile",
-                                      style: GoogleFonts.dmSans(
-                                        color: AppColor.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            Responsive.textScaleFactor * 12,
+                                  width: double.infinity,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5.0,
+                                      vertical: 4.5,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "View Profile",
+                                        style: GoogleFonts.dmSans(
+                                          color: AppColor.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize:
+                                              Responsive.textScaleFactor * 12,
+                                        ),
                                       ),
                                     ),
                                   ),

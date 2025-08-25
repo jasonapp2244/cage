@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 
 class Utils {
   static tosatMassage(String massage) {
@@ -64,6 +65,38 @@ class Utils {
       return user.uid; // This is the uid you pass to addUserFieldByRole
     } else {
       throw Exception('User not logged in');
+    }
+  }
+
+  /// Converts date from "12 Apr 2025" format to "22/08/2025" format
+  static String convertDateFormat(String dateString) {
+    try {
+      // Parse the input date string (e.g., "12 Apr 2025")
+      final inputFormat = DateFormat('dd MMM yyyy');
+      final date = inputFormat.parse(dateString);
+
+      // Format to output format (e.g., "22/08/2025")
+      final outputFormat = DateFormat('dd/MM/yyyy');
+      return outputFormat.format(date);
+    } catch (e) {
+      // Return original string if parsing fails
+      return dateString;
+    }
+  }
+
+  /// Converts date from "22/08/2025" format to "12 Apr 2025" format
+  static String convertToReadableFormat(String dateString) {
+    try {
+      // Parse the input date string (e.g., "22/08/2025")
+      final inputFormat = DateFormat('dd/MM/yyyy');
+      final date = inputFormat.parse(dateString);
+
+      // Format to output format (e.g., "12 Apr 2025")
+      final outputFormat = DateFormat('dd MMM yyyy');
+      return outputFormat.format(date);
+    } catch (e) {
+      // Return original string if parsing fails
+      return dateString;
     }
   }
 }

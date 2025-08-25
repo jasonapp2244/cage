@@ -434,4 +434,88 @@ class AuthViewmodel extends ChangeNotifier {
       rethrow;
     }
   }
+
+  // New comprehensive login method that handles validation and navigation
+  Future<void> performLogin(
+    String email,
+    String password,
+    BuildContext context,
+  ) async {
+    // Validate email
+    if (email.isEmpty) {
+      Utils.flushBarErrorMassage("Please Enter Email First", context);
+      return;
+    }
+
+    if (!RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$").hasMatch(email)) {
+      Utils.flushBarErrorMassage("Please Enter Correct Email First", context);
+      return;
+    }
+
+    // Validate password
+    if (password.isEmpty) {
+      Utils.flushBarErrorMassage("Please Enter Password First", context);
+      return;
+    }
+
+    if (password.length < 8) {
+      Utils.flushBarErrorMassage("Please Enter 8 digits", context);
+      return;
+    }
+
+    try {
+      // Attempt login
+      await loginWithEmailPassword(email, password, context);
+
+      // If login successful, check user role and navigate accordingly
+      final uid = Utils.getCurrentUid();
+      if (uid != null) {
+        final userDoc = await FirebaseFirestore.instance
+            .collection('userData')
+            .doc(uid)
+            .get();
+
+        if (userDoc.exists) {
+          final userData = userDoc.data();
+          final role = userData?['role'];
+          print('Login - User data: $userData');
+          print('Login - Detected role: $role');
+
+          if (role == 'Fighter') {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RoutesName.home,
+              (route) => false,
+            );
+          } else if (role == 'Promoter') {
+            print(
+              'Login - Navigating to promoter home route: ${RoutesName.promoterHome}',
+            );
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RoutesName.promoterHome,
+              (route) => false,
+            );
+          } else {
+            // No role set, go to role selection
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RoutesName.roleView,
+              (route) => false,
+            );
+          }
+        } else {
+          // No user data, go to role selection
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            RoutesName.roleView,
+            (route) => false,
+          );
+        }
+      }
+    } catch (e) {
+      // Error is already handled in loginWithEmailPassword method
+      print('Login failed: $e');
+    }
+  }
 }

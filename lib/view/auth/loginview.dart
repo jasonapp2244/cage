@@ -220,87 +220,11 @@ class _LoginviewState extends State<Loginview> {
                   buttontext: "Login",
                   loading: authViewmodel.loading,
                   onPress: () async {
-                    if (emailController.text.isEmpty) {
-                      Utils.flushBarErrorMassage(
-                        "Please Enter Email First",
-                        context,
-                      );
-                    } else if (!RegExp(
-                      r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$",
-                    ).hasMatch(emailController.text)) {
-                      Utils.flushBarErrorMassage(
-                        "Please Enter Correct Email First",
-                        context,
-                      );
-                    } else if (passwordController.text.isEmpty) {
-                      Utils.flushBarErrorMassage(
-                        "Please Enter Password First",
-                        context,
-                      );
-                    } else if (passwordController.text.length < 8) {
-                      Utils.flushBarErrorMassage(
-                        "Please Enter 8 digits",
-                        context,
-                      );
-                    } else {
-                      try {
-                        await authViewmodel.loginWithEmailPassword(
-                          emailController.text,
-                          passwordController.text,
-                          context,
-                        );
-
-                        // If login successful, check user role and navigate accordingly
-                        final uid = Utils.getCurrentUid();
-                        if (uid != null) {
-                          final userDoc = await FirebaseFirestore.instance
-                              .collection('userData')
-                              .doc(uid)
-                              .get();
-
-                          if (userDoc.exists) {
-                            final userData = userDoc.data();
-                            final role = userData?['role'];
-                            print('Login - User data: $userData');
-                            print('Login - Detected role: $role');
-
-                            if (role == 'Fighter') {
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                RoutesName.home,
-                                (route) => false,
-                              );
-                            } else if (role == 'Promoter') {
-                              print(
-                                'Login - Navigating to promoter home route: ${RoutesName.promoterHome}',
-                              );
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                RoutesName.promoterHome,
-                                (route) => false,
-                              );
-                            } else {
-                              // No role set, go to role selection
-                              Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                RoutesName.roleView,
-                                (route) => false,
-                              );
-                            }
-                          } else {
-                            // No user data, go to role selection
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              RoutesName.roleView,
-                              (route) => false,
-                            );
-                          }
-                        }
-                      } catch (e) {
-                        // Error is already handled in loginWithEmailPassword method
-                        print('Login failed: $e');
-                      }
-                    }
+                    await authViewmodel.performLogin(
+                      emailController.text,
+                      passwordController.text,
+                      context,
+                    );
                   },
                 ),
                 SizedBox(height: Responsive.h(5)),

@@ -489,11 +489,11 @@ class AuthViewmodel extends ChangeNotifier {
             );
           } else if (role == 'Promoter') {
             print(
-              'Login - Navigating to promoter home route: ${RoutesName.promoterHome}',
+              'Login - Navigating to promoter home route: ${RoutesName.PromoterHome}',
             );
             Navigator.pushNamedAndRemoveUntil(
               context,
-              RoutesName.promoterHome,
+              RoutesName.PromoterHome,
               (route) => false,
             );
           } else {

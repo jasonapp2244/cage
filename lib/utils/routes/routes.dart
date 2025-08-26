@@ -5,40 +5,46 @@ import 'package:cage/view/Profile/Promoter/company_name_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_email_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_number_view.dart';
 import 'package:cage/view/Profile/Promoter/event_history.dart';
+import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
+import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
+import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/Promoter/upload_company_logo.dart';
 import 'package:cage/view/Profile/Promoter/who_thePromoter_view.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
+import 'package:cage/view/Profile/fighter/Payment_View.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
-import 'package:cage/view/Profile/fighter/fighter_profile.dart';
-import 'package:cage/view/age_view.dart';
-import 'package:cage/view/bottom_wraper.dart';
+import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
+import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
+import 'package:cage/view/Profile/fighter/age_view.dart';
+import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
+import 'package:cage/view/Profile/fighter/review_view.dart';
 import 'package:cage/view/change_password_view.dart';
-import 'package:cage/view/coach_conatct.dart';
-import 'package:cage/view/coach_view.dart';
-import 'package:cage/view/createnew_ticticket_view.dart';
-import 'package:cage/view/enter_name_view.dart';
-import 'package:cage/view/exploer/Promoters_view.dart';
+import 'package:cage/view/Profile/fighter/coach_conatct.dart';
+import 'package:cage/view/Profile/fighter/coach_view.dart';
+import 'package:cage/view/Profile/fighter/createnew_ticticket_view.dart';
+import 'package:cage/view/Profile/fighter/enter_name_view.dart';
 import 'package:cage/view/exploer/events_view.dart';
-import 'package:cage/view/eye_test_view.dart';
-import 'package:cage/view/fight_knockout_view.dart';
-import 'package:cage/view/fight_lose_view.dart';
-import 'package:cage/view/fight_style_view.dart';
-import 'package:cage/view/fight_win_view.dart';
-import 'package:cage/view/hight_view.dart';
-import 'package:cage/view/homeview.dart';
-import 'package:cage/view/lastBT_view.dart';
-import 'package:cage/view/last_physical_exam_view.dart';
+import 'package:cage/view/Profile/fighter/eye_test_view.dart';
+import 'package:cage/view/Profile/fighter/fight_knockout_view.dart';
+import 'package:cage/view/Profile/fighter/fight_lose_view.dart';
+import 'package:cage/view/Profile/fighter/fight_style_view.dart';
+import 'package:cage/view/Profile/fighter/fight_win_view.dart';
+import 'package:cage/view/Profile/fighter/hight_view.dart';
+import 'package:cage/view/Profile/fighter/homeview.dart';
+import 'package:cage/view/Profile/fighter/lastBT_view.dart';
+import 'package:cage/view/Profile/fighter/last_physical_exam_view.dart';
 import 'package:cage/view/auth/loginview.dart';
 import 'package:cage/view/map_screen.dart';
 import 'package:cage/view/notification_view.dart';
-import 'package:cage/view/otp_view.dart';
-import 'package:cage/view/role_selector_view.dart';
+import 'package:cage/view/auth/otp_view.dart';
+import 'package:cage/view/Profile/Promoter/promotor_bottom_nav_bar.dart';
+import 'package:cage/view/auth/role_selector_view.dart';
 import 'package:cage/view/auth/sginupview.dart';
 import 'package:cage/view/auth/splash_view.dart';
 import 'package:cage/view/support_view.dart';
-import 'package:cage/view/tapalogy_view.dart';
+import 'package:cage/view/Profile/fighter/tapalogy_view.dart';
 import 'package:cage/view/term_condition_view.dart';
-import 'package:cage/view/updateProfle_view.dart';
+import 'package:cage/view/Profile/fighter/updateProfle_view.dart';
 import 'package:flutter/material.dart';
 
 class Routes {
@@ -115,13 +121,21 @@ class Routes {
           builder: (BuildContext context) => EidtProfile(),
         );
 
-      case RoutesName.fighterprofileView:
+      case RoutesName.fighterpersonalprofileView:
         return MaterialPageRoute(
-          builder: (BuildContext context) => FighterProfile(),
+          builder: (BuildContext context) => FighterPersonalProfileView(),
+        );
+      case RoutesName.FighterPublicProfile:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => FighterPublicProfile(),
+        );
+      case RoutesName.review:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ReviewView(),
         );
       case RoutesName.PaymentView:
         return MaterialPageRoute(
-          builder: (BuildContext context) => PaymentView(),
+          builder: (BuildContext context) =>PaymentView(),
         );
       case RoutesName.Change_Password_View:
         return MaterialPageRoute(
@@ -132,10 +146,10 @@ class Routes {
           builder: (BuildContext context) => TermConditionView(),
         );
 
-      case RoutesName.promoterView:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => FightersView(),
-        );
+      // case RoutesName.promoterView:
+      //   return MaterialPageRoute(
+      //     builder: (BuildContext context) => PromotersView(),
+      //   );
       case RoutesName.fightKnouckout:
         return MaterialPageRoute(
           builder: (BuildContext context) => FightKnockoutView(),
@@ -158,20 +172,70 @@ class Routes {
         return MaterialPageRoute(
           builder: (BuildContext context) => RoleSelectionScreen(),
         );
+      case RoutesName.PromotorSubcribtionView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PromotorSubcribtionView(),
+        );
 
       case RoutesName.supportView:
         return MaterialPageRoute(
           builder: (BuildContext context) => SupportView(),
+        );
+      case RoutesName.UploadCompanyLogo:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => UploadCompanyLogo(),
         );
 
       case RoutesName.home:
         return MaterialPageRoute(
           builder: (BuildContext context) => MainWrapper(),
         );
+      case RoutesName.PromotorBottomNavBar:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PromotorBottomNavBar(),
+        );
+      case RoutesName.WhoThepromoterView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => WhoThepromoterView(),
+        );
+      case RoutesName.WhoThepromoterView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PromoterView(),
+          // WhoThepromoterView(),
+        );
+      case RoutesName.PromoterHome:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PromoterHome(),
+        );
+      case RoutesName.PromoterProfileView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PromoterProfileView(),
+        );
+
+      case RoutesName.aboutCompanayName:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => AboutCompanyNameView(),
+        );
 
       case RoutesName.namecoachview:
         return MaterialPageRoute(
           builder: (BuildContext context) => CoachNameView(),
+        );
+      case RoutesName.EventHistory:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => EventHistory(),
+        );
+      case RoutesName.ContactNumberView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ContactNumberView(),
+        );
+      case RoutesName.ContactEmailView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ContactEmailView(),
+        );
+      case RoutesName.CompanyNameView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => EnterCompanyNameView(),
         );
 
       case RoutesName.login:
@@ -199,31 +263,31 @@ class Routes {
           builder: (BuildContext context) => ContactEmailView(),
         );
 
-      case RoutesName.aboutCompany:
+      case RoutesName.aboutCompanayName:
         return MaterialPageRoute(
           builder: (BuildContext context) => AboutCompanyNameView(),
         );
 
-      case RoutesName.historyEvents:
+      case RoutesName.EventHistory:
         return MaterialPageRoute(
-          builder: (BuildContext context) => EventHistoryView(),
+          builder: (BuildContext context) =>EventHistory(),
         );
 
-      case RoutesName.whoThePrompter:
+      case RoutesName.WhoThepromoterView:
         return MaterialPageRoute(
           builder: (BuildContext context) => WhoThepromoterView(),
         );
-      case RoutesName.contactNumber:
+      case RoutesName.ContactNumberView:
         return MaterialPageRoute(
           builder: (BuildContext context) => ContactNumberView(),
         );
 
-      case RoutesName.companyLogo:
+      case RoutesName.UploadCompanyLogo:
         return MaterialPageRoute(
           builder: (BuildContext context) => UploadCompanyLogo(),
         );
 
-      case RoutesName.promoterHome:
+      case RoutesName.PromoterHome:
         return MaterialPageRoute(
           builder: (BuildContext context) => FightersView(),
         );

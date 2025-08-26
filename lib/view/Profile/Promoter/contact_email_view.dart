@@ -11,6 +11,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class ContactEmailView extends StatelessWidget {
+  const ContactEmailView({super.key});
+
   @override
   Widget build(BuildContext context) {
     TextEditingController contactEmailController = TextEditingController();
@@ -119,7 +121,7 @@ class ContactEmailView extends StatelessWidget {
                       fieldName: 'contactEmail',
                       value: contactEmailController.text.toString(),
                     );
-                    Navigator.pushNamed(context, RoutesName.contactNumber);
+                    Navigator.pushNamed(context, RoutesName.ContactNumberView);
                   }
                 },
               ),

@@ -3,7 +3,7 @@ import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/fighter_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/view/Profile/fighter/fighter_profile.dart';
+import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -390,15 +390,8 @@ class _FightersViewState extends State<FightersView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  _buildStatChip(fighter.location.toString()),
-                                  // _buildStatChip(
-                                  //   "L",
-                                  //   fighter.fightsLose.toString(),
-                                  // ),
-                                  // _buildStatChip(
-                                  //   "KO",
-                                  //   fighter.fightsKnockout.toString(),
-                                  // ),
+                            _buildStatChip(fighter.location.toString()),
+                               
                                 ],
                               ),
 
@@ -410,7 +403,7 @@ class _FightersViewState extends State<FightersView> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          FighterProfile(userData: user),
+                                         FighterProfile(userData: user),
                                     ),
                                   );
                                 },
@@ -454,7 +447,11 @@ class _FightersViewState extends State<FightersView> {
         ),
       ),
     );
+    
   }
+
+}
+
 
   // Helper widget for stats
   Widget _buildStatChip(String location) {
@@ -474,4 +471,4 @@ class _FightersViewState extends State<FightersView> {
       ),
     );
   }
-}
+

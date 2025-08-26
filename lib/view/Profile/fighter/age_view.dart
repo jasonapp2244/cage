@@ -1,27 +1,27 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/auth/sginupview.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
-class FightKnockoutView extends StatefulWidget {
-  const FightKnockoutView({super.key});
-
+class AgeView extends StatefulWidget {
   @override
-  State<FightKnockoutView> createState() => _FightKnockoutViewState();
+  _AgeViewState createState() => _AgeViewState();
 }
 
-class _FightKnockoutViewState extends State<FightKnockoutView> {
+class _AgeViewState extends State<AgeView> {
   final FixedExtentScrollController _scrollController =
       FixedExtentScrollController();
   List<int> heightValues = List.generate(
     50,
-    (index) => 00 + index,
+    (index) => 18 + index,
   ); // 140-189 cm
-  int selectedHeight = 100;
+  int selectedHeight = 99;
 
   @override
   void initState() {
@@ -36,7 +36,6 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
     final authProvider = Provider.of<AuthViewmodel>(context);
     return Scaffold(
       backgroundColor: AppColor.black,
-      appBar: AppBar(backgroundColor: AppColor.black),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -45,8 +44,17 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: Responsive.h(2)),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: SvgPicture.asset(
+                    "assets/icons/arrow-left-01.svg",
+                    color: AppColor.red,
+                  ),
+                ),
+                SizedBox(height: Responsive.h(2)),
                 const Text(
-                  'How many fights have you Knockout?',
+                  'What’s your age?',
                   style: TextStyle(
                     color: AppColor.white,
                     fontFamily: AppFonts.appFont,
@@ -56,7 +64,7 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Mention the number of official Knockout in your fight record.',
+                  'Enter your age in years (you must be 18 or older to join).',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 Center(
@@ -128,19 +136,14 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
                       Button(
                         text: "Next",
                         onTap: () {
-                          print('Selected Age: $selectedHeight');
                           var uid = Utils.getCurrentUid();
                           authProvider.addUserFieldByRole
 (
                             uid: uid,
-                            fieldName: 'fightsKnockout',
+                            fieldName: 'age',
                             value: selectedHeight.toString(),
                           );
-
-                          Navigator.pushNamed(
-                            context,
-                            RoutesName.fightStyle_view,
-                          );
+                          Navigator.pushNamed(context, RoutesName.hightview);
                         },
                       ),
 

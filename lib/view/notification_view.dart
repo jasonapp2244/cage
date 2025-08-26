@@ -1,14 +1,21 @@
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class NotificationView extends StatelessWidget {
   const NotificationView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final drawerProvider = Provider.of<DrawerControllerProvider>(
+      context,
+      listen: false,
+    );
+
     Responsive.init(context);
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -27,6 +34,19 @@ class NotificationView extends StatelessWidget {
                       color: AppColor.white,
                       fontFamily: AppFonts.appFont,
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: drawerProvider.toggleDrawer,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColor.white.withValues(alpha: 0.1),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: SvgPicture.asset("assets/icons/menu-11.svg"),
+                      ),
                     ),
                   ),
                 ],
@@ -54,7 +74,9 @@ class NotificationView extends StatelessWidget {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.all(5.0),
-                                child: SvgPicture.asset("assets/icons/Frame 1410120832.svg"),
+                                child: SvgPicture.asset(
+                                  "assets/icons/Frame 1410120832.svg",
+                                ),
                               ),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

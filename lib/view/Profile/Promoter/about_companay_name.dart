@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class EnterNameView extends StatelessWidget {
-  const EnterNameView({super.key});
+class AboutCompanayName extends StatelessWidget {
+  const AboutCompanayName({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -67,18 +67,17 @@ class EnterNameView extends StatelessWidget {
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          Responsive.w(12),
+                        borderRadius: BorderRadius.circular(22
                         ), // 6% of width
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        borderRadius: BorderRadius.circular(22),
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: AppColor.red),
-                        borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        borderRadius: BorderRadius.circular(22),
                       ),
                       // prefixIcon: Padding(
                       //   padding: EdgeInsets.all(Responsive.w(3)), // 2% of width
@@ -110,11 +109,11 @@ class EnterNameView extends StatelessWidget {
                 onTap: () {
                   if (fullNameController.text.isEmpty) {
                     Utils.flushBarErrorMassage(
-                      "Please Enter Full Name First",
+                      "Please Tell Us About Your Company",
                       context,
                     );
                   } else {
-                    Navigator.pushNamed(context, RoutesName.namecoachview);
+                    Navigator.pushNamed(context, RoutesName.EventHistory);
                     // Map<String, String> headr = {
                     //   "x-api-key": "reqres-free-v1",
                     // };

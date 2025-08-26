@@ -1,10 +1,11 @@
 // main_wrapper.dart
+import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/fighter/fighter_profile.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
 import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
 import 'package:cage/view/exploer/events_view.dart';
-import 'package:cage/view/homeview.dart';
+import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/repository/home_repository.dart';
@@ -12,6 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 class MainWrapper extends StatefulWidget {
   final String? userRole;
@@ -121,7 +123,7 @@ class _MainWrapperState extends State<MainWrapper> {
         height: double.infinity,
         decoration: BoxDecoration(color: AppColor.red),
       ),
-      controller: _drawerController,
+      controller: drawerProvider.controller,
       animationCurve: Curves.easeInOut,
       animationDuration: const Duration(milliseconds: 300),
       childDecoration: const BoxDecoration(
@@ -207,7 +209,7 @@ class _MainWrapperState extends State<MainWrapper> {
       onTap: (index) => setState(() => _currentIndex = index),
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.black,
-      selectedItemColor: Colors.red,
+      selectedItemColor: AppColor.white,
       unselectedItemColor: Colors.grey,
       items: [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -219,7 +221,6 @@ class _MainWrapperState extends State<MainWrapper> {
           icon: Icon(Icons.fitness_center),
           label: isPromoter ? 'Notifications' : 'Training',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
     );
   }

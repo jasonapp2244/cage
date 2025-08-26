@@ -1,10 +1,12 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/auth/sginupview.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class HightView extends StatefulWidget {
@@ -31,10 +33,11 @@ class _HightViewState extends State<HightView> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthViewmodel>(context);
+        final authProvider = Provider.of<AuthViewmodel>(context);
+    Responsive.init(context);
+
     return Scaffold(
       backgroundColor: AppColor.black,
-      appBar: AppBar(backgroundColor: AppColor.black),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -42,7 +45,15 @@ class _HightViewState extends State<HightView> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: []),
+              SizedBox(height: Responsive.h(2)),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: SvgPicture.asset(
+                  "assets/icons/arrow-left-01.svg",
+                  color: AppColor.red,
+                ),
+              ),
+              SizedBox(height: Responsive.h(2)),
               const Text(
                 'What\'s your height?',
                 style: TextStyle(

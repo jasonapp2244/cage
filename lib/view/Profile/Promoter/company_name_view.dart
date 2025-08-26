@@ -120,7 +120,7 @@ class EnterCompanyNameView extends StatelessWidget {
                       fieldName: 'companyName',
                       value: companyNameController.text.toString(),
                     );
-                    Navigator.pushNamed(context, RoutesName.aboutCompany);
+                    Navigator.pushNamed(context, RoutesName.aboutCompanayName);
 
                     // Map<String, String> headr = {
                     //   "x-api-key": "reqres-free-v1",

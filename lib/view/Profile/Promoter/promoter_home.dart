@@ -1,7 +1,9 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/view/Profile/fighter/fighter_profile_view.dart';
+import 'package:cage/utils/routes/routes.dart';
+import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -404,7 +406,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                                     onTap: () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => FighterProfileView(),
+                                        builder: (_) => FighterPublicProfile(),
                                       ),
                                     ),
                                     child: Container(

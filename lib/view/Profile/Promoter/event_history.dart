@@ -10,8 +10,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class EventHistoryView extends StatelessWidget {
-  const EventHistoryView({super.key});
+class EventHistory extends StatelessWidget {
+  const EventHistory({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class EventHistoryView extends StatelessWidget {
                       fieldName: 'eventHistory',
                       value: noOfEventsController.text.toString(),
                     );
-                    Navigator.pushNamed(context, RoutesName.whoThePrompter);
+                    Navigator.pushNamed(context, RoutesName.pr);
                   }
                 },
               ),

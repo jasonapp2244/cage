@@ -172,6 +172,7 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const Spacer(),
               ElevatedButton(
+<<<<<<< HEAD:lib/view/role_selector_view.dart
                 onPressed: () async {
                   print('Button pressed!');
                   try {
@@ -217,6 +218,16 @@ class RoleSelectionScreen extends StatelessWidget {
                       context,
                     );
                   }
+=======
+                onPressed: () {
+                  print('Selected role: ${roleProvider.selectedRole}');
+                  if (roleProvider.selectedRole == "Fighter") {
+                    Navigator.pushNamed(context, RoutesName.nameview);
+                  } else {
+                    Navigator.pushNamed(context, RoutesName.nameview);
+                  } 
+                  // CompanyNameView
+>>>>>>> main:lib/view/auth/role_selector_view.dart
                 },
                 child: const Text('Continue', style: TextStyle(fontSize: 18)),
                 style: ElevatedButton.styleFrom(

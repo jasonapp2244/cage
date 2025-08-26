@@ -1,5 +1,6 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/auth/loginview.dart';
 import 'package:cage/widgets/button.dart';
@@ -68,7 +69,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
                       ),
                     ),
                     Text(
-                      "Profile",
+                      "Change Password",
                       style: TextStyle(
                         fontSize: Responsive.textScaleFactor * 24,
                         color: AppColor.white,

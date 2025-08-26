@@ -57,7 +57,8 @@ class RoutesName {
 
   static const String eventsView = "events_view";
 
-  static const String fighterprofileView = "fighter_profile_view";
+  static const String fighterpersonalprofileView = "fighter_perosnal_profile_view";
+  static const String FighterPublicProfile = "FighterPublicProfile";
 
   static const String promoterprofileView = "promoter_profile_view";
 
@@ -65,16 +66,22 @@ class RoutesName {
 
   static const String TermConditionView = "Term_Condition_View";
 
-  static const String selectLocation = 'Select_Location_View';
+  static const String PromotorSubcribtionView = "PromotorSubcribtionView";
 
-  static const String companyName = 'Company_Enter_View';
-  static const String aboutCompany = 'About_Companay_Name_View';
-  static const String contactEmail = 'Contact_Email_View';
+  static const String WhoThepromoterView = "WhoThepromoterView";
+  static const String PromoterView = "PromoterView";
+  static const String PromotorBottomNavBar = "PromotorBottomNavBar";
 
-  static const String historyEvents = 'history_events_View';
+  static const String review = "review";
 
-  static const String whoThePrompter = 'who_the_prompter_View';
-  static const String contactNumber = 'contact_number';
-  static const String companyLogo = 'company_logo';
-  static const String promoterHome = 'promoter_home';
+
+
+  static const String aboutCompanayName = "About_Companay_Name";
+  static const String UploadCompanyLogo = "Upload_Company_Logo";
+  static const String CompanyNameView = "Company_Name_View";
+  static const String ContactEmailView = "Contact_Email_View";
+  static const String ContactNumberView = "Contact_Number_View";
+  static const String EventHistory = "Event_History";
+  static const String PromoterHome = "Promoter_Home";
+  static const String PromoterProfileView = "Promoter_Profile_View";
 }

@@ -1,5 +1,6 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/view/auth/loginview.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:flutter/material.dart';
@@ -184,7 +185,7 @@ class PaymentView extends StatelessWidget {
                       SizedBox(height: Responsive.h(0.5)),
 
                       Row(
-                        children: [
+                       children : [
                           SvgPicture.asset("assets/icons/right.svg"),
                           SizedBox(width: Responsive.w(2)),
                           Text(

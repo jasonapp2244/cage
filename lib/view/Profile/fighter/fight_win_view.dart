@@ -1,25 +1,29 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
-class AgeView extends StatefulWidget {
+class FightWinView extends StatefulWidget {
+  const FightWinView({super.key});
+
   @override
-  _AgeViewState createState() => _AgeViewState();
+  State<FightWinView> createState() => _FightWinViewState();
 }
 
-class _AgeViewState extends State<AgeView> {
+class _FightWinViewState extends State<FightWinView> {
   final FixedExtentScrollController _scrollController =
       FixedExtentScrollController();
   List<int> heightValues = List.generate(
     50,
-    (index) => 18 + index,
+    (index) => 00 + index,
   ); // 140-189 cm
-  int selectedHeight = 99;
+  int selectedHeight = 100;
 
   @override
   void initState() {
@@ -32,9 +36,11 @@ class _AgeViewState extends State<AgeView> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthViewmodel>(context);
+
+    Responsive.init(context);
+
     return Scaffold(
       backgroundColor: AppColor.black,
-      appBar: AppBar(backgroundColor: AppColor.black),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -43,8 +49,17 @@ class _AgeViewState extends State<AgeView> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: Responsive.h(2)),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: SvgPicture.asset(
+                    "assets/icons/arrow-left-01.svg",
+                    color: AppColor.red,
+                  ),
+                ),
+                SizedBox(height: Responsive.h(2)),
                 const Text(
-                  'What’s your age?',
+                  'How many fights have you won?',
                   style: TextStyle(
                     color: AppColor.white,
                     fontFamily: AppFonts.appFont,
@@ -54,7 +69,7 @@ class _AgeViewState extends State<AgeView> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Enter your age in years (you must be 18 or older to join).',
+                  'Enter the total number of official fights you’ve won so far.',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 Center(
@@ -122,18 +137,20 @@ class _AgeViewState extends State<AgeView> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 10),
                       Button(
                         text: "Next",
                         onTap: () {
+                          print('Selected Age: $selectedHeight');
+
                           var uid = Utils.getCurrentUid();
-                          authProvider.addUserFieldByRole
-(
+                          authProvider.addUserFieldByRole(
                             uid: uid,
-                            fieldName: 'age',
+                            fieldName: 'fightWin',
                             value: selectedHeight.toString(),
                           );
-                          Navigator.pushNamed(context, RoutesName.hightview);
+
+                          Navigator.pushNamed(context, RoutesName.fightlose);
                         },
                       ),
 

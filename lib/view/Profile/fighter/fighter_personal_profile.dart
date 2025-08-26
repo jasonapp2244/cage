@@ -28,13 +28,7 @@ class FighterProfile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: SvgPicture.asset(
-                        "assets/icons/arrow-left-01.svg",
-                        color: AppColor.red,
-                      ),
-                    ),
+                   
                     Text(
                       userData != null ? "Fighter Profile" : "Profile",
                       style: TextStyle(

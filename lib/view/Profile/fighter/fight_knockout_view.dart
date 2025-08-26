@@ -1,20 +1,22 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/auth/sginupview.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
-class FightWinView extends StatefulWidget {
-  const FightWinView({super.key});
+class FightKnockoutView extends StatefulWidget {
+  const FightKnockoutView({super.key});
 
   @override
-  State<FightWinView> createState() => _FightWinViewState();
+  State<FightKnockoutView> createState() => _FightKnockoutViewState();
 }
 
-class _FightWinViewState extends State<FightWinView> {
+class _FightKnockoutViewState extends State<FightKnockoutView> {
   final FixedExtentScrollController _scrollController =
       FixedExtentScrollController();
   List<int> heightValues = List.generate(
@@ -33,10 +35,11 @@ class _FightWinViewState extends State<FightWinView> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthViewmodel>(context);
+        final authProvider = Provider.of<AuthViewmodel>(context);
+    Responsive.init(context);
+
     return Scaffold(
       backgroundColor: AppColor.black,
-      appBar: AppBar(backgroundColor: AppColor.black),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -45,9 +48,17 @@ class _FightWinViewState extends State<FightWinView> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: []),
+                SizedBox(height: Responsive.h(2)),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: SvgPicture.asset(
+                  "assets/icons/arrow-left-01.svg",
+                  color: AppColor.red,
+                ),
+              ),
+              SizedBox(height: Responsive.h(2)),
                 const Text(
-                  'How many fights have you won?',
+                  'How many fights have you Knockout?',
                   style: TextStyle(
                     color: AppColor.white,
                     fontFamily: AppFonts.appFont,
@@ -57,7 +68,7 @@ class _FightWinViewState extends State<FightWinView> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Enter the total number of official fights you’ve won so far.',
+                  'Mention the number of official Knockout in your fight record.',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 Center(
@@ -125,21 +136,22 @@ class _FightWinViewState extends State<FightWinView> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 30),
                       Button(
                         text: "Next",
                         onTap: () {
                           print('Selected Age: $selectedHeight');
-
                           var uid = Utils.getCurrentUid();
-                          authProvider.addUserFieldByRole
-(
+                          authProvider.addUserFieldByRole(
                             uid: uid,
-                            fieldName: 'fightWin',
+                            fieldName: 'fightsKnockout',
                             value: selectedHeight.toString(),
                           );
 
-                          Navigator.pushNamed(context, RoutesName.fightlose);
+                          Navigator.pushNamed(
+                            context,
+                            RoutesName.fightStyle_view,
+                          );
                         },
                       ),
 

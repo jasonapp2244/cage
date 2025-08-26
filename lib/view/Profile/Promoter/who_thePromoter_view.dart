@@ -123,7 +123,7 @@ class WhoThepromoterView extends StatelessWidget {
                       value: promoterController.text.toString(),
                     );
 
-                    Navigator.pushNamed(context, RoutesName.contactEmail);
+                    Navigator.pushNamed(context, RoutesName.ContactEmailView);
                   }
                 },
               ),

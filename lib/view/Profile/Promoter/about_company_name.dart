@@ -122,7 +122,7 @@ class AboutCompanyNameView extends StatelessWidget {
                       fieldName: 'companyAbout',
                       value: aboutCompanyController.text.toString(),
                     );
-                    Navigator.pushNamed(context, RoutesName.historyEvents);
+                    Navigator.pushNamed(context, RoutesName.EventHistory);
                   }
                 },
               ),

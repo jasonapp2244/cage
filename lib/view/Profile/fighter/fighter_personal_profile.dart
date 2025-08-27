@@ -7,13 +7,19 @@ import 'package:cage/widgets/share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:cage/models/fighter_model.dart';
+import 'package:cage/models/promoter_model.dart';
 import 'package:cage/models/user_model.dart';
+import 'package:cage/models/review_model.dart';
 import 'package:cage/repository/home_repository.dart';
+import 'package:cage/repository/review_repository.dart';
+import 'package:cage/view/Profile/fighter/all_reviews_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class FighterProfile extends StatelessWidget {
+class FighterPublicProfile extends StatelessWidget {
   final UserModel? userData;
 
-  const FighterProfile({super.key, this.userData});
+  const FighterPublicProfile({super.key, this.userData});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +34,6 @@ class FighterProfile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                   
                     Text(
                       userData != null ? "Fighter Profile" : "Profile",
                       style: TextStyle(
@@ -346,6 +351,96 @@ class FighterProfile extends StatelessWidget {
             ),
           ],
         ),
+
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                // width: Responsive.w(30),
+                height: Responsive.w(22),
+                decoration: BoxDecoration(
+                  color: AppColor.black,
+
+                  border: BoxBorder.all(
+                    color: AppColor.white.withValues(alpha: 0.1),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Weight Style",
+                        style: TextStyle(
+                          color: AppColor.white,
+                          fontFamily: AppFonts.appFont,
+                          fontWeight: FontWeight.normal,
+                          fontSize: Responsive.sp(10.5),
+                        ),
+                      ),
+                      Text(
+                        fighter.weight.toString(),
+                        style: TextStyle(
+                          color: AppColor.white,
+                          fontFamily: AppFonts.appFont,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.sp(24),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                // width: Responsive.w(30),
+                height: Responsive.w(22),
+                decoration: BoxDecoration(
+                  color: AppColor.black,
+
+                  border: BoxBorder.all(
+                    color: AppColor.white.withValues(alpha: 0.1),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Fighting Style",
+                        style: TextStyle(
+                          color: AppColor.white,
+                          fontFamily: AppFonts.appFont,
+                          fontWeight: FontWeight.normal,
+                          fontSize: Responsive.sp(10.5),
+                        ),
+                      ),
+                      Text(
+                        fighter.fightsStyle.toString(),
+                        style: TextStyle(
+                          color: AppColor.white,
+                          fontFamily: AppFonts.appFont,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.sp(20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
         SizedBox(height: Responsive.h(1)),
 
         Container(
@@ -580,89 +675,276 @@ class FighterProfile extends StatelessWidget {
                 fontSize: Responsive.sp(10),
               ),
             ),
-            Row(
-              children: [
-                Text(
-                  "View All",
-                  style: TextStyle(
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.bold,
-                    fontSize: Responsive.sp(10),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AllReviewsScreen(
+                      fighterUserId: user.id,
+                      fighterName: fighter.fullName ?? "Fighter",
+                    ),
                   ),
-                ),
-                SizedBox(width: Responsive.w(2)),
-                SvgPicture.asset("assets/icons/Vector (2).svg"),
-              ],
+                );
+              },
+              child: Row(
+                children: [
+                  Text(
+                    "View All",
+                    style: TextStyle(
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(10),
+                    ),
+                  ),
+                  SizedBox(width: Responsive.w(2)),
+                  SvgPicture.asset("assets/icons/Vector (2).svg"),
+                ],
+              ),
             ),
           ],
         ),
         SizedBox(height: Responsive.h(1)),
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            border: BoxBorder.all(
-              color: AppColor.white.withValues(alpha: 0.1),
-              width: 2,
-            ),
-            borderRadius: BorderRadius.circular(14),
-            color: AppColor.black,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Image(
-                      image: AssetImage("assets/images/Frame 1410120835.png"),
-                    ),
-                    SizedBox(width: Responsive.w(2)),
-                    Text(
-                      fighter.fullName ?? "Fighter",
-                      style: TextStyle(
-                        color: AppColor.white,
-                        fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.bold,
-                        fontSize: Responsive.sp(10),
+
+        // Latest Review Section
+        FutureBuilder<ReviewModel?>(
+          future: ReviewRepository.getLatestReview(user.id),
+          builder: (context, reviewSnapshot) {
+            if (reviewSnapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                width: double.infinity,
+                height: 100,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: AppColor.white.withOpacity(0.1),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  color: AppColor.black,
+                ),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppColor.red,
+                    strokeWidth: 2,
+                  ),
+                ),
+              );
+            }
+
+            final latestReview = reviewSnapshot.data;
+
+            if (latestReview == null) {
+              return Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: AppColor.white.withOpacity(0.1),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  color: AppColor.black,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.rate_review_outlined,
+                        color: AppColor.white.withOpacity(0.5),
+                        size: 32,
                       ),
-                    ),
-                    Spacer(),
-                    Column(
+                      SizedBox(height: 8),
+                      Text(
+                        "No reviews yet",
+                        style: TextStyle(
+                          color: AppColor.white.withOpacity(0.7),
+                          fontFamily: AppFonts.appFont,
+                          fontSize: Responsive.sp(12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: AppColor.white.withOpacity(0.1),
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                color: AppColor.black,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          "3h ago",
-                          style: TextStyle(
-                            color: AppColor.white.withValues(alpha: 0.2),
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(10),
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: AppColor.red,
+                          child: Text(
+                            latestReview.reviewerName.isNotEmpty
+                                ? latestReview.reviewerName[0].toUpperCase()
+                                : 'U',
+                            style: TextStyle(
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(12),
+                            ),
                           ),
                         ),
-                        Image(
-                          image: AssetImage(
-                            "assets/icons/material-symbols_star.png",
+                        SizedBox(width: Responsive.w(2)),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                latestReview.reviewerName,
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: Responsive.sp(10),
+                                ),
+                              ),
+                              Text(
+                                latestReview.reviewerRole,
+                                style: TextStyle(
+                                  color: AppColor.white.withOpacity(0.7),
+                                  fontFamily: AppFonts.appFont,
+                                  fontSize: Responsive.sp(8),
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Row(
+                              children: List.generate(5, (index) {
+                                return Icon(
+                                  Icons.star,
+                                  color: index < latestReview.rating
+                                      ? AppColor.red
+                                      : AppColor.white.withOpacity(0.3),
+                                  size: 14,
+                                );
+                              }),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              Utils.convertToReadableFormat(
+                                latestReview.createdAt.toIso8601String(),
+                              ),
+                              style: TextStyle(
+                                color: AppColor.white.withOpacity(0.5),
+                                fontFamily: AppFonts.appFont,
+                                fontSize: Responsive.sp(8),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                    SizedBox(height: Responsive.h(1)),
+                    Text(
+                      latestReview.comment,
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontSize: Responsive.sp(10),
+                        height: 1.3,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
-                SizedBox(height: Responsive.h(1)),
-                Text(
-                  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
-                  style: TextStyle(
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.bold,
-                    fontSize: Responsive.sp(10),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
+
+        // 🔹 Rate Fighter Button (only show when current user is a promoter)
+        FutureBuilder<String?>(
+          future: _getCurrentUserRole(),
+          builder: (context, snapshot) {
+            // Debug: Print role detection
+            print('=== DEBUG: Rate Button Role Check ===');
+            print('Snapshot hasData: ${snapshot.hasData}');
+            print('Snapshot data: "${snapshot.data}"');
+            print('Connection state: ${snapshot.connectionState}');
+            print('Is equal to Promoter: ${snapshot.data == 'Promoter'}');
+            print('Is equal to Fighter: ${snapshot.data == 'Fighter'}');
+            print('Raw comparison: "${snapshot.data}" == "Promoter"');
+            print('=====================================');
+
+            // Only show button if current user is a promoter
+            // SAFETY CHECK: Explicitly hide button if role is Fighter
+            if (snapshot.hasData && snapshot.data == 'Fighter') {
+              print('🚫 HIDING BUTTON: User is a Fighter!');
+              return Container(); // Explicitly hide for fighters
+            }
+
+            if (snapshot.hasData && snapshot.data == 'Promoter') {
+              print('✅ SHOWING BUTTON: User is a Promoter!');
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  SizedBox(height: Responsive.h(2)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 200,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _ratePromoterBottomSheet(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.red,
+                            foregroundColor: AppColor.white,
+                            padding: EdgeInsets.symmetric(
+                              vertical: Responsive.h(1.5),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            "Rate This Fighter",
+                            style: TextStyle(
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            // Return empty container if not a promoter or still loading
+            print(
+              '⚪ HIDING BUTTON: Default case (not promoter or still loading)',
+            );
+            return Container();
+          },
+        ),
+
         SizedBox(height: Responsive.h(2)),
         Align(
           alignment: Alignment.centerLeft,
@@ -728,6 +1010,362 @@ class FighterProfile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  // Helper method to get current user's role from Firestore
+  Future<String?> _getCurrentUserRole() async {
+    try {
+      print('=== DEBUG: Getting Current User Role ===');
+
+      // First check local storage
+      final savedRole = await Utils.getSavedRole('role');
+      print('Saved role from local storage: "$savedRole"');
+
+      if (savedRole != null) {
+        print('Returning saved role: "$savedRole"');
+        return savedRole;
+      }
+
+      // If not in local storage, fetch from Firestore
+      final userId = Utils.getCurrentUid();
+      print('Current user ID: $userId');
+
+      final doc = await FirebaseFirestore.instance
+          .collection('userData')
+          .doc(userId)
+          .get();
+
+      print('Document exists: ${doc.exists}');
+      if (doc.exists) {
+        final docData = doc.data();
+        print('Document data: $docData');
+
+        final role = docData?['role'] as String?;
+        print('Role field from Firestore: "$role"');
+
+        if (role != null) {
+          await Utils.saveSavedRole('role', role);
+          print('Saved role to local storage: "$role"');
+        }
+        print('Returning Firestore role: "$role"');
+        return role;
+      }
+      print('Document does not exist, returning null');
+      return null;
+    } catch (e) {
+      print('Error getting user role: $e');
+      return null;
+    }
+  }
+
+  void _ratePromoterBottomSheet(BuildContext context) {
+    // Get the fighter user data - either passed userData or current user
+    final UserModel? fighterUser = userData;
+    final String fighterUserId = fighterUser?.id ?? '';
+    final String fighterName =
+        fighterUser?.roleData != null && fighterUser!.isFighter
+        ? (fighterUser.roleData as FighterDataModel).fullName ?? 'Fighter'
+        : 'Fighter';
+
+    print('=== DEBUG: Rating Bottom Sheet ===');
+    print('Fighter User ID: $fighterUserId');
+    print('Fighter Name: $fighterName');
+    print('Fighter User Data: $fighterUser');
+    print('===================================');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      backgroundColor: AppColor.black,
+      builder: (context) {
+        return _RatingBottomSheetContent(
+          fighterUserId: fighterUserId,
+          fighterName: fighterName,
+        );
+      },
+    );
+  }
+}
+
+class _RatingBottomSheetContent extends StatefulWidget {
+  final String fighterUserId;
+  final String fighterName;
+
+  const _RatingBottomSheetContent({
+    required this.fighterUserId,
+    required this.fighterName,
+  });
+
+  @override
+  State<_RatingBottomSheetContent> createState() =>
+      _RatingBottomSheetContentState();
+}
+
+class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
+  int _selectedRating = 0;
+  final TextEditingController _commentController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitReview() async {
+    if (_selectedRating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Please select a rating",
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: AppColor.red,
+        ),
+      );
+      return;
+    }
+
+    if (_commentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Please write a review",
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: AppColor.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      print('=== DEBUG: Submit Review ===');
+      print('Fighter User ID: ${widget.fighterUserId}');
+      print('Fighter Name: ${widget.fighterName}');
+      print('Selected Rating: $_selectedRating');
+      print('Comment: ${_commentController.text.trim()}');
+
+      // Get current user data for reviewer info
+      final currentUser = await UserRepository.fetchCurrentUserOnce();
+      String reviewerName = 'Anonymous';
+      String reviewerRole = 'Unknown';
+
+      print('Current User: ${currentUser.email}');
+      print('Is Promoter: ${currentUser.isPromoter}');
+      print('Is Fighter: ${currentUser.isFighter}');
+      print('Role Data: ${currentUser.roleData}');
+
+      if (currentUser.isPromoter && currentUser.roleData != null) {
+        final promoterData = currentUser.roleData as PromoterDataModel;
+        reviewerName = promoterData.companyName ?? 'Promoter';
+        reviewerRole = 'Promoter';
+      } else if (currentUser.isFighter && currentUser.roleData != null) {
+        final fighterData = currentUser.roleData as FighterDataModel;
+        reviewerName = fighterData.fullName ?? 'Fighter';
+        reviewerRole = 'Fighter';
+      }
+
+      print('Reviewer Name: $reviewerName');
+      print('Reviewer Role: $reviewerRole');
+
+      await ReviewRepository.addReview(
+        fighterUserId: widget.fighterUserId,
+        rating: _selectedRating,
+        comment: _commentController.text.trim(),
+        reviewerName: reviewerName,
+        reviewerEmail: currentUser.email,
+        reviewerRole: reviewerRole,
+      );
+
+      print('Review submitted successfully!');
+      print('============================');
+
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Review submitted successfully!",
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      print('Error submitting review: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Failed to submit review. Please try again.",
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: AppColor.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: Responsive.w(5),
+        right: Responsive.w(5),
+        top: Responsive.h(1),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Rate ${widget.fighterName}",
+                style: GoogleFonts.dmSans(
+                  color: AppColor.white,
+                  fontSize: Responsive.sp(18),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: SvgPicture.asset("assets/icons/IC_cross.svg"),
+              ),
+            ],
+          ),
+          SizedBox(height: Responsive.h(2)),
+
+          // Rating Stars Section
+          Text(
+            "Rate this fighter",
+            style: GoogleFonts.dmSans(
+              color: AppColor.white,
+              fontSize: Responsive.sp(14),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: Responsive.h(1)),
+          Row(
+            children: List.generate(5, (index) {
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedRating = index + 1;
+                  });
+                },
+                child: Icon(
+                  Icons.star,
+                  color: index < _selectedRating
+                      ? AppColor.red
+                      : AppColor.white.withOpacity(0.3),
+                  size: Responsive.sp(28),
+                ),
+              );
+            }),
+          ),
+          SizedBox(height: Responsive.h(1)),
+          Text(
+            _selectedRating > 0
+                ? "$_selectedRating star${_selectedRating > 1 ? 's' : ''}"
+                : "Select a rating",
+            style: GoogleFonts.dmSans(
+              color: AppColor.white.withOpacity(0.7),
+              fontSize: Responsive.sp(12),
+            ),
+          ),
+          SizedBox(height: Responsive.h(2)),
+
+          // Comment Section
+          Text(
+            "Write a review",
+            style: GoogleFonts.dmSans(
+              color: AppColor.white,
+              fontSize: Responsive.sp(14),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: Responsive.h(1)),
+          TextFormField(
+            controller: _commentController,
+            maxLines: 5,
+            style: GoogleFonts.dmSans(
+              color: AppColor.white,
+              fontSize: Responsive.sp(12),
+            ),
+            decoration: InputDecoration(
+              hintText: "Share your experience with this fighter...",
+              hintStyle: GoogleFonts.dmSans(
+                color: AppColor.white.withOpacity(0.5),
+                fontSize: Responsive.sp(12),
+              ),
+              filled: true,
+              fillColor: AppColor.white.withOpacity(0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColor.white.withOpacity(0.2)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColor.white.withOpacity(0.2)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColor.red, width: 2),
+              ),
+            ),
+          ),
+          SizedBox(height: Responsive.h(3)),
+
+          // Submit Button
+          Container(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : _submitReview,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor.red,
+                foregroundColor: AppColor.white,
+                padding: EdgeInsets.symmetric(vertical: Responsive.h(1.5)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _isSubmitting
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: AppColor.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      "Submit Review",
+                      style: GoogleFonts.dmSans(
+                        color: AppColor.white,
+                        fontSize: Responsive.sp(14),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
+          ),
+          SizedBox(height: Responsive.h(2)),
+        ],
+      ),
     );
   }
 }

@@ -57,7 +57,8 @@ class RoutesName {
 
   static const String eventsView = "events_view";
 
-  static const String fighterpersonalprofileView = "fighter_perosnal_profile_view";
+  static const String fighterpersonalprofileView =
+      "fighter_perosnal_profile_view";
   static const String FighterPublicProfile = "FighterPublicProfile";
 
   static const String promoterprofileView = "promoter_profile_view";
@@ -73,8 +74,7 @@ class RoutesName {
   static const String PromotorBottomNavBar = "PromotorBottomNavBar";
 
   static const String review = "review";
-
-
+  static const String selectLocation = 'selectLocation';
 
   static const String aboutCompanayName = "About_Companay_Name";
   static const String UploadCompanyLogo = "Upload_Company_Logo";

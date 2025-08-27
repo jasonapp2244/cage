@@ -58,10 +58,7 @@ class _LoginviewState extends State<Loginview> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: Responsive.h(2)), // 2% of screen height
-                // SvgPicture.asset(
-                //   "assets/images/Frame 1171275875 (2).svg",
-                //   width: Responsive.w(25), // 50% of screen width
-                // ),
+
                 Hero(
                   tag: 'app-logo',
                   child: SizedBox(
@@ -226,6 +223,7 @@ class _LoginviewState extends State<Loginview> {
                       passwordController.text,
                       context,
                     );
+                    
                   },
                 ),
                 SizedBox(height: Responsive.h(5)),

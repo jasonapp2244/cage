@@ -9,14 +9,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class FightersView extends StatefulWidget {
-  const FightersView({super.key});
+class ExploreFightersView extends StatefulWidget {
+  ExploreFightersView({super.key});
 
   @override
-  State<FightersView> createState() => _FightersViewState();
+  State<ExploreFightersView> createState() => _FightersViewState();
 }
 
-class _FightersViewState extends State<FightersView> {
+class _FightersViewState extends State<ExploreFightersView> {
   @override
   void initState() {
     super.initState();
@@ -390,8 +390,7 @@ class _FightersViewState extends State<FightersView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                            _buildStatChip(fighter.location.toString()),
-                               
+                                  _buildStatChip(fighter.location.toString()),
                                 ],
                               ),
 
@@ -403,7 +402,7 @@ class _FightersViewState extends State<FightersView> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                         FighterProfile(userData: user),
+                                          FighterPublicProfile(userData: user),
                                     ),
                                   );
                                 },
@@ -447,28 +446,24 @@ class _FightersViewState extends State<FightersView> {
         ),
       ),
     );
-    
   }
-
 }
 
-
-  // Helper widget for stats
-  Widget _buildStatChip(String location) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppColor.red.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(8),
+// Helper widget for stats
+Widget _buildStatChip(String location) {
+  return Container(
+    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: AppColor.red.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Text(
+      "${location ?? 'San Francisco, California'}",
+      style: GoogleFonts.dmSans(
+        color: AppColor.white,
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
       ),
-      child: Text(
-        "${location ?? 'San Francisco, California'}",
-        style: GoogleFonts.dmSans(
-          color: AppColor.white,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
+    ),
+  );
+}

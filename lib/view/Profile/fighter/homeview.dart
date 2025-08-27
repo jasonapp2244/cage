@@ -1,5 +1,8 @@
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/models/fighter_model.dart';
+import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/darwer_provider.dart';
+import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:flutter/material.dart';
@@ -38,27 +41,80 @@ class _HomeviewState extends State<Homeview> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     SvgPicture.asset("assets/icons/Group 9.svg"),
-                    Column(
-                      children: [
-                        Text(
-                          "Hi👋Jhon Doe",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(18),
-                          ),
-                        ),
-                        Text(
-                          "San Francisco, California 94124",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.normal,
-                            fontSize: Responsive.sp(10.5),
-                          ),
-                        ),
-                      ],
+
+                    /// ✅ StreamBuilder for user data
+                    StreamBuilder<UserModel>(
+                      stream: UserRepository.fetchCurrentUserStream(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Column(
+                            children: [
+                              CircularProgressIndicator(color: AppColor.red),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Loading...",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontSize: Responsive.sp(10),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        if (!snapshot.hasData || snapshot.data == null) {
+                          return Column(
+                            children: [
+                              Text(
+                                "Hi👋 Guest",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: Responsive.sp(18),
+                                ),
+                              ),
+                              Text(
+                                "Location not set",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontSize: Responsive.sp(10.5),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        final user = snapshot.data!;
+                        return Column(
+                          children: [
+                            Text(
+                              "Hi👋 ${user.isFighter ? (user.roleData as FighterDataModel).fullName : 'User'}",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.bold,
+                                fontSize: Responsive.sp(18),
+                              ),
+                            ),
+                            Text(
+                              user.isFighter
+                                  ? (user.roleData as FighterDataModel)
+                                            .location ??
+                                        "Location not set"
+                                  : "Location not set",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.normal,
+                                fontSize: Responsive.sp(10.5),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
 
                     GestureDetector(
@@ -92,185 +148,121 @@ class _HomeviewState extends State<Homeview> {
                           image: AssetImage("assets/icons/Mask group.png"),
                         ),
                       ),
-                      RotatedBox(
-                        quarterTurns: 3,
-                        child: Text(
-                          '143.3 LBS',
-                          style: TextStyle(
-                            color: AppColor.white.withValues(alpha: 0.18),
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.normal,
-                            fontSize: Responsive.sp(40),
-                          ),
-                        ),
+                      StreamBuilder<UserModel>(
+                        stream: UserRepository.fetchCurrentUserStream(),
+                        builder: (context, snapshot) {
+                          String weight = "0 LBS";
+
+                          if (snapshot.hasData &&
+                              snapshot.data != null &&
+                              snapshot.data!.isFighter) {
+                            final fighterData =
+                                snapshot.data!.roleData as FighterDataModel;
+                            weight =
+                                fighterData.weight != null &&
+                                    fighterData.weight!.isNotEmpty
+                                ? "${fighterData.weight} LBS"
+                                : "0 LBS";
+                          }
+
+                          return RotatedBox(
+                            quarterTurns: 3,
+                            child: Text(
+                              weight,
+                              style: TextStyle(
+                                color: AppColor.white.withValues(alpha: 0.18),
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.normal,
+                                fontSize: Responsive.sp(40),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      width: Responsive.w(27),
-                      height: Responsive.w(22),
-                      decoration: BoxDecoration(
-                        color: AppColor.black,
+                // 🔹 Wins / Losses / Knockouts with dynamic data
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    String wins = "0", losses = "0", knockouts = "0";
 
-                        border: BoxBorder.all(
-                          color: AppColor.white.withValues(alpha: 0.1),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Wins",
-                              style: TextStyle(
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                                fontSize: Responsive.sp(10.5),
-                              ),
-                            ),
-                            Text(
-                              "12",
-                              style: TextStyle(
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                                fontSize: Responsive.sp(24),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: Responsive.w(27),
-                      height: Responsive.w(22),
-                      decoration: BoxDecoration(
-                        color: AppColor.black,
+                    if (snapshot.hasData &&
+                        snapshot.data != null &&
+                        snapshot.data!.isFighter) {
+                      final fighterData =
+                          snapshot.data!.roleData as FighterDataModel;
+                      wins = fighterData.fightWin.toString();
+                      losses = fighterData.fightsLose.toString();
+                      knockouts = fighterData.fightsKnockout.toString();
+                    }
 
-                        border: BoxBorder.all(
-                          color: AppColor.white.withValues(alpha: 0.1),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Losses",
-                              style: TextStyle(
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                                fontSize: Responsive.sp(10.5),
-                              ),
-                            ),
-                            Text(
-                              "05",
-                              style: TextStyle(
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                                fontSize: Responsive.sp(24),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: Responsive.w(27),
-                      height: Responsive.w(22),
-                      decoration: BoxDecoration(
-                        color: AppColor.black,
-
-                        border: BoxBorder.all(
-                          color: AppColor.white.withValues(alpha: 0.1),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Knockouts",
-                              style: TextStyle(
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                                fontSize: Responsive.sp(10.5),
-                              ),
-                            ),
-                            Text(
-                              "01",
-                              style: TextStyle(
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                                fontSize: Responsive.sp(24),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildStatCard("Wins", wins),
+                        _buildStatCard("Losses", losses),
+                        _buildStatCard("Knockouts", knockouts),
+                      ],
+                    );
+                  },
                 ),
                 SizedBox(height: Responsive.h(2)),
 
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColor.black,
+                // 🔹 Coach Name with dynamic data
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    String coachName = "Not set";
 
-                    border: BoxBorder.all(
-                      color: AppColor.white.withValues(alpha: 0.1),
-                      width: 2,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Coach Name",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.normal,
-                            fontSize: Responsive.sp(10),
-                          ),
+                    if (snapshot.hasData &&
+                        snapshot.data != null &&
+                        snapshot.data!.isFighter) {
+                      final fighterData =
+                          snapshot.data!.roleData as FighterDataModel;
+                      coachName = fighterData.coachName.isEmpty
+                          ? "Not set"
+                          : fighterData.coachName;
+                    }
+
+                    return Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColor.black,
+                        border: BoxBorder.all(
+                          color: AppColor.white.withValues(alpha: 0.1),
+                          width: 2,
                         ),
-                        Text(
-                          "Kianna Septimus",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(12),
-                          ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Coach Name",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontSize: Responsive.sp(10),
+                              ),
+                            ),
+                            Text(
+                              coachName,
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.bold,
+                                fontSize: Responsive.sp(12),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -376,6 +368,48 @@ class _HomeviewState extends State<Homeview> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Reusable Stat Card
+  Widget _buildStatCard(String title, String value) {
+    return Container(
+      width: Responsive.w(27),
+      height: Responsive.w(22),
+      decoration: BoxDecoration(
+        color: AppColor.black,
+        border: BoxBorder.all(
+          color: AppColor.white.withValues(alpha: 0.1),
+          width: 2,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: AppColor.white,
+                fontFamily: AppFonts.appFont,
+                fontSize: Responsive.sp(10.5),
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                color: AppColor.white,
+                fontFamily: AppFonts.appFont,
+                fontWeight: FontWeight.normal,
+                fontSize: Responsive.sp(24),
+              ),
+            ),
+          ],
         ),
       ),
     );

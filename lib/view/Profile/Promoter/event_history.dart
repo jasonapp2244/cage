@@ -111,7 +111,7 @@ class EventHistory extends StatelessWidget {
                       fieldName: 'eventHistory',
                       value: noOfEventsController.text.toString(),
                     );
-                    Navigator.pushNamed(context, RoutesName.pr);
+                    Navigator.pushNamed(context, RoutesName.EventHistory);
                   }
                 },
               ),

@@ -493,7 +493,7 @@ class AuthViewmodel extends ChangeNotifier {
             );
             Navigator.pushNamedAndRemoveUntil(
               context,
-              RoutesName.PromoterHome,
+              RoutesName.PromotorBottomNavBar,
               (route) => false,
             );
           } else {
@@ -517,5 +517,52 @@ class AuthViewmodel extends ChangeNotifier {
       // Error is already handled in loginWithEmailPassword method
       print('Login failed: $e');
     }
+  }
+
+  String? _userRole;
+
+  Future<void> loadUserRole() async {
+    try {
+      print('=== Starting role detection ===');
+
+      // First check local storage
+      final savedRole = await Utils.getSavedRole('role');
+      if (savedRole != null) {
+        _userRole = savedRole;
+        print('Role loaded from local storage: $_userRole');
+      } else {
+        print('Role not in local storage, fetching from database...');
+
+        final userId = Utils.getCurrentUid();
+        print('User ID: $userId');
+
+        final doc = await FirebaseFirestore.instance
+            .collection('userData')
+            .doc(userId)
+            .get();
+
+        if (doc.exists) {
+          final data = doc.data();
+          print('Firestore data: $data');
+
+          _userRole = data?['role'];
+          print('Role from Firestore: $_userRole');
+
+          if (_userRole != null) {
+            await Utils.saveSavedRole('role', _userRole!);
+            print('Role saved to local storage: $_userRole');
+          }
+        } else {
+          print('User document does not exist in Firestore');
+        }
+      }
+
+      print('Final detected role: $_userRole');
+      print('Is promoter: ${_userRole == 'Promoter'}');
+    } catch (e, st) {
+      print('Error loading user role: $e');
+      print(st);
+      _userRole = null;
+    } finally {}
   }
 }

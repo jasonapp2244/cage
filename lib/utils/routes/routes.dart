@@ -1,5 +1,4 @@
 import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/Payment_View.dart';
 import 'package:cage/view/Profile/Promoter/about_company_name.dart';
 import 'package:cage/view/Profile/Promoter/company_name_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_email_view.dart';
@@ -7,14 +6,14 @@ import 'package:cage/view/Profile/Promoter/contact_number_view.dart';
 import 'package:cage/view/Profile/Promoter/event_history.dart';
 import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
 import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
-import 'package:cage/view/Profile/Promoter/test.dart';
+import 'package:cage/view/Profile/Promoter/promotor_subcribtion_view.dart';
 import 'package:cage/view/Profile/Promoter/upload_company_logo.dart';
 import 'package:cage/view/Profile/Promoter/who_thePromoter_view.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
 import 'package:cage/view/Profile/fighter/Payment_View.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
-import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
+import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/view/Profile/fighter/age_view.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:cage/view/Profile/fighter/review_view.dart';
@@ -123,7 +122,7 @@ class Routes {
 
       case RoutesName.fighterpersonalprofileView:
         return MaterialPageRoute(
-          builder: (BuildContext context) => FighterPersonalProfileView(),
+          builder: (BuildContext context) => FighterPublicProfile(),
         );
       case RoutesName.FighterPublicProfile:
         return MaterialPageRoute(
@@ -135,7 +134,7 @@ class Routes {
         );
       case RoutesName.PaymentView:
         return MaterialPageRoute(
-          builder: (BuildContext context) =>PaymentView(),
+          builder: (BuildContext context) => PaymentView(),
         );
       case RoutesName.Change_Password_View:
         return MaterialPageRoute(
@@ -198,11 +197,6 @@ class Routes {
         return MaterialPageRoute(
           builder: (BuildContext context) => WhoThepromoterView(),
         );
-      case RoutesName.WhoThepromoterView:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => PromoterView(),
-          // WhoThepromoterView(),
-        );
       case RoutesName.PromoterHome:
         return MaterialPageRoute(
           builder: (BuildContext context) => PromoterHome(),
@@ -253,35 +247,6 @@ class Routes {
           builder: (BuildContext context) => SelectLocationView(),
         );
 
-      case RoutesName.companyName:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => EnterCompanyNameView(),
-        );
-
-      case RoutesName.contactEmail:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => ContactEmailView(),
-        );
-
-      case RoutesName.aboutCompanayName:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => AboutCompanyNameView(),
-        );
-
-      case RoutesName.EventHistory:
-        return MaterialPageRoute(
-          builder: (BuildContext context) =>EventHistory(),
-        );
-
-      case RoutesName.WhoThepromoterView:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => WhoThepromoterView(),
-        );
-      case RoutesName.ContactNumberView:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => ContactNumberView(),
-        );
-
       case RoutesName.UploadCompanyLogo:
         return MaterialPageRoute(
           builder: (BuildContext context) => UploadCompanyLogo(),
@@ -289,7 +254,7 @@ class Routes {
 
       case RoutesName.PromoterHome:
         return MaterialPageRoute(
-          builder: (BuildContext context) => FightersView(),
+          builder: (BuildContext context) => ExploreFightersView(),
         );
 
       default:

@@ -24,7 +24,7 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
 
   final List<Widget> _pages = [
     PromoterHome(),
-    ExploreFighters(),
+    ExploreFightersView(),
     NotificationView(),
     PromoterView(),
   ];
@@ -35,7 +35,6 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<PromoterProfileView>(context);
     return AdvancedDrawer(
       backdrop: Container(
         width: double.infinity,

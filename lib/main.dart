@@ -1,5 +1,7 @@
+import 'package:cage/firebase_options.dart';
 import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/provider/fighter_provider.dart';
+import 'package:cage/provider/location_provider.dart';
 import 'package:cage/provider/role_provider.dart';
 import 'package:cage/provider/tab_controller.dart';
 import 'package:cage/provider/ticket_provider.dart';
@@ -11,17 +13,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-import 'firebase_options.dart'; // if using FlutterFire CLI
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    print("Firebase initialized successfully");
   } catch (e) {
-    print("Firebase init error: $e");
+    print("Firebase initialization error: $e");
+    // Continue with app even if Firebase fails to initialize
   }
+
   runApp(
     MultiProvider(
       providers: [
@@ -31,6 +35,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => TabProvider()),
         ChangeNotifierProvider(create: (_) => FighterProvider()),
         ChangeNotifierProvider(create: (_) => TicketProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
       ],
       child: const MyApp(),
     ),

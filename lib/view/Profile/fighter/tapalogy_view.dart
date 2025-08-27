@@ -107,13 +107,13 @@ class TapalogyView extends StatelessWidget {
                 text: "Next",
                 onTap: () {
                   var uid = Utils.getCurrentUid();
-                    authProvider.addUserFieldByRole                        (
+                  authProvider.addUserFieldByRole(
                     uid: uid,
                     fieldName: 'urlProfile',
                     value: urlController.text.toString(),
                   );
 
-                  Navigator.pushNamed(context, RoutesName.lastBloodTest_view);
+                  Navigator.pushNamed(context, RoutesName.updateProilePic_view);
                 },
               ),
               // SizedBox(height: Responsive.h(3)),

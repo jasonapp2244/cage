@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class AuthViewmodel extends ChangeNotifier {
   final _myRepo = AuthRepository();
@@ -225,6 +226,15 @@ class AuthViewmodel extends ChangeNotifier {
     BuildContext context,
   ) async {
     try {
+      // Check if Firebase is initialized
+      if (Firebase.apps.isEmpty) {
+        throw FirebaseException(
+          plugin: 'core',
+          message: 'Firebase is not initialized',
+          code: 'no-app',
+        );
+      }
+
       // Step 1: Create the email/password account
       final userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -344,6 +354,15 @@ class AuthViewmodel extends ChangeNotifier {
     BuildContext context,
   ) async {
     try {
+      // Check if Firebase is initialized
+      if (Firebase.apps.isEmpty) {
+        throw FirebaseException(
+          plugin: 'core',
+          message: 'Firebase is not initialized',
+          code: 'no-app',
+        );
+      }
+
       final userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
@@ -464,53 +483,77 @@ class AuthViewmodel extends ChangeNotifier {
     }
 
     try {
+      // Check if Firebase is initialized
+      if (Firebase.apps.isEmpty) {
+        Utils.flushBarErrorMassage(
+          "Firebase is not initialized. Please restart the app.",
+          context,
+        );
+        return;
+      }
+
       // Attempt login
       await loginWithEmailPassword(email, password, context);
 
       // If login successful, check user role and navigate accordingly
       final uid = Utils.getCurrentUid();
       if (uid != null) {
-        final userDoc = await FirebaseFirestore.instance
-            .collection('userData')
-            .doc(uid)
-            .get();
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('userData')
+              .doc(uid)
+              .get();
 
-        if (userDoc.exists) {
-          final userData = userDoc.data();
-          final role = userData?['role'];
-          print('Login - User data: $userData');
-          print('Login - Detected role: $role');
+          if (userDoc.exists) {
+            final userData = userDoc.data();
+            final role = userData?['role'];
+            print('Login - User data: $userData');
+            print('Login - Detected role: $role');
 
-          if (role == 'Fighter') {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              RoutesName.home,
-              (route) => false,
-            );
-          } else if (role == 'Promoter') {
-            print(
-              'Login - Navigating to promoter home route: ${RoutesName.PromoterHome}',
-            );
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              RoutesName.PromotorBottomNavBar,
-              (route) => false,
-            );
+            if (role == 'Fighter') {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                RoutesName.home,
+                (route) => false,
+              );
+            } else if (role == 'Promoter') {
+              print(
+                'Login - Navigating to promoter home route: ${RoutesName.PromoterHome}',
+              );
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                RoutesName.PromotorBottomNavBar,
+                (route) => false,
+              );
+            } else {
+              // No role set, go to role selection
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                RoutesName.roleView,
+                (route) => false,
+              );
+            }
           } else {
-            // No role set, go to role selection
+            // No user data, go to role selection
             Navigator.pushNamedAndRemoveUntil(
               context,
               RoutesName.roleView,
               (route) => false,
             );
           }
-        } else {
-          // No user data, go to role selection
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            RoutesName.roleView,
-            (route) => false,
-          );
+        } catch (firestoreError) {
+          print('Firestore error during login: $firestoreError');
+          if (firestoreError.toString().contains('permission-denied')) {
+            Utils.flushBarErrorMassage(
+              "Permission denied. Please check your Firebase configuration.",
+              context,
+            );
+          } else {
+            Utils.flushBarErrorMassage(
+              "Error accessing user data. Please try again.",
+              context,
+            );
+          }
         }
       }
     } catch (e) {

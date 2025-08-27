@@ -16,10 +16,15 @@ class ReviewRepository {
   }) async {
     try {
       final reviewerId = Utils.getCurrentUid();
-      final reviewId = _firestore.collection('userData').doc().id;
+      if (reviewerId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Create a new review document in the reviews collection
+      final reviewDoc = _firestore.collection('reviews').doc();
 
       final review = ReviewModel(
-        id: reviewId,
+        id: reviewDoc.id,
         reviewerName: reviewerName,
         reviewerEmail: reviewerEmail,
         reviewerId: reviewerId,
@@ -30,29 +35,10 @@ class ReviewRepository {
         reviewerRole: reviewerRole,
       );
 
-      // Get current reviews array
-      final userDoc = await _firestore
-          .collection('userData')
-          .doc(fighterUserId)
-          .get();
+      // Save the review to the reviews collection
+      await reviewDoc.set(review.toMap());
 
-      List<Map<String, dynamic>> currentReviews = [];
-      if (userDoc.exists && userDoc.data()?['reviews'] != null) {
-        currentReviews = List<Map<String, dynamic>>.from(userDoc.data()!['reviews']);
-      }
-
-      // Add new review to the array
-      currentReviews.insert(0, review.toMap()); // Insert at beginning for latest first
-
-      // Update the userData document with new reviews array
-      await _firestore
-          .collection('userData')
-          .doc(fighterUserId)
-          .update({
-        'reviews': currentReviews,
-      });
-
-      print('Review added successfully to reviews array');
+      print('Review added successfully to reviews collection');
     } catch (e) {
       print('Error adding review: $e');
       throw Exception('Failed to add review: $e');
@@ -62,40 +48,33 @@ class ReviewRepository {
   // Get all reviews for a specific fighter
   static Stream<List<ReviewModel>> getFighterReviews(String fighterUserId) {
     return _firestore
-        .collection('userData')
-        .doc(fighterUserId)
+        .collection('reviews')
+        .where('reviewedUserId', isEqualTo: fighterUserId)
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      if (!snapshot.exists || snapshot.data()?['reviews'] == null) {
-        return <ReviewModel>[];
-      }
-
-      final reviewsData = List<Map<String, dynamic>>.from(snapshot.data()!['reviews']);
-      return reviewsData.map((reviewData) {
-        return ReviewModel.fromMap(reviewData);
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            return ReviewModel.fromMap(doc.data(), id: doc.id);
+          }).toList();
+        });
   }
 
   // Get the latest review for a fighter
   static Future<ReviewModel?> getLatestReview(String fighterUserId) async {
     try {
       final snapshot = await _firestore
-          .collection('userData')
-          .doc(fighterUserId)
+          .collection('reviews')
+          .where('reviewedUserId', isEqualTo: fighterUserId)
+          .orderBy('createdAt', descending: true)
+          .limit(1)
           .get();
 
-      if (!snapshot.exists || snapshot.data()?['reviews'] == null) {
+      if (snapshot.docs.isEmpty) {
         return null;
       }
 
-      final reviewsData = List<Map<String, dynamic>>.from(snapshot.data()!['reviews']);
-      if (reviewsData.isEmpty) {
-        return null;
-      }
-
-      // Return the first review (most recent since we insert at beginning)
-      return ReviewModel.fromMap(reviewsData.first);
+      final doc = snapshot.docs.first;
+      return ReviewModel.fromMap(doc.data(), id: doc.id);
     } catch (e) {
       print('Error fetching latest review: $e');
       return null;
@@ -106,16 +85,11 @@ class ReviewRepository {
   static Future<int> getReviewsCount(String fighterUserId) async {
     try {
       final snapshot = await _firestore
-          .collection('userData')
-          .doc(fighterUserId)
+          .collection('reviews')
+          .where('reviewedUserId', isEqualTo: fighterUserId)
           .get();
 
-      if (!snapshot.exists || snapshot.data()?['reviews'] == null) {
-        return 0;
-      }
-
-      final reviewsData = List<Map<String, dynamic>>.from(snapshot.data()!['reviews']);
-      return reviewsData.length;
+      return snapshot.docs.length;
     } catch (e) {
       print('Error getting reviews count: $e');
       return 0;
@@ -126,62 +100,66 @@ class ReviewRepository {
   static Future<double> getAverageRating(String fighterUserId) async {
     try {
       final snapshot = await _firestore
-          .collection('userData')
-          .doc(fighterUserId)
+          .collection('reviews')
+          .where('reviewedUserId', isEqualTo: fighterUserId)
           .get();
 
-      if (!snapshot.exists || snapshot.data()?['reviews'] == null) {
-        return 0.0;
-      }
-
-      final reviewsData = List<Map<String, dynamic>>.from(snapshot.data()!['reviews']);
-      if (reviewsData.isEmpty) return 0.0;
+      if (snapshot.docs.isEmpty) return 0.0;
 
       double totalRating = 0;
-      for (var review in reviewsData) {
-        totalRating += (review['rating'] ?? 0).toDouble();
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        totalRating += (data['rating'] ?? 0).toDouble();
       }
 
-      return totalRating / reviewsData.length;
+      return totalRating / snapshot.docs.length;
     } catch (e) {
       print('Error calculating average rating: $e');
       return 0.0;
     }
   }
 
-  // Delete a review (if needed)
-  static Future<void> deleteReview({
-    required String fighterUserId,
-    required String reviewId,
-  }) async {
+  // Delete a review (only by the reviewer)
+  static Future<void> deleteReview({required String reviewId}) async {
     try {
-      final snapshot = await _firestore
-          .collection('userData')
-          .doc(fighterUserId)
-          .get();
-
-      if (!snapshot.exists || snapshot.data()?['reviews'] == null) {
-        return;
+      final reviewerId = Utils.getCurrentUid();
+      if (reviewerId == null) {
+        throw Exception('User not authenticated');
       }
 
-      List<Map<String, dynamic>> reviewsData = 
-          List<Map<String, dynamic>>.from(snapshot.data()!['reviews']);
+      // Check if the current user is the reviewer
+      final reviewDoc = await _firestore
+          .collection('reviews')
+          .doc(reviewId)
+          .get();
+      if (!reviewDoc.exists) {
+        throw Exception('Review not found');
+      }
 
-      // Remove the review with matching ID
-      reviewsData.removeWhere((review) => review['id'] == reviewId);
+      final reviewData = reviewDoc.data();
+      if (reviewData?['reviewerId'] != reviewerId) {
+        throw Exception('You can only delete your own reviews');
+      }
 
-      // Update the userData document
-      await _firestore
-          .collection('userData')
-          .doc(fighterUserId)
-          .update({
-        'reviews': reviewsData,
-      });
-
+      await _firestore.collection('reviews').doc(reviewId).delete();
       print('Review deleted successfully');
     } catch (e) {
       print('Error deleting review: $e');
       throw Exception('Failed to delete review: $e');
     }
+  }
+
+  // Get reviews by a specific reviewer
+  static Stream<List<ReviewModel>> getReviewsByReviewer(String reviewerId) {
+    return _firestore
+        .collection('reviews')
+        .where('reviewerId', isEqualTo: reviewerId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            return ReviewModel.fromMap(doc.data(), id: doc.id);
+          }).toList();
+        });
   }
 }

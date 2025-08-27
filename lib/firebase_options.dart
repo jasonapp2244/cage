@@ -25,15 +25,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -47,30 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAhsS1E8LmsXho94nIxqMtMTzSkA5xs5xs',
-    appId: '1:755745368604:web:24d96c139253e939e50dd9',
-    messagingSenderId: '755745368604',
-    projectId: 'cageconnectapp',
-    authDomain: 'cageconnectapp.firebaseapp.com',
-    storageBucket: 'cageconnectapp.firebasestorage.app',
-    measurementId: 'G-PN81C9J6LQ',
+    apiKey: 'AIzaSyBcdhG36cHa8k4Ek6xVWMH6AXoI90Tw1GQ',
+    appId: '1:146547810947:web:a9a7ca07bf1ae663d871b6',
+    messagingSenderId: '146547810947',
+    projectId: 'cageconnect-feb07',
+    authDomain: 'cageconnect-feb07.firebaseapp.com',
+    storageBucket: 'cageconnect-feb07.firebasestorage.app',
+    measurementId: 'G-J713W7WHQN',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD99N39VJXgSmWYtmtk7SfShORNDWzyefc',
-    appId: '1:755745368604:android:9c6f8a672920eb81e50dd9',
-    messagingSenderId: '755745368604',
-    projectId: 'cageconnectapp',
-    storageBucket: 'cageconnectapp.firebasestorage.app',
+    apiKey: 'AIzaSyAUFmyNg9L5Fv7cf1NowstpW21doPSRX9k',
+    appId: '1:146547810947:android:ccb4485a656c562bd871b6',
+    messagingSenderId: '146547810947',
+    projectId: 'cageconnect-feb07',
+    storageBucket: 'cageconnect-feb07.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyABPIl5wABNvbWRt2U5Hl9r45KtZ4K0kx4',
-    appId: '1:755745368604:ios:5d3aa9bcf2acfbd0e50dd9',
-    messagingSenderId: '755745368604',
-    projectId: 'cageconnectapp',
-    storageBucket: 'cageconnectapp.firebasestorage.app',
+    apiKey: 'AIzaSyB6zc0UOYDa1YfrusUYL41pDJfVGradYnA',
+    appId: '1:146547810947:ios:e12cedf8daedd5fcd871b6',
+    messagingSenderId: '146547810947',
+    projectId: 'cageconnect-feb07',
+    storageBucket: 'cageconnect-feb07.firebasestorage.app',
     iosBundleId: 'com.craz.cage',
   );
 
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyB6zc0UOYDa1YfrusUYL41pDJfVGradYnA',
+    appId: '1:146547810947:ios:75976ebedf8b94ccd871b6',
+    messagingSenderId: '146547810947',
+    projectId: 'cageconnect-feb07',
+    storageBucket: 'cageconnect-feb07.firebasestorage.app',
+    iosBundleId: 'com.test1.cage',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBcdhG36cHa8k4Ek6xVWMH6AXoI90Tw1GQ',
+    appId: '1:146547810947:web:e2f159bb7854f63ed871b6',
+    messagingSenderId: '146547810947',
+    projectId: 'cageconnect-feb07',
+    authDomain: 'cageconnect-feb07.firebaseapp.com',
+    storageBucket: 'cageconnect-feb07.firebasestorage.app',
+    measurementId: 'G-YXZ03SS1E3',
+  );
 }

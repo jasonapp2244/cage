@@ -99,6 +99,60 @@ class LocationService {
     }
   }
 
+  /// Get address from coordinates using reverse geocoding
+  static Future<String> getAddressFromCoordinates({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      print('🔍 Starting reverse geocoding for: $latitude, $longitude');
+      
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json?'
+        'latlng=$latitude,$longitude'
+        '&key=$_apiKey',
+      );
+
+      print('🌐 Making request to: $url');
+      final response = await http.get(url).timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          print('⏰ Geocoding request timed out');
+          throw Exception('Request timed out');
+        },
+      );
+      print('📡 Response status: ${response.statusCode}');
+      
+      final data = json.decode(response.body);
+      print('📝 Response data: $data');
+
+      if (data['status'] == 'OK' && data['results'].isNotEmpty) {
+        final result = data['results'][0];
+        final address = result['formatted_address'];
+        if (address != null && address.isNotEmpty) {
+          print('✅ Successfully got address: $address');
+          return address;
+        }
+      } else {
+        print('❌ Geocoding failed. Status: ${data['status']}');
+        if (data['error_message'] != null) {
+          print('❌ Error message: ${data['error_message']}');
+        }
+      }
+      
+      // Return coordinates as fallback instead of "Selected Location"
+      final fallbackAddress = 'Location: ${latitude.toStringAsFixed(4)}, ${longitude.toStringAsFixed(4)}';
+      print('🔄 Using coordinate fallback: $fallbackAddress');
+      return fallbackAddress;
+    } catch (e) {
+      print('💥 Error getting address from coordinates: $e');
+      // Return coordinates as fallback instead of "Selected Location"
+      final fallbackAddress = 'Location: ${latitude.toStringAsFixed(4)}, ${longitude.toStringAsFixed(4)}';
+      print('🔄 Using coordinate fallback due to error: $fallbackAddress');
+      return fallbackAddress;
+    }
+  }
+
   /// Create location data from coordinates
   static LocationData createLocationData({
     required double latitude,
@@ -108,7 +162,7 @@ class LocationService {
     return LocationData(
       latitude: latitude,
       longitude: longitude,
-      address: address ?? 'Selected Location',
+      address: address ?? 'Location: ${latitude.toStringAsFixed(4)}, ${longitude.toStringAsFixed(4)}',
       timestamp: DateTime.now().toIso8601String(),
     );
   }

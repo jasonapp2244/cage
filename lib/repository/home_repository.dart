@@ -16,6 +16,10 @@ class UserRepository {
     }
   }
 
+  bool hasValidData(Map<String, dynamic>? map) {
+    return map != null && map.isNotEmpty && map.values.any((v) => v != null);
+  }
+
   // Fetch current user data as a stream with proper error handling
   static Stream<UserModel> fetchCurrentUserStream() {
     final userId = Utils.getCurrentUid();
@@ -33,27 +37,24 @@ class UserRepository {
 
           // Safe date parsing
           DateTime createdAt;
-          try {
-            if (data['createdAt'] is Timestamp) {
-              createdAt = (data['createdAt'] as Timestamp).toDate();
-            } else if (data['createdAt'] is DateTime) {
-              createdAt = data['createdAt'] as DateTime;
-            } else {
-              createdAt = DateTime.now(); // Fallback
-            }
-          } catch (e) {
-            createdAt = DateTime.now(); // Fallback
-          }
+         
+          // }
 
           // Determine role data with better error handling
           dynamic roleData;
           try {
-            if (data['fighterData'] != null) {
-              roleData = FighterDataModel.fromMap(data['fighterData']);
-            } else if (data['promoterData'] != null) {
-              roleData = PromoterDataModel.fromMap(data['promoterData']);
+            // Usage:
+
+            if (_isValidRoleData(data['fighterData'])) {
+              roleData = FighterDataModel.fromMap(
+                Map<String, dynamic>.from(data['fighterData']),
+              );
+            } else if (_isValidRoleData(data['promoterData'])) {
+              roleData = PromoterDataModel.fromMap(
+                Map<String, dynamic>.from(data['promoterData']),
+              );
             } else {
-              roleData = null; // No role data yet
+              roleData = null;
             }
           } catch (e) {
             print('Error parsing role data: $e');
@@ -63,7 +64,7 @@ class UserRepository {
           return UserModel(
             id: doc.id,
             email: data['email'] ?? '',
-            createdAt: createdAt,
+            createdAt: DateTime.now(),
             roleData: roleData,
           );
         })
@@ -97,37 +98,25 @@ class UserRepository {
 
       // Safe date parsing
       DateTime createdAt;
-      try {
-        if (data['createdAt'] is Timestamp) {
-          createdAt = (data['createdAt'] as Timestamp).toDate();
-        } else if (data['createdAt'] is DateTime) {
-          createdAt = data['createdAt'] as DateTime;
-        } else {
-          createdAt = DateTime.now();
-        }
-      } catch (e) {
-        createdAt = DateTime.now();
-      }
 
-      // Determine role data
-      dynamic roleData;
-      try {
-        if (data['fighterData'] != null) {
-          roleData = FighterDataModel.fromMap(data['fighterData']);
-        } else if (data['promoterData'] != null) {
-          roleData = PromoterDataModel.fromMap(data['promoterData']);
-        } else {
-          roleData = null;
-        }
-      } catch (e) {
-        print('Error parsing role data: $e');
+      // Usage:
+      dynamic? roleData;
+      if (_isValidRoleData(data['fighterData'])) {
+        roleData = FighterDataModel.fromMap(
+          Map<String, dynamic>.from(data['fighterData']),
+        );
+      } else if (_isValidRoleData(data['promoterData'])) {
+        roleData = PromoterDataModel.fromMap(
+          Map<String, dynamic>.from(data['promoterData']),
+        );
+      } else {
         roleData = null;
       }
 
       return UserModel(
         id: doc.id,
         email: data['email'] ?? '',
-        createdAt: createdAt,
+        createdAt: DateTime.now(),
         roleData: roleData,
       );
     } catch (e) {
@@ -141,4 +130,10 @@ class UserRepository {
       );
     }
   }
+}
+
+bool _isValidRoleData(Map<String, dynamic>? map) {
+  if (map == null) return false;
+  // true if at least one field is not null
+  return map.values.any((v) => v != null);
 }

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:cage/utils/routes/routes.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -68,8 +70,8 @@ class _SelectLocationViewState extends State<SelectLocationView> {
                     controller.setMapStyle(_mapStyle);
                     _controller.complete(controller);
                   },
-                  onTap: (LatLng position) {
-                    locationProvider.selectLocationByTap(position);
+                  onTap: (LatLng position) async {
+                    await locationProvider.selectLocationByTap(position);
                   },
                   markers: locationProvider.markers,
                 ),
@@ -202,7 +204,8 @@ class _SelectLocationViewState extends State<SelectLocationView> {
                                 // Return the selected location
                                 final selectedLocation = locationProvider
                                     .getSelectedLocation();
-                                Navigator.pop(context, selectedLocation);
+
+                                Navigator.pushNamed(context, RoutesName.home); 
                               } else {
                                 // Show error message
                                 ScaffoldMessenger.of(context).showSnackBar(

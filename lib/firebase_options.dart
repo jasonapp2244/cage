@@ -41,48 +41,46 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBcdhG36cHa8k4Ek6xVWMH6AXoI90Tw1GQ',
-    appId: '1:146547810947:web:a9a7ca07bf1ae663d871b6',
-    messagingSenderId: '146547810947',
-    projectId: 'cageconnect-feb07',
-    authDomain: 'cageconnect-feb07.firebaseapp.com',
-    storageBucket: 'cageconnect-feb07.firebasestorage.app',
-    measurementId: 'G-J713W7WHQN',
+    apiKey: 'AIzaSyBx9pMB1itKlxrbyL3HkSdMvtUuY-AXjCA',
+    appId: '1:862265403047:web:4e20d5142faa90d3bd9d82',
+    messagingSenderId: '862265403047',
+    projectId: 'cage-2025',
+    authDomain: 'cage-2025.firebaseapp.com',
+    storageBucket: 'cage-2025.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAUFmyNg9L5Fv7cf1NowstpW21doPSRX9k',
-    appId: '1:146547810947:android:ccb4485a656c562bd871b6',
-    messagingSenderId: '146547810947',
-    projectId: 'cageconnect-feb07',
-    storageBucket: 'cageconnect-feb07.firebasestorage.app',
+    apiKey: 'AIzaSyDoTcuHJdf44cHFlIZaP43mdTiBZT97Lfs',
+    appId: '1:862265403047:android:dff27272bb1b365ebd9d82',
+    messagingSenderId: '862265403047',
+    projectId: 'cage-2025',
+    storageBucket: 'cage-2025.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyB6zc0UOYDa1YfrusUYL41pDJfVGradYnA',
-    appId: '1:146547810947:ios:e12cedf8daedd5fcd871b6',
-    messagingSenderId: '146547810947',
-    projectId: 'cageconnect-feb07',
-    storageBucket: 'cageconnect-feb07.firebasestorage.app',
+    apiKey: 'AIzaSyAPfgvqPXk1m5Za4eYBDWe7BkOeEQEiR1U',
+    appId: '1:862265403047:ios:c493e2a21b4d436dbd9d82',
+    messagingSenderId: '862265403047',
+    projectId: 'cage-2025',
+    storageBucket: 'cage-2025.firebasestorage.app',
     iosBundleId: 'com.craz.cage',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyB6zc0UOYDa1YfrusUYL41pDJfVGradYnA',
-    appId: '1:146547810947:ios:75976ebedf8b94ccd871b6',
-    messagingSenderId: '146547810947',
-    projectId: 'cageconnect-feb07',
-    storageBucket: 'cageconnect-feb07.firebasestorage.app',
+    apiKey: 'AIzaSyAPfgvqPXk1m5Za4eYBDWe7BkOeEQEiR1U',
+    appId: '1:862265403047:ios:5527bfd6ae6cc6f4bd9d82',
+    messagingSenderId: '862265403047',
+    projectId: 'cage-2025',
+    storageBucket: 'cage-2025.firebasestorage.app',
     iosBundleId: 'com.test1.cage',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBcdhG36cHa8k4Ek6xVWMH6AXoI90Tw1GQ',
-    appId: '1:146547810947:web:e2f159bb7854f63ed871b6',
-    messagingSenderId: '146547810947',
-    projectId: 'cageconnect-feb07',
-    authDomain: 'cageconnect-feb07.firebaseapp.com',
-    storageBucket: 'cageconnect-feb07.firebasestorage.app',
-    measurementId: 'G-YXZ03SS1E3',
+    apiKey: 'AIzaSyBx9pMB1itKlxrbyL3HkSdMvtUuY-AXjCA',
+    appId: '1:862265403047:web:3fa15a933eae366bbd9d82',
+    messagingSenderId: '862265403047',
+    projectId: 'cage-2025',
+    authDomain: 'cage-2025.firebaseapp.com',
+    storageBucket: 'cage-2025.firebasestorage.app',
   );
 }

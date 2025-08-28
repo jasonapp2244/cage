@@ -59,6 +59,16 @@ class Utils {
     return await storage.read(key: key);
   }
 
+  // ✅ Remove a single key
+  static Future<void> removeSavedRole(String key) async {
+    await storage.delete(key: key);
+  }
+
+  // ✅ Clear everything (all keys/values)
+  static Future<void> clearAll() async {
+    await storage.deleteAll();
+  }
+
   static String getCurrentUid() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -91,7 +101,6 @@ class Utils {
       final inputFormat = DateFormat('dd/MM/yyyy');
       final date = inputFormat.parse(dateString);
 
-      // Format to output format (e.g., "12 Apr 2025")
       final outputFormat = DateFormat('dd MMM yyyy');
       return outputFormat.format(date);
     } catch (e) {

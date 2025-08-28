@@ -110,10 +110,7 @@ class ContactNumberView extends StatelessWidget {
                       fieldName: 'contactNumber',
                       value: contactNumberController.text.toString(),
                     );
-                    Navigator.pushNamed(
-                      context,
-                      RoutesName.updateProilePic_view,
-                    );
+                    Navigator.pushNamed(context, RoutesName.UploadCompanyLogo);
                   }
                 },
               ),

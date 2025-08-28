@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class FighterDataModel {
   final int age;
   final String coachContact;
@@ -16,6 +18,9 @@ class FighterDataModel {
   final String urlProfile;
   final String? weight;
   final String? location;
+  final double? latitude;
+  final double? longitude;
+  final List<dynamic>? reviews;
 
   FighterDataModel({
     required this.age,
@@ -35,6 +40,9 @@ class FighterDataModel {
     required this.urlProfile,
     this.weight,
     this.location,
+    this.latitude,
+    this.longitude,
+    this.reviews,
   });
 
   factory FighterDataModel.fromMap(Map<String, dynamic> map) {
@@ -57,7 +65,16 @@ class FighterDataModel {
       uploadProfile: map['uploadProfile'],
       urlProfile: map['urlProfile'] ?? 'https',
       weight: map['weight'],
-      location: map['location'],
+      location: map['selectLocation'] is Map<String, dynamic> 
+          ? map['selectLocation']['address'] 
+          : map['selectLocation']?.toString(),
+      latitude: map['selectLocation'] is Map<String, dynamic> 
+          ? map['selectLocation']['latitude']?.toDouble() 
+          : null,
+      longitude: map['selectLocation'] is Map<String, dynamic> 
+          ? map['selectLocation']['longitude']?.toDouble() 
+          : null,
+      reviews: map['reviews'] != null ? List<dynamic>.from(map['reviews']) : null,
     );
   }
 }

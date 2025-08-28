@@ -1,6 +1,7 @@
 import 'package:cage/repository/auth_repository.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/auth/loginview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -607,5 +608,20 @@ class AuthViewmodel extends ChangeNotifier {
       print(st);
       _userRole = null;
     } finally {}
+  }
+
+  Future<void> logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      await Utils.clearAll(); // Clear stored user id
+
+      // Redirect to login
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const Loginview()));
+    } catch (e) {
+      print('Logout failed: $e');
+    }
   }
 }

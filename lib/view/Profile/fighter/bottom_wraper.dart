@@ -2,32 +2,17 @@
 import 'package:cage/models/fighter_model.dart';
 import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
-import 'package:cage/view/Profile/Promoter/promoter_home.dart';
-import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
-import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';
-import 'package:cage/utils/routes/utils.dart';
-import 'package:cage/repository/home_repository.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 // main_wrapper.dart
-import 'package:cage/provider/darwer_provider.dart';
-import 'package:cage/res/components/app_color.dart';
-import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
-import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/tab_controller.dart';
-import 'package:cage/view/exploer/events_view.dart';
-import 'package:cage/view/Profile/fighter/homeview.dart';
-import 'package:cage/view/notification_view.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({Key? key}) : super(key: key);
@@ -38,6 +23,7 @@ class MainWrapper extends StatefulWidget {
 
 class _MainWrapperState extends State<MainWrapper> {
   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
+
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
@@ -53,6 +39,7 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
     final drawerProvider = Provider.of<DrawerControllerProvider>(context);
     return AdvancedDrawer(
       backdrop: Container(
@@ -119,7 +106,9 @@ class _MainWrapperState extends State<MainWrapper> {
                   title: Text('Terms & Conditions'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () async {
+                    await authProvider.logout(context);
+                  },
                   leading: SvgPicture.asset("assets/icons/logout-03.svg"),
                   title: Text('Logout'),
                 ),

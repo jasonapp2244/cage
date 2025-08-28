@@ -145,10 +145,7 @@ class Routes {
           builder: (BuildContext context) => TermConditionView(),
         );
 
-      // case RoutesName.promoterView:
-      //   return MaterialPageRoute(
-      //     builder: (BuildContext context) => PromotersView(),
-      //   );
+
       case RoutesName.fightKnouckout:
         return MaterialPageRoute(
           builder: (BuildContext context) => FightKnockoutView(),

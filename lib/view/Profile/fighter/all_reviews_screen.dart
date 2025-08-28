@@ -17,6 +17,65 @@ class AllReviewsScreen extends StatelessWidget {
     required this.fighterName,
   });
 
+  // Calculate rating distribution with counts
+  Map<int, int> _calculateRatingCounts(List<ReviewModel> reviews) {
+    Map<int, int> ratingCounts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+
+    for (var review in reviews) {
+      ratingCounts[review.rating] = (ratingCounts[review.rating] ?? 0) + 1;
+    }
+
+    return ratingCounts;
+  }
+
+  // Calculate percentage for progress bar
+  double _calculatePercentage(int count, int total) {
+    if (total == 0) return 0.0;
+    return count / total;
+  }
+
+  double _calculateAverageRating(List<ReviewModel> reviews) {
+    if (reviews.isEmpty) return 0.0;
+
+    double totalRating = 0;
+    for (var review in reviews) {
+      totalRating += review.rating;
+    }
+
+    return totalRating / reviews.length;
+  }
+
+  Widget _buildRatingBar(int rating, int count, int totalReviews) {
+    double percentage = _calculatePercentage(count, totalReviews);
+
+    return Row(
+      children: [
+        Flexible(
+          child: LinearProgressIndicator(
+            borderRadius: BorderRadius.circular(4),
+            backgroundColor: AppColor.white.withValues(alpha: 0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(AppColor.red),
+            value: percentage,
+            minHeight: 6,
+          ),
+        ),
+        SizedBox(width: Responsive.w(2)),
+        Container(
+          width: 15,
+          child: Text(
+            "$rating",
+            style: TextStyle(
+              fontSize: Responsive.textScaleFactor * 12,
+              color: AppColor.white,
+              fontFamily: AppFonts.appFont,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
@@ -33,10 +92,7 @@ class AllReviewsScreen extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColor.white.withValues(alpha: 0.1),
             ),
-            child: Icon(
-              Icons.arrow_back,
-              color: AppColor.white,
-            ),
+            child: Icon(Icons.arrow_back, color: AppColor.white),
           ),
         ),
         title: Text(
@@ -65,18 +121,11 @@ class AllReviewsScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: AppColor.red,
-                      size: 48,
-                    ),
+                    Icon(Icons.error_outline, color: AppColor.red, size: 48),
                     SizedBox(height: 16),
                     Text(
                       "Error loading reviews",
-                      style: TextStyle(
-                        color: AppColor.white,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: AppColor.white, fontSize: 16),
                     ),
                   ],
                 ),
@@ -124,68 +173,120 @@ class AllReviewsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Reviews summary
-                  FutureBuilder<double>(
-                    future: ReviewRepository.getAverageRating(fighterUserId),
-                    builder: (context, avgSnapshot) {
-                      final avgRating = avgSnapshot.data ?? 0.0;
-                      return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColor.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColor.white.withOpacity(0.1),
-                          ),
-                        ),
-                        child: Row(
+                  // Reviews summary with progress bars
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColor.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColor.white.withOpacity(0.1),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        // Left side - Average rating
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${reviews.length} Reviews",
-                                  style: TextStyle(
-                                    color: AppColor.white,
-                                    fontFamily: AppFonts.appFont,
-                                    fontSize: Responsive.sp(16),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    ...List.generate(5, (index) {
-                                      return Icon(
-                                        Icons.star,
-                                        color: index < avgRating.round()
-                                            ? AppColor.red
-                                            : AppColor.white.withOpacity(0.3),
-                                        size: 20,
-                                      );
-                                    }),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      "${avgRating.toStringAsFixed(1)} average",
-                                      style: TextStyle(
-                                        color: AppColor.white.withOpacity(0.7),
-                                        fontFamily: AppFonts.appFont,
-                                        fontSize: Responsive.sp(12),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            Text(
+                              _calculateAverageRating(
+                                reviews,
+                              ).toStringAsFixed(1),
+                              style: TextStyle(
+                                fontSize: Responsive.textScaleFactor * 48,
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
+                            Text(
+                              "Based on ${reviews.length} Review${reviews.length != 1 ? 's' : ''}",
+                              style: TextStyle(
+                                fontSize: Responsive.textScaleFactor * 12,
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            // Row(
+                            //   children: [
+                            //     ...List.generate(5, (index) {
+                            //       return Icon(
+                            //         Icons.star,
+                            //         color:
+                            //             index <
+                            //                 _calculateAverageRating(
+                            //                   reviews,
+                            //                 ).round()
+                            //             ? AppColor.red
+                            //             : AppColor.white.withOpacity(0.3),
+                            //         size: 20,
+                            //       );
+                            //     }),
+                            //   ],
+                            // ),
                           ],
                         ),
-                      );
-                    },
+
+                        SizedBox(width: 24),
+
+                        // Right side - Progress bars
+                        Expanded(
+                          child: Column(
+                            children: () {
+                              final ratingCounts = _calculateRatingCounts(
+                                reviews,
+                              );
+                              final totalReviews = reviews.length;
+
+                              return [
+                                // 5 stars (top)
+                                _buildRatingBar(
+                                  5,
+                                  ratingCounts[5] ?? 0,
+                                  totalReviews,
+                                ),
+                                SizedBox(height: 8),
+                                // 4 stars
+                                _buildRatingBar(
+                                  4,
+                                  ratingCounts[4] ?? 0,
+                                  totalReviews,
+                                ),
+                                SizedBox(height: 8),
+                                // 3 stars
+                                _buildRatingBar(
+                                  3,
+                                  ratingCounts[3] ?? 0,
+                                  totalReviews,
+                                ),
+                                SizedBox(height: 8),
+                                // 2 stars
+                                _buildRatingBar(
+                                  2,
+                                  ratingCounts[2] ?? 0,
+                                  totalReviews,
+                                ),
+                                SizedBox(height: 8),
+                                // 1 star (bottom)
+                                _buildRatingBar(
+                                  1,
+                                  ratingCounts[1] ?? 0,
+                                  totalReviews,
+                                ),
+                              ];
+                            }(),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  
+
                   SizedBox(height: 20),
-                  
+
                   // Reviews list
                   Expanded(
                     child: ListView.builder(
@@ -211,10 +312,7 @@ class AllReviewsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColor.black,
-        border: Border.all(
-          color: AppColor.white.withOpacity(0.1),
-          width: 1,
-        ),
+        border: Border.all(color: AppColor.white.withOpacity(0.1), width: 1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -227,7 +325,7 @@ class AllReviewsScreen extends StatelessWidget {
                 radius: 20,
                 backgroundColor: AppColor.red,
                 child: Text(
-                  review.reviewerName.isNotEmpty 
+                  review.reviewerName.isNotEmpty
                       ? review.reviewerName[0].toUpperCase()
                       : 'U',
                   style: TextStyle(
@@ -291,9 +389,9 @@ class AllReviewsScreen extends StatelessWidget {
               ),
             ],
           ),
-          
+
           SizedBox(height: 12),
-          
+
           // Review comment
           Text(
             review.comment,

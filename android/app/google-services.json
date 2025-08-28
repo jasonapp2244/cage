@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "146547810947",
-    "project_id": "cageconnect-feb07",
-    "storage_bucket": "cageconnect-feb07.firebasestorage.app"
+    "project_number": "862265403047",
+    "project_id": "cage-2025",
+    "storage_bucket": "cage-2025.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:146547810947:android:ccb4485a656c562bd871b6",
+        "mobilesdk_app_id": "1:862265403047:android:dff27272bb1b365ebd9d82",
         "android_client_info": {
           "package_name": "com.test1.cage"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAUFmyNg9L5Fv7cf1NowstpW21doPSRX9k"
+          "current_key": "AIzaSyDoTcuHJdf44cHFlIZaP43mdTiBZT97Lfs"
         }
       ],
       "services": {

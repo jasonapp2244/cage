@@ -138,18 +138,19 @@ class LocationProvider extends ChangeNotifier {
   }
 
   // Select location by tapping on map
-  void selectLocationByTap(LatLng position) {
+  Future<void> selectLocationByTap(LatLng position) async {
     _markers.removeWhere(
       (marker) => marker.markerId.value == 'selected-location',
     );
 
+    // First add a marker with coordinates, then update with address
     _markers.add(
       Marker(
         markerId: const MarkerId('selected-location'),
         position: position,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         infoWindow: InfoWindow(
-          title: 'Selected Location',
+          title: 'Getting address...',
           snippet: LocationHelper.formatCoordinates(
             position.latitude,
             position.longitude,
@@ -159,6 +160,62 @@ class LocationProvider extends ChangeNotifier {
     );
 
     notifyListeners();
+
+    // Get actual address using reverse geocoding
+    try {
+      print('🗺️ Getting address for coordinates: ${position.latitude}, ${position.longitude}');
+      final address = await LocationService.getAddressFromCoordinates(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+
+      print('🏠 Received address: $address');
+
+      // Update marker with actual address
+      _markers.removeWhere(
+        (marker) => marker.markerId.value == 'selected-location',
+      );
+
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('selected-location'),
+          position: position,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: InfoWindow(
+            title: address,
+            snippet: LocationHelper.formatCoordinates(
+              position.latitude,
+              position.longitude,
+            ),
+          ),
+        ),
+      );
+
+      print('✅ Updated marker with address: $address');
+      notifyListeners();
+    } catch (e) {
+      print('💥 Error getting address for selected location: $e');
+      
+      // Update marker with coordinate fallback if reverse geocoding fails
+      _markers.removeWhere(
+        (marker) => marker.markerId.value == 'selected-location',
+      );
+
+      final fallbackTitle = 'Location: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('selected-location'),
+          position: position,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: InfoWindow(
+            title: fallbackTitle,
+            snippet: 'Tap to retry getting address',
+          ),
+        ),
+      );
+
+      notifyListeners();
+    }
   }
 
   // Save selected location to Firestore

@@ -45,8 +45,12 @@ class LocationHelper {
         final role = data['role'];
         final sectionKey = role == 'Fighter' ? 'fighterData' : 'promoterData';
 
+        // Save both the detailed location data and the address string
         await FirebaseFirestore.instance.collection('userData').doc(uid).set({
-          sectionKey: {'selectLocation': locationData.toMap()},
+          sectionKey: {
+            'selectLocation': locationData.toMap(),
+            'location': locationData.address, // Save address string for display
+          },
         }, SetOptions(merge: true));
 
         return true;

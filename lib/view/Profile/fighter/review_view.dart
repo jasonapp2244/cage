@@ -72,136 +72,151 @@ class ReviewView extends StatelessWidget {
                         spacing: 1,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: LinearProgressIndicator(
-                                  borderRadius: BorderRadius.circular(22),
-                                  backgroundColor: AppColor.white.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColor.red,
-                                  ), // Progress color
-                                  value: 0.5, // Set progress to 50%
-                                ),
-                              ),
-                              SizedBox(width: Responsive.w(1)),
-                              Text(
-                                "1",
-                                style: TextStyle(
-                                  fontSize: Responsive.textScaleFactor * 12,
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: LinearProgressIndicator(
-                                  borderRadius: BorderRadius.circular(22),
-                                  backgroundColor: AppColor.white.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColor.red,
-                                  ), // Progress color
-                                  value: 0.9, // Set progress to 50%
-                                ),
-                              ),
-                              Text(
-                                "2",
-                                style: TextStyle(
-                                  fontSize: Responsive.textScaleFactor * 12,
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: LinearProgressIndicator(
-                                  borderRadius: BorderRadius.circular(22),
-                                  backgroundColor: AppColor.white.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColor.red,
-                                  ), // Progress color
-                                  value: 0.3, // Set progress to 50%
-                                ),
-                              ),
-                              SizedBox(width: Responsive.w(1)),
-                              Text(
-                                "3",
-                                style: TextStyle(
-                                  fontSize: Responsive.textScaleFactor * 12,
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: LinearProgressIndicator(
-                                  borderRadius: BorderRadius.circular(22),
-                                  backgroundColor: AppColor.white.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColor.red,
-                                  ), // Progress color
-                                  value: 0.7, // Set progress to 50%
-                                ),
-                              ),
-                              SizedBox(width: Responsive.w(1)),
-                              Text(
-                                "4",
-                                style: TextStyle(
-                                  fontSize: Responsive.textScaleFactor * 12,
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: LinearProgressIndicator(
-                                  borderRadius: BorderRadius.circular(22),
-                                  backgroundColor: AppColor.white.withValues(
-                                    alpha: 0.4,
-                                  ),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColor.red,
-                                  ), // Progress color
-                                  value: 0.2, // Set progress to 50%
-                                ),
-                              ),
-                              SizedBox(width: Responsive.w(1)),
-                              Text(
-                                "5",
-                                style: TextStyle(
-                                  fontSize: Responsive.textScaleFactor * 12,
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                                                 children: [
+                           // 5 stars (top)
+                           Row(
+                             children: [
+                               Flexible(
+                                 child: LinearProgressIndicator(
+                                   borderRadius: BorderRadius.circular(4),
+                                   backgroundColor: AppColor.white.withValues(
+                                     alpha: 0.2,
+                                   ),
+                                   valueColor: AlwaysStoppedAnimation<Color>(
+                                     AppColor.red,
+                                   ),
+                                   value: 0.2, // 20% for 5 stars
+                                   minHeight: 6,
+                                 ),
+                               ),
+                               SizedBox(width: Responsive.w(2)),
+                               Text(
+                                 "5",
+                                 style: TextStyle(
+                                   fontSize: Responsive.textScaleFactor * 12,
+                                   color: AppColor.white,
+                                   fontFamily: AppFonts.appFont,
+                                   fontWeight: FontWeight.bold,
+                                 ),
+                               ),
+                             ],
+                           ),
+                           SizedBox(height: 8),
+                           // 4 stars
+                           Row(
+                             children: [
+                               Flexible(
+                                 child: LinearProgressIndicator(
+                                   borderRadius: BorderRadius.circular(4),
+                                   backgroundColor: AppColor.white.withValues(
+                                     alpha: 0.2,
+                                   ),
+                                   valueColor: AlwaysStoppedAnimation<Color>(
+                                     AppColor.red,
+                                   ),
+                                   value: 0.7, // 70% for 4 stars
+                                   minHeight: 6,
+                                 ),
+                               ),
+                               SizedBox(width: Responsive.w(2)),
+                               Text(
+                                 "4",
+                                 style: TextStyle(
+                                   fontSize: Responsive.textScaleFactor * 12,
+                                   color: AppColor.white,
+                                   fontFamily: AppFonts.appFont,
+                                   fontWeight: FontWeight.bold,
+                                 ),
+                               ),
+                             ],
+                           ),
+                           SizedBox(height: 8),
+                           // 3 stars
+                           Row(
+                             children: [
+                               Flexible(
+                                 child: LinearProgressIndicator(
+                                   borderRadius: BorderRadius.circular(4),
+                                   backgroundColor: AppColor.white.withValues(
+                                     alpha: 0.2,
+                                   ),
+                                   valueColor: AlwaysStoppedAnimation<Color>(
+                                     AppColor.red,
+                                   ),
+                                   value: 0.3, // 30% for 3 stars
+                                   minHeight: 6,
+                                 ),
+                               ),
+                               SizedBox(width: Responsive.w(2)),
+                               Text(
+                                 "3",
+                                 style: TextStyle(
+                                   fontSize: Responsive.textScaleFactor * 12,
+                                   color: AppColor.white,
+                                   fontFamily: AppFonts.appFont,
+                                   fontWeight: FontWeight.bold,
+                                 ),
+                               ),
+                             ],
+                           ),
+                           SizedBox(height: 8),
+                           // 2 stars
+                           Row(
+                             children: [
+                               Flexible(
+                                 child: LinearProgressIndicator(
+                                   borderRadius: BorderRadius.circular(4),
+                                   backgroundColor: AppColor.white.withValues(
+                                     alpha: 0.2,
+                                   ),
+                                   valueColor: AlwaysStoppedAnimation<Color>(
+                                     AppColor.red,
+                                   ),
+                                   value: 0.9, // 90% for 2 stars
+                                   minHeight: 6,
+                                 ),
+                               ),
+                               SizedBox(width: Responsive.w(2)),
+                               Text(
+                                 "2",
+                                 style: TextStyle(
+                                   fontSize: Responsive.textScaleFactor * 12,
+                                   color: AppColor.white,
+                                   fontFamily: AppFonts.appFont,
+                                   fontWeight: FontWeight.bold,
+                                 ),
+                               ),
+                             ],
+                           ),
+                           SizedBox(height: 8),
+                           // 1 star (bottom)
+                           Row(
+                             children: [
+                               Flexible(
+                                 child: LinearProgressIndicator(
+                                   borderRadius: BorderRadius.circular(4),
+                                   backgroundColor: AppColor.white.withValues(
+                                     alpha: 0.2,
+                                   ),
+                                   valueColor: AlwaysStoppedAnimation<Color>(
+                                     AppColor.red,
+                                   ),
+                                   value: 0.5, // 50% for 1 star
+                                   minHeight: 6,
+                                 ),
+                               ),
+                               SizedBox(width: Responsive.w(2)),
+                               Text(
+                                 "1",
+                                 style: TextStyle(
+                                   fontSize: Responsive.textScaleFactor * 12,
+                                   color: AppColor.white,
+                                   fontFamily: AppFonts.appFont,
+                                   fontWeight: FontWeight.bold,
+                                 ),
+                               ),
+                             ],
+                           ),
                         ],
                       ),
                     ),

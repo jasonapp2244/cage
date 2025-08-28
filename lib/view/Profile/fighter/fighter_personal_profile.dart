@@ -875,66 +875,76 @@ class FighterPublicProfile extends StatelessWidget {
         ),
 
         // 🔹 Rate Fighter Button (only show when current user is a promoter)
-        FutureBuilder<String?>(
-          future: _getCurrentUserRole(),
+        StreamBuilder<UserModel>(
+          stream: UserRepository.fetchCurrentUserStream(),
           builder: (context, snapshot) {
             // Debug: Print role detection
             print('=== DEBUG: Rate Button Role Check ===');
             print('Snapshot hasData: ${snapshot.hasData}');
-            print('Snapshot data: "${snapshot.data}"');
             print('Connection state: ${snapshot.connectionState}');
-            print('Is equal to Promoter: ${snapshot.data == 'Promoter'}');
-            print('Is equal to Fighter: ${snapshot.data == 'Fighter'}');
-            print('Raw comparison: "${snapshot.data}" == "Promoter"');
-            print('=====================================');
 
-            // Only show button if current user is a promoter
-            // SAFETY CHECK: Explicitly hide button if role is Fighter
-            if (snapshot.hasData && snapshot.data == 'Fighter') {
-              print('🚫 HIDING BUTTON: User is a Fighter!');
-              return Container(); // Explicitly hide for fighters
-            }
+            if (snapshot.hasData) {
+              final currentUser = snapshot.data!;
+              print('Current user role: ${currentUser.roleData}');
+              print('Is Promoter: ${currentUser.isPromoter}');
+              print('Is Fighter: ${currentUser.isFighter}');
+              print('User ID: ${currentUser.id}');
+              print('Fighter ID: ${userData?.id ?? user.id}');
 
-            if (snapshot.hasData && snapshot.data == 'Promoter') {
-              print('✅ SHOWING BUTTON: User is a Promoter!');
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  SizedBox(height: Responsive.h(2)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        width: 200,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _ratePromoterBottomSheet(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.red,
-                            foregroundColor: AppColor.white,
-                            padding: EdgeInsets.symmetric(
-                              vertical: Responsive.h(1.5),
+              // Hide button if user is viewing their own profile
+              if (userData == null || currentUser.id == userData!.id) {
+                print('🚫 HIDING BUTTON: User viewing own profile!');
+                return Container();
+              }
+
+              // Hide button if current user is a fighter
+              if (currentUser.isFighter) {
+                print('🚫 HIDING BUTTON: User is a Fighter!');
+                return Container();
+              }
+
+              // Show button only if current user is a promoter
+              if (currentUser.isPromoter) {
+                print('✅ SHOWING BUTTON: User is a Promoter!');
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    SizedBox(height: Responsive.h(2)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 200,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _ratePromoterBottomSheet(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColor.red,
+                              foregroundColor: AppColor.white,
+                              padding: EdgeInsets.symmetric(
+                                vertical: Responsive.h(1.5),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            "Rate This Fighter",
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.sp(14),
+                            child: Text(
+                              "Rate This Fighter",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.bold,
+                                fontSize: Responsive.sp(14),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
+                      ],
+                    ),
+                  ],
+                );
+              }
             }
 
             // Return empty container if not a promoter or still loading
@@ -1011,52 +1021,6 @@ class FighterPublicProfile extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  // Helper method to get current user's role from Firestore
-  Future<String?> _getCurrentUserRole() async {
-    try {
-      print('=== DEBUG: Getting Current User Role ===');
-
-      // First check local storage
-      final savedRole = await Utils.getSavedRole('role');
-      print('Saved role from local storage: "$savedRole"');
-
-      if (savedRole != null) {
-        print('Returning saved role: "$savedRole"');
-        return savedRole;
-      }
-
-      // If not in local storage, fetch from Firestore
-      final userId = Utils.getCurrentUid();
-      print('Current user ID: $userId');
-
-      final doc = await FirebaseFirestore.instance
-          .collection('userData')
-          .doc(userId)
-          .get();
-
-      print('Document exists: ${doc.exists}');
-      if (doc.exists) {
-        final docData = doc.data();
-        print('Document data: $docData');
-
-        final role = docData?['role'] as String?;
-        print('Role field from Firestore: "$role"');
-
-        if (role != null) {
-          await Utils.saveSavedRole('role', role);
-          print('Saved role to local storage: "$role"');
-        }
-        print('Returning Firestore role: "$role"');
-        return role;
-      }
-      print('Document does not exist, returning null');
-      return null;
-    } catch (e) {
-      print('Error getting user role: $e');
-      return null;
-    }
   }
 
   void _ratePromoterBottomSheet(BuildContext context) {
@@ -1189,7 +1153,7 @@ class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
       print('Review submitted successfully!');
       print('============================');
 
-      Navigator.pop(context);
+      // Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

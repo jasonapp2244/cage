@@ -23,7 +23,7 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
     PromoterHome(),
     ExploreFightersView(),
     NotificationView(),
-    PromoterView(),
+    PromoterProfileView(),
   ];
 
   void _handleMenuButtonPressed() {

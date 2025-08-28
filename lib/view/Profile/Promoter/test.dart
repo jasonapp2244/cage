@@ -4,57 +4,19 @@ import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cage/fonts/fonts.dart';
+import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/view/Profile/Promoter/edit_promoter_profile.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:cage/repository/home_repository.dart';
+import 'package:cage/models/user_model.dart';
+import 'package:cage/models/promoter_model.dart';
 
-class PromoterView extends StatefulWidget {
-  const PromoterView({super.key});
-
-  @override
-  State<PromoterView> createState() => _PromoterViewState();
-}
-
-class _PromoterViewState extends State<PromoterView>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  // Sample data
-  final List<String> photoUrls = const [
-    "assets/images/photo1.jpg",
-    "assets/images/photo2.jpg",
-    "assets/images/photo3.jpg",
-    "assets/images/photo4.jpg",
-    "assets/images/photo5.jpg",
-    "assets/images/photo6.jpg",
-  ];
-
-  final List<String> videoThumbnails = const [
-    "assets/videos/thumb1.jpg",
-    "assets/videos/thumb2.jpg",
-  ];
-
-  final List<Map<String, dynamic>> events = const [
-    {
-      "title": "Jake \"The Beast\" Miller - 💤️ Win (KO)",
-      "date": "20 May",
-      "status": "View Details",
-    },
-    {
-      "title": "MMA Championship Finals",
-      "date": "15 June",
-      "status": "View Details",
-    },
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+class PromoterProfileView extends StatelessWidget {
+  const PromoterProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +39,7 @@ class _PromoterViewState extends State<PromoterView>
                       ),
                     ),
                     Text(
-                      "Profi",
+                      "Profile",
                       style: TextStyle(
                         fontSize: Responsive.textScaleFactor * 24,
                         color: AppColor.white,
@@ -87,177 +49,149 @@ class _PromoterViewState extends State<PromoterView>
                     ),
                   ],
                 ),
-                SizedBox(height: Responsive.h(2)),
 
-                // Profile Header Section
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundColor: AppColor.white.withOpacity(0.1),
-                      child: Image(
-                        image: AssetImage("assets/images/image.png"),
+                // 🔹 Promoter Profile Section with StreamBuilder
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    // Debug prints
+                    print('=== Promoter Profile Debug ===');
+                    print('Connection State: ${snapshot.connectionState}');
+                    print('Has Data: ${snapshot.hasData}');
+                    print('Has Error: ${snapshot.hasError}');
+                    if (snapshot.hasError) {
+                      print('Error: ${snapshot.error}');
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Column(
+                        children: [
+                          SizedBox(height: Responsive.h(2)),
+                          CircularProgressIndicator(color: AppColor.red),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Loading profile...",
+                            style: TextStyle(
+                              color: AppColor.white,
+                              fontSize: Responsive.sp(12),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      print('No data available');
+                      return _buildDefaultProfileSection(context);
+                    }
+
+                    final user = snapshot.data!;
+                    print('User ID: ${user.id}');
+                    print('User Email: ${user.email}');
+                    print('Role Data Type: ${user.roleData.runtimeType}');
+                    print('Is Promoter: ${user.isPromoter}');
+                    print('Is Fighter: ${user.isFighter}');
+
+                    if (user.roleData != null) {
+                      print('Role Data: $user.roleData');
+                    }
+
+                    if (!user.isPromoter) {
+                      print('User is not a promoter');
+                      return _buildDefaultProfileSection(context);
+                    }
+
+                    final promoter = user.roleData as PromoterDataModel;
+
+                    return _buildPromoterProfileSection(context, promoter);
+                  },
+                ),
+
+                SizedBox(height: Responsive.h(1)),
+
+                // 🔹 Company Description Section
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    String companyAbout = "No description available";
+
+                    print('=== Company Description Debug ===');
+                    print('Has Data: ${snapshot.hasData}');
+                    print(
+                      'Is Promoter: ${snapshot.hasData && snapshot.data != null ? snapshot.data!.isPromoter : false}',
+                    );
+
+                    if (snapshot.hasData &&
+                        snapshot.data != null &&
+                        snapshot.data!.isPromoter) {
+                      final promoterData =
+                          snapshot.data!.roleData as PromoterDataModel;
+                      companyAbout =
+                          promoterData.companyAbout ??
+                          "No description available";
+                      print('Company About: $companyAbout');
+                    }
+
+                    return Text(
+                      companyAbout,
+                      style: TextStyle(
+                        fontSize: Responsive.textScaleFactor * 12,
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.normal,
                       ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    );
+                  },
+                ),
+
+                // 🔹 Stats Cards Section
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    String numberOfEvents = "0";
+                    String averageRating = "0";
+
+                    print('=== Stats Cards Debug ===');
+                    print('Has Data: ${snapshot.hasData}');
+                    print(
+                      'Is Promoter: ${snapshot.hasData && snapshot.data != null ? snapshot.data!.isPromoter : false}',
+                    );
+
+                    if (snapshot.hasData &&
+                        snapshot.data != null &&
+                        snapshot.data!.isPromoter) {
+                      final promoterData =
+                          snapshot.data!.roleData as PromoterDataModel;
+                      numberOfEvents = (promoterData.numberOfEvents ?? 0)
+                          .toString();
+                      // For now, using a placeholder rating - you can add rating field to model later
+                      averageRating = "4.5";
+                      print('Number of Events: $numberOfEvents');
+                      print('Average Rating: $averageRating');
+                    }
+
+                    return Row(
                       children: [
-                        Text(
-                          "UFC Fighting Club",
-                          style: TextStyle(
-                            fontSize: Responsive.textScaleFactor * 14,
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: _buildStatCard(
+                            "No of Event Managed",
+                            numberOfEvents,
                           ),
                         ),
-                        Row(
-                          children: [
-                            SvgPicture.asset("assets/icons/call.svg"),
-                            SizedBox(width: Responsive.w(1)),
-                            Text(
-                              "+1 2654 564 169",
-                              style: TextStyle(
-                                fontSize: Responsive.textScaleFactor * 12,
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            SvgPicture.asset("assets/icons/mail-02.svg"),
-                            SizedBox(width: Responsive.w(1)),
-                            Text(
-                              "rubenkenter2@gmail.com",
-                              style: TextStyle(
-                                fontSize: Responsive.textScaleFactor * 12,
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ],
+                        SizedBox(width: Responsive.w(2)),
+                        Expanded(
+                          child: _buildStatCard(
+                            "Average Rating",
+                            averageRating,
+                          ),
                         ),
                       ],
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => EidtProfile()),
-                        );
-                      },
-                      child: SvgPicture.asset("assets/icons/edits.svg"),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-                SizedBox(height: Responsive.h(2)),
 
-                // Bio Section
-                Text(
-                  "Looking for aggressive strikers with clean records. The winner will be featured on our official YouTube broadcast with cash bonus + sponsor exposure.",
-                  style: TextStyle(
-                    fontSize: Responsive.textScaleFactor * 12,
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-                SizedBox(height: Responsive.h(2)),
+                SizedBox(height: Responsive.h(1)),
 
-                // Stats Section
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColor.black,
-                          border: Border.all(
-                            color: AppColor.white.withOpacity(0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "No of Event Managed",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(10.5),
-                                ),
-                              ),
-                              Text(
-                                "20",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: Responsive.sp(24),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: Responsive.w(2)),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColor.black,
-                          border: Border.all(
-                            color: AppColor.white.withOpacity(0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Average Rating",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(10.5),
-                                ),
-                              ),
-                              Text(
-                                "10",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: Responsive.sp(24),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: Responsive.h(2)),
-
-                // Reviews Section
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -270,29 +204,35 @@ class _PromoterViewState extends State<PromoterView>
                         fontSize: Responsive.sp(10),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(10),
+                    GestureDetector(
+                      onTap: () =>
+                          Navigator.pushNamed(context, RoutesName.review),
+                      child: Row(
+                        children: [
+                          Text(
+                            "View All",
+                            style: TextStyle(
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(10),
+                            ),
                           ),
-                        ),
-                        SizedBox(width: Responsive.w(2)),
-                        SvgPicture.asset("assets/icons/Vector (2).svg"),
-                      ],
+                          SizedBox(width: Responsive.w(2)),
+                          SvgPicture.asset("assets/icons/Vector (2).svg"),
+                        ],
+                      ),
                     ),
                   ],
                 ),
                 SizedBox(height: Responsive.h(1)),
+
+                // 🔹 Sample Review (you can make this dynamic later)
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppColor.white.withOpacity(0.1),
+                    border: BoxBorder.all(
+                      color: AppColor.white.withValues(alpha: 0.1),
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(14),
@@ -326,7 +266,9 @@ class _PromoterViewState extends State<PromoterView>
                                 Text(
                                   "3h ago",
                                   style: TextStyle(
-                                    color: AppColor.white.withOpacity(0.4),
+                                    color: AppColor.white.withValues(
+                                      alpha: 0.4,
+                                    ),
                                     fontFamily: AppFonts.appFont,
                                     fontWeight: FontWeight.bold,
                                     fontSize: Responsive.sp(10),
@@ -357,151 +299,272 @@ class _PromoterViewState extends State<PromoterView>
                 ),
                 SizedBox(height: Responsive.h(2)),
 
-                // Tab Bar Section
-                Column(
-                  children: [
-                    TabBar(
-                      controller: _tabController,
-                      tabs: const [
-                        Tab(text: 'Events'),
-                        Tab(text: 'Photos'),
-                        Tab(text: 'Videos'),
-                      ],
-                      labelColor: AppColor.white,
-                      unselectedLabelColor: AppColor.white.withOpacity(0.5),
-                      indicatorColor: AppColor.red,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      labelStyle: TextStyle(
-                        fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.bold,
-                        fontSize: Responsive.sp(14),
-                      ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Photos",
+                    style: TextStyle(
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(16),
                     ),
-                    SizedBox(
-                      height: Responsive.h(30),
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          // Events Tab
-                          ListView.builder(
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: events.length,
-                            itemBuilder: (context, index) {
-                              final event = events[index];
-                              return Container(
-                                margin: EdgeInsets.only(bottom: Responsive.h(1)),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: AppColor.white.withOpacity(0.1),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: ListTile(
-                                  title: Text(
-                                    event['title'],
-                                    style: TextStyle(
-                                      color: AppColor.white,
-                                      fontFamily: AppFonts.appFont,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    event['date'],
-                                    style: TextStyle(
-                                      color: AppColor.white.withOpacity(0.7),
-                                      fontFamily: AppFonts.appFont,
-                                    ),
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        event['status'],
-                                        style: TextStyle(
-                                          color: AppColor.red,
-                                          fontFamily: AppFonts.appFont,
-                                        ),
-                                      ),
-                                      SizedBox(width: Responsive.w(1)),
-                                      Icon(
-                                        Icons.arrow_forward_ios,
-                                        color: AppColor.red,
-                                        size: Responsive.sp(12),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
 
-                          // Photos Tab
-                          GridView.builder(
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: Responsive.w(2),
-                              mainAxisSpacing: Responsive.h(1),
-                              childAspectRatio: 1,
-                            ),
-                            itemCount: photoUrls.length,
-                            itemBuilder: (context, index) {
-                              return GestureDetector(
-                                onTap: () {
-                                  // Handle photo tap
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    image: DecorationImage(
-                                      image: AssetImage(photoUrls[index]),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-
-                          // Videos Tab
-                          ListView.builder(
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: videoThumbnails.length,
-                            itemBuilder: (context, index) {
-                              return GestureDetector(
-                                onTap: () {
-                                  // Handle video tap
-                                },
-                                child: Container(
-                                  height: Responsive.h(15),
-                                  margin: EdgeInsets.only(bottom: Responsive.h(1)),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    image: DecorationImage(
-                                      image: AssetImage(videoThumbnails[index]),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.play_circle_filled,
-                                      color: AppColor.white.withOpacity(0.8),
-                                      size: Responsive.sp(30),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                // Add your photos grid or list view here
+                Container(
+                  height: Responsive.h(20),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppColor.white.withOpacity(0.1),
+                      width: 2,
                     ),
-                  ],
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Photos will be displayed here",
+                      style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+                    ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(2)),
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Videos",
+                    style: TextStyle(
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(16),
+                    ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
+
+                // Add your videos grid or list view here
+                Container(
+                  height: Responsive.h(20),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppColor.white.withOpacity(0.1),
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Videos will be displayed here",
+                      style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Build default profile section when no data is available
+  Widget _buildDefaultProfileSection(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        CircleAvatar(
+          radius: 35,
+          backgroundColor: AppColor.white.withValues(alpha: 0.1),
+          child: Image(image: AssetImage("assets/images/image.png")),
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Company Name",
+              style: TextStyle(
+                fontSize: Responsive.textScaleFactor * 14,
+                color: AppColor.white,
+                fontFamily: AppFonts.appFont,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Row(
+              children: [
+                SvgPicture.asset("assets/icons/call.svg"),
+                SizedBox(width: Responsive.w(1)),
+                Text(
+                  "Phone not set",
+                  style: TextStyle(
+                    fontSize: Responsive.textScaleFactor * 12,
+                    color: AppColor.white,
+                    fontFamily: AppFonts.appFont,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SvgPicture.asset("assets/icons/mail-02.svg"),
+                SizedBox(width: Responsive.w(1)),
+                Text(
+                  "Email not set",
+                  style: TextStyle(
+                    fontSize: Responsive.textScaleFactor * 12,
+                    color: AppColor.white,
+                    fontFamily: AppFonts.appFont,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => EditPromoterProfile()),
+            );
+          },
+          child: SvgPicture.asset("assets/icons/edits.svg"),
+        ),
+      ],
+    );
+  }
+
+  /// Build promoter profile section with actual data
+  Widget _buildPromoterProfileSection(
+    BuildContext context,
+    PromoterDataModel promoter,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        CircleAvatar(
+          radius: 35,
+          backgroundColor: AppColor.white.withValues(alpha: 0.1),
+          child:
+              promoter.companyLogo != null && promoter.companyLogo!.isNotEmpty
+              ? ClipOval(
+                  child: Image.network(
+                    promoter.companyLogo!,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image(
+                        image: AssetImage("assets/images/image.png"),
+                      );
+                    },
+                  ),
+                )
+              : Image(image: AssetImage("assets/images/image.png")),
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              promoter.companyName ?? "Company Name",
+              style: TextStyle(
+                fontSize: Responsive.textScaleFactor * 14,
+                color: AppColor.white,
+                fontFamily: AppFonts.appFont,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Row(
+              children: [
+                SvgPicture.asset("assets/icons/call.svg"),
+                SizedBox(width: Responsive.w(1)),
+                Text(
+                  promoter.contactNumber ?? "Phone not set",
+                  style: TextStyle(
+                    fontSize: Responsive.textScaleFactor * 12,
+                    color: AppColor.white,
+                    fontFamily: AppFonts.appFont,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                SvgPicture.asset("assets/icons/mail-02.svg"),
+                SizedBox(width: Responsive.w(1)),
+                Text(
+                  promoter.contactEmail ?? "Email not set",
+                  style: TextStyle(
+                    fontSize: Responsive.textScaleFactor * 12,
+                    color: AppColor.white,
+                    fontFamily: AppFonts.appFont,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => EditPromoterProfile(promoterData: promoter),
+              ),
+            );
+          },
+          child: SvgPicture.asset("assets/icons/edits.svg"),
+        ),
+      ],
+    );
+  }
+
+  /// Reusable Stat Card
+  Widget _buildStatCard(String title, String value) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColor.black,
+        border: BoxBorder.all(
+          color: AppColor.white.withValues(alpha: 0.1),
+          width: 2,
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: AppColor.white,
+                fontFamily: AppFonts.appFont,
+                fontWeight: FontWeight.normal,
+                fontSize: Responsive.sp(10.5),
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                color: AppColor.white,
+                fontFamily: AppFonts.appFont,
+                fontWeight: FontWeight.bold,
+                fontSize: Responsive.sp(24),
+              ),
+            ),
+          ],
         ),
       ),
     );

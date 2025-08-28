@@ -7,6 +7,7 @@ import 'package:cage/view/Profile/Promoter/event_history.dart';
 import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
 import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
 import 'package:cage/view/Profile/Promoter/promotor_subcribtion_view.dart';
+import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/Promoter/upload_company_logo.dart';
 import 'package:cage/view/Profile/Promoter/who_thePromoter_view.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';

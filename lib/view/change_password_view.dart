@@ -2,7 +2,9 @@ import 'package:cage/fonts/fonts.dart';
 import 'package:cage/provider/change_password_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/Profile/fighter/updateProfle_view.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -315,10 +317,7 @@ class ChangePasswordView extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: SvgPicture.asset(
-                        "assets/icons/arrow-left-01.svg",
-                        color: AppColor.red,
-                      ),
+                      child: SvgPicture.asset("assets/icons/arrow-left-01.svg"),
                     ),
                     Text(
                       "Change Password",
@@ -401,7 +400,12 @@ class ChangePasswordView extends StatelessWidget {
                 Button(
                   focusNode: provider.saveFocus,
                   text: "Update",
-                  onTap: () {
+                  onTap: () async {
+                    await provider.updatePassword(
+                      newPassword: provider.newPasswordController.text,
+                      oldPassword: provider.oldPasswordController.text,
+                    );
+                    Navigator.pop(context);
                     // Call your save logic
                   },
                 ),

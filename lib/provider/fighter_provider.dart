@@ -50,11 +50,11 @@ class FighterProvider with ChangeNotifier {
         FighterDataModel? fighterData;
         try {
           if (data['fighterData'] != null) {
-            print('Found fighterData: ${data['fighterData']}');
+    
             fighterData = FighterDataModel.fromMap(data['fighterData']);
           } else {
             // Try to create fighter data from direct fields
-            print('No fighterData found, trying direct fields...');
+        
             final fighterMap = {
               'age': data['age'] ?? 0,
               'coachContact': data['coachContact'] ?? '',

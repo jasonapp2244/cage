@@ -139,7 +139,10 @@ class _FightStyleViewState extends State<FightStyleView> {
                         value: selectedFightStyle.toString(),
                       );
 
-                      Navigator.pushNamed(context, RoutesName.tapalogy_view);
+                      Navigator.pushNamed(
+                        context,
+                        RoutesName.lastBloodTest_view,
+                      );
                     },
                   ),
                 ],

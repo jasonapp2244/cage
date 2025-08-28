@@ -23,7 +23,6 @@ class _CreatenewTicticketViewState extends State<CreatenewTicticketView> {
   final FocusNode subjectFoucs = FocusNode();
   final FocusNode messageFoucs = FocusNode();
   final FocusNode buttonFoucs = FocusNode();
-  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -36,42 +35,23 @@ class _CreatenewTicticketViewState extends State<CreatenewTicticketView> {
   }
 
   Future<void> _submitTicket() async {
-    if (subjectController.text.trim().isEmpty) {
-      Utils.tosatMassage('Please enter a subject');
-      return;
-    }
+    final success = await context.read<TicketProvider>().createTicketWithValidation(
+      subjectController.text,
+      MessageController.text,
+      attachmentUrl: '',
+    );
 
-    if (MessageController.text.trim().isEmpty) {
-      Utils.tosatMassage('Please enter a message');
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      await context.read<TicketProvider>().createTicket(
-        subjectController.text.trim(),
-        MessageController.text.trim(),
-        attachmentUrl: '',
-      );
-
-      Utils.tosatMassage('Ticket created successfully!');
+    if (success) {
       Navigator.pop(context);
-    } catch (e) {
-      Utils.tosatMassage('Failed to create ticket: ${e.toString()}');
-    } finally {
-      setState(() {
-        _isSubmitting = false;
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
-    return Scaffold(
+    return Consumer<TicketProvider>(
+      builder: (context, ticketProvider, child) {
+        return Scaffold(
       backgroundColor: AppColor.black,
       body: SafeArea(
         child: Padding(
@@ -99,6 +79,38 @@ class _CreatenewTicticketViewState extends State<CreatenewTicticketView> {
                 ],
               ),
               SizedBox(height: Responsive.h(2)),
+
+              // Error message display
+              if (ticketProvider.error != null)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          ticketProvider.error!,
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 14,
+                            fontFamily: AppFonts.appFont,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => ticketProvider.clearError(),
+                        child: Icon(Icons.close, color: Colors.red, size: 20),
+                      ),
+                    ],
+                  ),
+                ),
 
               EditProfileTextfeild(
                 text: 'Subject...',
@@ -187,14 +199,16 @@ class _CreatenewTicticketViewState extends State<CreatenewTicticketView> {
               Spacer(),
 
               Button(
-                text: _isSubmitting ? "Submitting..." : "Submit",
-                onTap: _isSubmitting ? () {} : () => _submitTicket(),
+                text: ticketProvider.isSubmitting ? "Submitting..." : "Submit",
+                onTap: ticketProvider.isSubmitting ? () {} : () => _submitTicket(),
                 focusNode: buttonFoucs,
               ),
             ],
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

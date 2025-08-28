@@ -33,7 +33,7 @@ class _HightViewState extends State<HightView> {
 
   @override
   Widget build(BuildContext context) {
-        final authProvider = Provider.of<AuthViewmodel>(context);
+    final authProvider = Provider.of<AuthViewmodel>(context);
     Responsive.init(context);
 
     return Scaffold(
@@ -159,13 +159,12 @@ class _HightViewState extends State<HightView> {
                       onTap: () {
                         print('Selected height: $selectedHeight cm');
                         var uid = Utils.getCurrentUid();
-                        authProvider.addUserFieldByRole
-(
+                        authProvider.addUserFieldByRole(
                           uid: uid,
                           fieldName: 'height',
                           value: selectedHeight.toString(),
                         );
-                        Navigator.pushNamed(context, RoutesName.fightwon);
+                        Navigator.pushNamed(context, RoutesName.weightView);
                       },
                     ),
 

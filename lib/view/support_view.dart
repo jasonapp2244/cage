@@ -21,18 +21,16 @@ class _SupportViewState extends State<SupportView> {
   @override
   void initState() {
     super.initState();
-    // Fetch tickets when widget initializes
+    // Initialize ticket stream when widget loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TicketProvider>().fetchTickets();
+      context.read<TicketProvider>().initializeTicketStream();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
-    return ChangeNotifierProvider(
-      create: (_) => TicketProvider(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: AppColor.black,
         body: SafeArea(
           child: Padding(
@@ -105,7 +103,7 @@ class _SupportViewState extends State<SupportView> {
                               SizedBox(height: 8),
                               ElevatedButton(
                                 onPressed: () {
-                                  ticketProvider.fetchTickets();
+                                  ticketProvider.initializeTicketStream();
                                 },
                                 child: Text('Retry'),
                               ),
@@ -176,8 +174,7 @@ class _SupportViewState extends State<SupportView> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildTicketCard(TicketModel ticket) {

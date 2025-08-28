@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ChangePasswordProvider extends ChangeNotifier {
@@ -69,15 +70,6 @@ class ChangePasswordProvider extends ChangeNotifier {
   // =====================
   // Password update logic (dummy API placeholder)
   // =====================
-  Future<void> updatePassword() async {
-    final error = validatePasswords();
-    if (error != null) {
-      throw Exception(error);
-    }
-
-    // TODO: Implement API call here
-    await Future.delayed(const Duration(seconds: 2));
-  }
 
   // =====================
   // Dispose controllers and focus nodes properly
@@ -92,5 +84,40 @@ class ChangePasswordProvider extends ChangeNotifier {
     confirmPasswordFocus.dispose();
     saveFocus.dispose();
     super.dispose();
+  }
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  Future<void> updatePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+
+      if (user == null || user.email == null) {
+        throw Exception("No user logged in");
+      }
+
+      // Step 1: Re-authenticate with old password
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: oldPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+
+      // Step 2: Update to new password
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password') {
+        throw Exception("Old password is incorrect");
+      } else if (e.code == 'weak-password') {
+        throw Exception("New password is too weak");
+      } else {
+        throw Exception("Error: ${e.message}");
+      }
+    } catch (e) {
+      throw Exception("Unexpected error: $e");
+    }
   }
 }

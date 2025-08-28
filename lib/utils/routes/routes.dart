@@ -17,6 +17,7 @@ import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/view/Profile/fighter/age_view.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:cage/view/Profile/fighter/review_view.dart';
+import 'package:cage/view/Profile/fighter/weight_view.dart';
 import 'package:cage/view/change_password_view.dart';
 import 'package:cage/view/Profile/fighter/coach_conatct.dart';
 import 'package:cage/view/Profile/fighter/coach_view.dart';
@@ -251,6 +252,11 @@ class Routes {
       case RoutesName.PromoterHome:
         return MaterialPageRoute(
           builder: (BuildContext context) => ExploreFightersView(),
+        );
+
+      case RoutesName.weightView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => WeighView(),
         );
 
       default:

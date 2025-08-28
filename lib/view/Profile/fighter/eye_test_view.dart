@@ -1,6 +1,9 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
+import 'package:cage/widgets/button.dart';
 import 'package:cage/widgets/custom_calendar.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +22,7 @@ class _EyeTestViewState extends State<EyeTestView> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<AuthViewmodel>(context);
+    final authProvider = Provider.of<AuthViewmodel>(context);
 
     Responsive.init(context);
     return Scaffold(
@@ -127,6 +130,20 @@ class _EyeTestViewState extends State<EyeTestView> {
                         ),
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 40),
+                  Button(
+                    text: "Next",
+                    onTap: () {
+                      //print('Selected height: $selectedHeight cm');
+                      var uid = Utils.getCurrentUid();
+                      authProvider.addUserFieldByRole(
+                        uid: uid,
+                        fieldName: 'eyeExam',
+                        value: _eyeTestController.text.toString(),
+                      );
+                      Navigator.pushNamed(context, RoutesName.tapalogy_view);
+                    },
                   ),
                 ],
               ),

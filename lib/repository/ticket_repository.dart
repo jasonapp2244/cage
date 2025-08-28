@@ -4,49 +4,66 @@ import 'package:cage/utils/routes/utils.dart';
 
 class TicketRepository {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  // Create a new ticket
   static Future<void> createTicket(TicketModel ticket) async {
     try {
       final userId = Utils.getCurrentUid();
-      final ticketData = ticket.toJson();
-      ticketData['userId'] = userId;
+      if (userId == null) throw Exception("User not authenticated");
 
-      await _firestore
+      final ticketMap = ticket.toJson();
+      ticketMap['userId'] = userId;
+
+      // Get current user doc
+      final userDoc = await FirebaseFirestore.instance
           .collection('userData')
           .doc(userId)
-          .collection('tickets')
-          .doc(ticket.id)
-          .set(ticketData);
+          .get();
+
+      // Existing tickets array (if any)
+      List<dynamic> existingTickets = [];
+      if (userDoc.exists &&
+          userDoc.data() != null &&
+          userDoc.data()!.containsKey('tickets')) {
+        existingTickets = List<dynamic>.from(userDoc['tickets']);
+      }
+
+      // Append new ticket
+      existingTickets.add(ticketMap);
+
+      // Save back
+      await FirebaseFirestore.instance.collection('userData').doc(userId).set({
+        'tickets': existingTickets,
+      }, SetOptions(merge: true));
+
+      print("Ticket added successfully");
     } catch (e) {
-      throw Exception('Failed to create ticket: $e');
+      throw Exception("Failed to create ticket: $e");
     }
   }
 
-  // Fetch all tickets for current user
   static Stream<List<TicketModel>> fetchUserTickets() {
     try {
       final userId = Utils.getCurrentUid();
+      if (userId == null) throw Exception("User not authenticated");
 
-      return _firestore
+      return FirebaseFirestore.instance
           .collection('userData')
           .doc(userId)
-          .collection('tickets')
-          .orderBy('createdAt', descending: true)
           .snapshots()
-          .map((snapshot) {
-            return snapshot.docs.map((doc) {
-              final data = doc.data();
-              data['id'] = doc.id;
-              return TicketModel.fromJson(data);
-            }).toList();
+          .map((docSnap) {
+            if (!docSnap.exists) return [];
+
+            final data = docSnap.data();
+            if (data == null || !data.containsKey('tickets')) return [];
+
+            // Convert array of maps to TicketModel list
+            final tickets = List<Map<String, dynamic>>.from(data['tickets']);
+            return tickets.map((t) => TicketModel.fromJson(t)).toList();
           });
     } catch (e) {
-      throw Exception('Failed to fetch tickets: $e');
+      throw Exception("Failed to fetch tickets: $e");
     }
   }
 
-  // Update ticket status
   static Future<void> updateTicketStatus(String ticketId, String status) async {
     try {
       final userId = Utils.getCurrentUid();

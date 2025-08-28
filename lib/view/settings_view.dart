@@ -1,6 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/change_password_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -122,30 +123,35 @@ class SettingsView extends StatelessWidget {
                       builder: (context, snapshot) {
                         return _buildSettingsButton(
                           icon: "assets/icons/lock-password.svg",
-                          title: "Edit Profile",
+                          title: "Change Password",
                           onTap: () {
-                            if (snapshot.hasData && snapshot.data != null) {
-                              final user = snapshot.data!;
-                              if (user.isPromoter) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditPromoterProfile(
-                                      promoterData: user.roleData,
-                                    ),
-                                  ),
-                                );
-                              } else if (user.isFighter) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        EidtProfile(fighterData: user.roleData),
-                                  ),
-                                );
-                              }
-                            }
+                            Navigator.pushNamed(
+                              context,
+                              RoutesName.Change_Password_View,
+                            );
                           },
+                          //   if (snapshot.hasData && snapshot.data != null) {
+                          //     final user = snapshot.data!;
+                          //     if (user.isPromoter) {
+                          //       Navigator.push(
+                          //         context,
+                          //         MaterialPageRoute(
+                          //           builder: (context) => EditPromoterProfile(
+                          //             promoterData: user.roleData,
+                          //           ),
+                          //         ),
+                          //       );
+                          //     } else if (user.isFighter) {
+                          //       Navigator.push(
+                          //         context,
+                          //         MaterialPageRoute(
+                          //           builder: (context) =>
+                          //               EidtProfile(fighterData: user.roleData),
+                          //         ),
+                          //       );
+                          //     }
+                          //   }
+                          // },
                         );
                       },
                     ),

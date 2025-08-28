@@ -113,7 +113,7 @@ class TapalogyView extends StatelessWidget {
                     value: urlController.text.toString(),
                   );
 
-                  Navigator.pushNamed(context, RoutesName.updateProilePic_view);
+                  Navigator.pushNamed(context, RoutesName.selectLocation);
                 },
               ),
               // SizedBox(height: Responsive.h(3)),

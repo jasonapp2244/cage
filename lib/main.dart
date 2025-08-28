@@ -10,6 +10,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
+import 'package:cage/viewmodel/notification_settings_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -38,6 +39,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => TicketProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => ChangePasswordProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationSettingsViewmodel()),
       ],
       child: const MyApp(),
     ),

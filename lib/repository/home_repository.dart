@@ -36,7 +36,6 @@ class UserRepository {
           final data = doc.data()!;
 
           // Safe date parsing
-          DateTime createdAt;
          
           // }
 
@@ -97,7 +96,6 @@ class UserRepository {
       final data = doc.data()!;
 
       // Safe date parsing
-      DateTime createdAt;
 
       // Usage:
       dynamic? roleData;

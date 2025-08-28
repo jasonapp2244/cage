@@ -207,9 +207,6 @@ class ReviewRepository {
   }) async {
     try {
       final currentUserId = Utils.getCurrentUid();
-      if (currentUserId == null) {
-        throw Exception('User not authenticated');
-      }
 
       // Get the fighter's userData
       final userDoc = await _firestore

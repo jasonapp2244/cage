@@ -1,10 +1,3 @@
-import 'package:cage/fonts/fonts.dart';
-import 'package:cage/res/components/app_color.dart';
-import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/Profile/fighter/eidt_profile.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 // class FighterPublicProfile extends StatelessWidget {
 //   const FighterPublicProfile({super.key});

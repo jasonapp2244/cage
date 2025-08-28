@@ -1,15 +1,12 @@
 // main_wrapper.dart
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
-import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
 import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
-import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
 
 class PromotorBottomNavBar extends StatefulWidget {
   const PromotorBottomNavBar({Key? key}) : super(key: key);

@@ -3,7 +3,6 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
-import 'package:cage/widgets/share.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:cage/models/fighter_model.dart';
@@ -14,7 +13,6 @@ import 'package:cage/repository/home_repository.dart';
 import 'package:cage/repository/review_repository.dart';
 import 'package:cage/view/Profile/fighter/all_reviews_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FighterPublicProfile extends StatelessWidget {
   final UserModel? userData;

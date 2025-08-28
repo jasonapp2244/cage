@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/models/review_model.dart';
 import 'package:cage/repository/review_repository.dart';

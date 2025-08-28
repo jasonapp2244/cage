@@ -1,4 +1,3 @@
-import 'dart:math';
 
 class FighterDataModel {
   final int age;

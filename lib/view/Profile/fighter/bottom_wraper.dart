@@ -1,8 +1,6 @@
 // main_wrapper.dart
-import 'package:cage/models/fighter_model.dart';
 import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';

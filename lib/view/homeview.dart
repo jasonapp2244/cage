@@ -1,17 +1,3 @@
-import 'package:cage/fonts/fonts.dart';
-import 'package:cage/models/fighter_model.dart';
-import 'package:cage/models/user_model.dart';
-import 'package:cage/provider/darwer_provider.dart';
-import 'package:cage/repository/home_repository.dart';
-import 'package:cage/res/components/app_color.dart';
-import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/utils/routes/routes_name.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:provider/provider.dart';
 
 // class Homeview extends StatefulWidget {
 //   const Homeview({super.key});

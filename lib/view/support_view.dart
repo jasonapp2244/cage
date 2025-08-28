@@ -31,150 +31,150 @@ class _SupportViewState extends State<SupportView> {
   Widget build(BuildContext context) {
     Responsive.init(context);
     return Scaffold(
-        backgroundColor: AppColor.black,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: SvgPicture.asset(
-                        "assets/icons/arrow-left-01.svg",
-                        color: AppColor.red,
-                      ),
+      backgroundColor: AppColor.black,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: SvgPicture.asset(
+                      "assets/icons/arrow-left-01.svg",
+                      color: AppColor.red,
                     ),
-                    Text(
-                      "Support Tickets",
-                      style: TextStyle(
-                        fontSize: Responsive.textScaleFactor * 24,
-                        color: AppColor.white,
-                        fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: Responsive.h(2)),
-
-                // Tickets List
-                Expanded(
-                  child: Consumer<TicketProvider>(
-                    builder: (context, ticketProvider, child) {
-                      if (ticketProvider.isLoading) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(color: AppColor.red),
-                              SizedBox(height: 16),
-                              Text(
-                                "Loading tickets...",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      if (ticketProvider.error != null) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: AppColor.red,
-                                size: 48,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'Error loading tickets',
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              ElevatedButton(
-                                onPressed: () {
-                                  ticketProvider.initializeTicketStream();
-                                },
-                                child: Text('Retry'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      final tickets = ticketProvider.tickets;
-
-                      if (tickets.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.support_agent,
-                                color: AppColor.red,
-                                size: 48,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                "No tickets found",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                "Create your first support ticket!",
-                                style: TextStyle(
-                                  color: AppColor.white.withOpacity(0.7),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      return ListView.builder(
-                        itemCount: tickets.length,
-                        itemBuilder: (context, index) {
-                          final ticket = tickets[index];
-                          return _buildTicketCard(ticket);
-                        },
-                      );
-                    },
                   ),
-                ),
+                  Text(
+                    "Support Tickets",
+                    style: TextStyle(
+                      fontSize: Responsive.textScaleFactor * 24,
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: Responsive.h(2)),
 
-                SizedBox(height: Responsive.h(2)),
+              // Tickets List
+              Expanded(
+                child: Consumer<TicketProvider>(
+                  builder: (context, ticketProvider, child) {
+                    if (ticketProvider.isLoading) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: AppColor.red),
+                            SizedBox(height: 16),
+                            Text(
+                              "Loading tickets...",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
 
-                Button(
-                  text: "Create New Ticket",
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CreatenewTicticketView(),
-                      ),
+                    if (ticketProvider.error != null) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: AppColor.red,
+                              size: 48,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Error loading tickets',
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                ticketProvider.initializeTicketStream();
+                              },
+                              child: Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final tickets = ticketProvider.tickets;
+
+                    if (tickets.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.support_agent,
+                              color: AppColor.red,
+                              size: 48,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              "No tickets found",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              "Create your first support ticket!",
+                              style: TextStyle(
+                                color: AppColor.white.withOpacity(0.7),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: tickets.length,
+                      itemBuilder: (context, index) {
+                        final ticket = tickets[index];
+                        return _buildTicketCard(ticket);
+                      },
                     );
                   },
-                  focusNode: FocusNode(),
                 ),
-              ],
-            ),
+              ),
+
+              SizedBox(height: Responsive.h(2)),
+
+              Button(
+                text: "Create New Ticket",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CreatenewTicticketView(),
+                    ),
+                  );
+                },
+                focusNode: FocusNode(),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildTicketCard(TicketModel ticket) {

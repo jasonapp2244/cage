@@ -99,7 +99,6 @@ class _HomeviewState extends State<Homeview> {
                                 fontSize: Responsive.sp(18),
                               ),
                             ),
-
                             Text(
                               user.isFighter
                                   ? (user.roleData as FighterDataModel)
@@ -112,6 +111,9 @@ class _HomeviewState extends State<Homeview> {
                                 fontWeight: FontWeight.normal,
                                 fontSize: Responsive.sp(8.5),
                               ),
+                              maxLines: 3,
+                              softWrap: true,
+                              overflow: TextOverflow.visible,
                             ),
                           ],
                         );

@@ -76,7 +76,7 @@ class TicketProvider extends ChangeNotifier {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         subject: subject.trim(),
         message: message.trim(),
-        status: 'open',
+        status: 'in-progress',
         createdAt: DateTime.now(),
         userId: Utils.getCurrentUid(),
         attachmentUrl: attachmentUrl,

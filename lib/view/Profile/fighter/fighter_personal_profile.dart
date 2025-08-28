@@ -13,6 +13,8 @@ import 'package:cage/repository/home_repository.dart';
 import 'package:cage/repository/review_repository.dart';
 import 'package:cage/view/Profile/fighter/all_reviews_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class FighterPublicProfile extends StatelessWidget {
   final UserModel? userData;
@@ -653,11 +655,10 @@ class FighterPublicProfile extends StatelessWidget {
           ),
         ),
         SizedBox(height: Responsive.h(1)),
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
-          child: Image(image: AssetImage("assets/images/Frame 1000002180.png")),
-        ),
+
+        // Fighter Location Map
+        if (fighter.latitude != null && fighter.longitude != null)
+          _buildLocationMap(fighter),
 
         SizedBox(height: Responsive.h(1)),
 
@@ -1030,12 +1031,6 @@ class FighterPublicProfile extends StatelessWidget {
         ? (fighterUser.roleData as FighterDataModel).fullName ?? 'Fighter'
         : 'Fighter';
 
-    print('=== DEBUG: Rating Bottom Sheet ===');
-    print('Fighter User ID: $fighterUserId');
-    print('Fighter Name: $fighterName');
-    print('Fighter User Data: $fighterUser');
-    print('===================================');
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1049,6 +1044,131 @@ class FighterPublicProfile extends StatelessWidget {
           fighterName: fighterName,
         );
       },
+    );
+  }
+
+  /// Build interactive Google Map widget for fighter's location
+  Widget _buildLocationMap(FighterDataModel fighter) {
+    final LatLng fighterLocation = LatLng(
+      fighter.latitude!,
+      fighter.longitude!,
+    );
+
+    return Container(
+      height: 200,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColor.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Stack(
+          children: [
+            // Google Map with dark theme
+            GoogleMap(
+              myLocationEnabled: false,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              compassEnabled: false,
+              mapToolbarEnabled: false,
+              initialCameraPosition: CameraPosition(
+                target: fighterLocation,
+                zoom: 14.0,
+              ),
+                            onMapCreated: (GoogleMapController controller) async {
+                // Apply dark map style from assets
+                try {
+                  final String mapStyle = await rootBundle.loadString('assets/map_style.json');
+                  await controller.setMapStyle(mapStyle);
+                } catch (e) {
+                  print('Error setting map style: $e');
+                }
+              },
+              markers: {
+                Marker(
+                  markerId: MarkerId('fighter_location'),
+                  position: fighterLocation,
+                  infoWindow: InfoWindow(
+                    title: fighter.fullName,
+                    snippet: fighter.location ?? "Fighter Location",
+                  ),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueRed,
+                  ),
+                ),
+              },
+            ),
+
+            // Location info overlay
+            Positioned(
+              top: 16,
+              left: 16,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColor.black.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColor.red.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.location_on, color: AppColor.red, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          "Fighter Location",
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontSize: 12,
+                            fontFamily: AppFonts.appFont,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (fighter.location != null) ...[
+                      SizedBox(height: 4),
+                      Text(
+                        fighter.location!,
+                        style: TextStyle(
+                          color: AppColor.white.withValues(alpha: 0.9),
+                          fontSize: 10,
+                          fontFamily: AppFonts.appFont,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+
+            // Map type toggle button
+            Positioned(
+              top: 16,
+              right: 16,
+              child: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColor.red,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.map, color: AppColor.white, size: 20),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -36,7 +36,7 @@ class UserRepository {
           final data = doc.data()!;
 
           // Safe date parsing
-         
+
           // }
 
           // Determine role data with better error handling

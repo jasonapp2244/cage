@@ -4,6 +4,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';
+import 'package:cage/view/settings_view.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -27,7 +28,7 @@ class _MainWrapperState extends State<MainWrapper> {
   final List<Widget> _pages = [
     Homeview(),
     ActivityView(),
-    NotificationView(),
+    SettingsView(), // change again to notification
     FighterPublicProfile(),
   ];
 

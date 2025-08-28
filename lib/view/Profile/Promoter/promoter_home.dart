@@ -7,6 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
+import 'package:cage/repository/home_repository.dart';
+import 'package:cage/models/user_model.dart';
+import 'package:cage/models/promoter_model.dart';
+import 'package:cage/view/Profile/Promoter/edit_promoter_profile.dart';
 
 class PromoterHome extends StatefulWidget {
   final AdvancedDrawerController? drawerController;
@@ -28,32 +32,114 @@ class _PromoterHomeState extends State<PromoterHome> {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
               children: [
+                // 🔹 Header Row with StreamBuilder for promoter data
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     SvgPicture.asset("assets/icons/Group 9.svg"),
-                    Column(
-                      children: [
-                        Text(
-                          "Hi👋Jhon Doe",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(18),
-                          ),
-                        ),
-                        Text(
-                          "San Francisco, California 94124",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.normal,
-                            fontSize: Responsive.sp(10.5),
-                          ),
-                        ),
-                      ],
+
+                    /// ✅ StreamBuilder for promoter data
+                    StreamBuilder<UserModel>(
+                      stream: UserRepository.fetchCurrentUserStream(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Column(
+                            children: [
+                              CircularProgressIndicator(color: AppColor.red),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Loading...",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontSize: Responsive.sp(10),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        if (!snapshot.hasData || snapshot.data == null) {
+                          return Column(
+                            children: [
+                              Text(
+                                "Hi👋 Guest",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: Responsive.sp(18),
+                                ),
+                              ),
+                              Text(
+                                "Location not set",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontSize: Responsive.sp(10.5),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        final user = snapshot.data!;
+
+                        if (!user.isPromoter) {
+                          return Column(
+                            children: [
+                              Text(
+                                "Hi👋 User",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: Responsive.sp(18),
+                                ),
+                              ),
+                              Text(
+                                "Not a promoter",
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontSize: Responsive.sp(10.5),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        final promoter = user.roleData as PromoterDataModel;
+                        final promoterName =
+                            promoter.prompterName ?? "Promoter";
+                        final location =
+                            promoter.location ?? "Location not set";
+
+                        return Column(
+                          children: [
+                            Text(
+                              "Hi👋 $promoterName",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.bold,
+                                fontSize: Responsive.sp(18),
+                              ),
+                            ),
+                            Text(
+                              location,
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.normal,
+                                fontSize: Responsive.sp(10.5),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
+
                     // Menu button for drawer
                     GestureDetector(
                       onTap: () {
@@ -75,97 +161,173 @@ class _PromoterHomeState extends State<PromoterHome> {
 
                 SizedBox(height: Responsive.h(2)),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColor.black,
+                // 🔹 Company Logo and Name Section
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    String companyName = "Company Name";
 
-                          border: BoxBorder.all(
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Wins",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(10.5),
-                                ),
+                    if (snapshot.hasData &&
+                        snapshot.data != null &&
+                        snapshot.data!.isPromoter) {
+                      final promoterData =
+                          snapshot.data!.roleData as PromoterDataModel;
+                      companyName = promoterData.companyName ?? "Company Name";
+                    }
+
+                    return Container(
+                      color: AppColor.black,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 0.0),
+                            child: Image(
+                              width: Responsive.w(70),
+                              image: const AssetImage(
+                                "assets/icons/Mask group.png",
                               ),
-                              Text(
-                                "12",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: Responsive.textScaleFactor * 32,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                          RotatedBox(
+                            quarterTurns: 3,
+                            child: Text(
+                              companyName,
+                              style: TextStyle(
+                                color: AppColor.white.withValues(alpha: 0.18),
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.normal,
+                                fontSize: Responsive.sp(40),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    SizedBox(width: Responsive.w(4)),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColor.black,
-                          border: BoxBorder.all(
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Knockouts",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: Responsive.sp(10.5),
-                                ),
-                              ),
-                              Text(
-                                "01",
-                                style: TextStyle(
-                                  color: AppColor.white,
-                                  fontFamily: AppFonts.appFont,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: Responsive.textScaleFactor * 32,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
+
+                // 🔹 Stats Cards with dynamic promoter data
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    String numberOfEvents = "0";
+                    String totalEvents = "0";
+
+                    if (snapshot.hasData &&
+                        snapshot.data != null &&
+                        snapshot.data!.isPromoter) {
+                      final promoterData =
+                          snapshot.data!.roleData as PromoterDataModel;
+                      numberOfEvents = (promoterData.numberOfEvents ?? 0)
+                          .toString();
+                      totalEvents = (promoterData.numberOfEvents ?? 0)
+                          .toString();
+                    }
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildStatCard("Events", numberOfEvents),
+                        _buildStatCard("Total Events", totalEvents),
+                      ],
+                    );
+                  },
+                ),
+
                 SizedBox(height: Responsive.h(2)),
+
+                // 🔹 Company Info Section
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    String companyName = "Not set";
+                    String contactEmail = "Not set";
+
+                    if (snapshot.hasData &&
+                        snapshot.data != null &&
+                        snapshot.data!.isPromoter) {
+                      final promoterData =
+                          snapshot.data!.roleData as PromoterDataModel;
+                      companyName = promoterData.companyName ?? "Not set";
+                      contactEmail = promoterData.contactEmail ?? "Not set";
+                    }
+
+                    return Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColor.black,
+                        border: BoxBorder.all(
+                          color: AppColor.white.withValues(alpha: 0.1),
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Company Name",
+                                  style: TextStyle(
+                                    color: AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: Responsive.sp(10),
+                                  ),
+                                ),
+                                Text(
+                                  companyName,
+                                  style: TextStyle(
+                                    color: AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Responsive.sp(12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: Responsive.h(1)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Contact Email",
+                                  style: TextStyle(
+                                    color: AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontSize: Responsive.sp(10),
+                                  ),
+                                ),
+                                Text(
+                                  contactEmail,
+                                  style: TextStyle(
+                                    color: AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Responsive.sp(12),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                SizedBox(height: Responsive.h(2)),
+
+                // 🔹 Recent Events
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Recent Fights",
+                      "Recent Events",
                       style: TextStyle(
                         color: AppColor.white,
                         fontFamily: AppFonts.appFont,
@@ -173,8 +335,6 @@ class _PromoterHomeState extends State<PromoterHome> {
                         fontSize: Responsive.textScaleFactor * 14,
                       ),
                     ),
-
-                    // SizedBox(width: Responsive.w(5)),
                     Row(
                       children: [
                         Text(
@@ -207,11 +367,9 @@ class _PromoterHomeState extends State<PromoterHome> {
                           child: Container(
                             width: Responsive.w(80),
                             height: Responsive.h(100),
-
                             decoration: BoxDecoration(
                               border: BoxBorder.all(
                                 color: AppColor.white.withValues(alpha: 0.1),
-                                // width: Responsive.w(0),
                               ),
                               borderRadius: BorderRadius.circular(18),
                             ),
@@ -226,9 +384,8 @@ class _PromoterHomeState extends State<PromoterHome> {
                                     ),
                                   ),
                                   SizedBox(height: Responsive.h(1)),
-
                                   Text(
-                                    "Jake “The Beast” Miller - 🏆 Win (KO)",
+                                    "Jake \"The Beast\" Miller - 🏆 Win (KO)",
                                     style: TextStyle(
                                       color: AppColor.white,
                                       fontFamily: AppFonts.appFont,
@@ -278,6 +435,8 @@ class _PromoterHomeState extends State<PromoterHome> {
                   ),
                 ),
                 SizedBox(height: Responsive.h(2)),
+
+                // 🔹 Fighter Scouting
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -290,8 +449,6 @@ class _PromoterHomeState extends State<PromoterHome> {
                         fontSize: Responsive.textScaleFactor * 14,
                       ),
                     ),
-
-                    // SizedBox(width: Responsive.w(5)),
                     Row(
                       children: [
                         Text(
@@ -310,6 +467,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                   ],
                 ),
                 SizedBox(height: Responsive.h(2)),
+
                 Container(
                   height: Responsive.h(28),
                   child: ListView.builder(
@@ -323,11 +481,9 @@ class _PromoterHomeState extends State<PromoterHome> {
                           child: Container(
                             width: Responsive.w(50),
                             height: Responsive.h(50),
-
                             decoration: BoxDecoration(
                               border: BoxBorder.all(
                                 color: AppColor.white.withValues(alpha: 0.1),
-                                // width: Responsive.w(0),
                               ),
                               borderRadius: BorderRadius.circular(18),
                             ),
@@ -380,7 +536,6 @@ class _PromoterHomeState extends State<PromoterHome> {
                                     ),
                                   ),
                                   SizedBox(height: Responsive.h(1)),
-
                                   Row(
                                     children: [
                                       SvgPicture.asset(
@@ -388,7 +543,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                                       ),
                                       SizedBox(width: Responsive.w(1)),
                                       Text(
-                                        "Corey Herwitz",
+                                        "San Francisco, CA",
                                         style: TextStyle(
                                           color: AppColor.white,
                                           fontFamily: AppFonts.appFont,
@@ -407,7 +562,6 @@ class _PromoterHomeState extends State<PromoterHome> {
                                         builder: (_) => FighterPublicProfile(),
                                       ),
                                     ),
-
                                     child: Container(
                                       width: double.infinity,
                                       decoration: BoxDecoration(
@@ -448,6 +602,48 @@ class _PromoterHomeState extends State<PromoterHome> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Reusable Stat Card
+  Widget _buildStatCard(String title, String value) {
+    return Container(
+      width: Responsive.w(45),
+      height: Responsive.w(22),
+      decoration: BoxDecoration(
+        color: AppColor.black,
+        border: BoxBorder.all(
+          color: AppColor.white.withValues(alpha: 0.1),
+          width: 2,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: AppColor.white,
+                fontFamily: AppFonts.appFont,
+                fontSize: Responsive.sp(10.5),
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                color: AppColor.white,
+                fontFamily: AppFonts.appFont,
+                fontWeight: FontWeight.normal,
+                fontSize: Responsive.sp(24),
+              ),
+            ),
+          ],
         ),
       ),
     );

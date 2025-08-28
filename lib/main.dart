@@ -1,4 +1,5 @@
 import 'package:cage/firebase_options.dart';
+import 'package:cage/provider/change_password_provider.dart';
 import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/provider/fighter_provider.dart';
 import 'package:cage/provider/location_provider.dart';
@@ -36,6 +37,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => FighterProvider()),
         ChangeNotifierProvider(create: (_) => TicketProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ChangeNotifierProvider(create: (_) => ChangePasswordProvider()),
       ],
       child: const MyApp(),
     ),

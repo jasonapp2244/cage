@@ -13,11 +13,12 @@ class AuthButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPress,
+      onTap: loading ? null : onPress, // Disable button when loading
       child: Container(
         width:MediaQuery.sizeOf(context).width*1,
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24), color:AppColor.red),
+            borderRadius: BorderRadius.circular(24), 
+            color: loading ? AppColor.red.withValues(alpha: 0.7) : AppColor.red), // Slightly transparent when loading
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical:  12.0),
           child: Center(

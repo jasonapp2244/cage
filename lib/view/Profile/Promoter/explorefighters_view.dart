@@ -390,7 +390,9 @@ class _FightersViewState extends State<ExploreFightersView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  _buildStatChip(fighter.location.toString()),
+                                  _buildStatChip(
+                                    _extractCityFromLocation(fighter.location),
+                                  ),
                                 ],
                               ),
 
@@ -447,22 +449,59 @@ class _FightersViewState extends State<ExploreFightersView> {
       ),
     );
   }
+
+  // Extract city from location data to avoid long text
+  String _extractCityFromLocation(String? location) {
+    if (location == null || location.isEmpty) {
+      return "Unknown";
+    }
+
+    // Check if it's coordinates (contains comma and numbers)
+    if (RegExp(r'^[\d\.-]+,\s*[\d\.-]+$').hasMatch(location.trim())) {
+      return "Location";
+    }
+
+    // If it's an address string, extract city
+    final parts = location.split(',').map((e) => e.trim()).toList();
+
+    if (parts.length >= 4) {
+      // For US format: "Street, City, State ZipCode, Country"
+      return parts[parts.length - 3];
+    } else if (parts.length == 3) {
+      // For format: "Street, City, Country"
+      return parts[1];
+    } else if (parts.length == 2) {
+      // For format: "City, Country"
+      return parts[0];
+    } else if (parts.length == 1) {
+      // Single location name - limit length
+      return parts[0].length > 12
+          ? parts[0].substring(0, 12) + "..."
+          : parts[0];
+    }
+
+    return location.length > 12 ? location.substring(0, 12) + "..." : location;
+  }
 }
 
 // Helper widget for stats
 Widget _buildStatChip(String location) {
-  return Container(
-    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-    decoration: BoxDecoration(
-      color: AppColor.red.withOpacity(0.2),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Text(
-      "${location ?? 'San Francisco, California'}",
-      style: GoogleFonts.dmSans(
-        color: AppColor.white,
-        fontSize: 10,
-        fontWeight: FontWeight.bold,
+  return Flexible(
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColor.red.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        location.isNotEmpty ? location : 'Unknown',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.dmSans(
+          color: AppColor.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     ),
   );

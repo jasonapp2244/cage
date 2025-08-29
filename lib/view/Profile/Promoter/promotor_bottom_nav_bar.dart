@@ -1,12 +1,21 @@
 // main_wrapper.dart
+import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
 import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
+import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
+import 'package:cage/view/Profile/fighter/homeview.dart';
+import 'package:cage/view/Profile/tab_controller.dart';
 import 'package:cage/view/notification_view.dart';
+import 'package:cage/view/settings_view.dart';
+import 'package:cage/view/support_view.dart';
+import 'package:cage/view/term_condition_view.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 class PromotorBottomNavBar extends StatefulWidget {
   const PromotorBottomNavBar({Key? key}) : super(key: key);
@@ -18,20 +27,78 @@ class PromotorBottomNavBar extends StatefulWidget {
 class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
   int _currentIndex = 0;
+  bool _isDrawerNavigation = false; // Track if we're navigating from drawer
 
-  final List<Widget> _pages = [
-    PromoterHome(),
-    ExploreFightersView(),
-    NotificationView(),
-    PromoterProfileView(),
+    // We'll create the pages in the build method to access the drawer controller
+  List<Widget> get _bottomNavPages => [
+    PromoterHome(drawerController: _drawerController), // Promoter Home
+    ExploreFightersView(), // Explore Fighters
+    NotificationView(), // Notifications
+    PromoterProfileView(), // Promoter Profile
+  ];
+
+  // Drawer Navigation Pages (Settings/Support Flow)
+  List<Widget> get _drawerPages => [
+    PromoterHome(drawerController: _drawerController), // Home (same as bottom nav)
+    _buildSubscriptionView(), // Subscription
+    SupportView(), // Support
+    SettingsView(), // Settings
+    TermConditionView(),
   ];
 
   void _handleMenuButtonPressed() {
-    _drawerController.showDrawer();
+    // This method is not used anymore since we use provider directly
+  }
+
+  // Subscription view for drawer navigation
+  Widget _buildSubscriptionView() {
+    return Scaffold(
+      backgroundColor: AppColor.black,
+      appBar: AppBar(
+        backgroundColor: AppColor.black,
+        title: Text('Subscription', style: TextStyle(color: AppColor.white)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColor.white),
+          onPressed: () {
+            setState(() {
+              _currentIndex = 0;
+              _isDrawerNavigation = false;
+            });
+          },
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.subscriptions, size: 64, color: AppColor.red),
+            SizedBox(height: 16),
+            Text(
+              'Promoter Subscription Plans',
+              style: TextStyle(
+                color: AppColor.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Manage your promoter subscription here',
+              style: TextStyle(
+                color: AppColor.white.withValues(alpha: 0.7),
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthViewmodel>(context);
+    
     return AdvancedDrawer(
       backdrop: Container(
         width: double.infinity,
@@ -60,7 +127,10 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 0);
+                    setState(() {
+                      _currentIndex = 0;
+                      _isDrawerNavigation = true;
+                    });
                   },
                   leading: SvgPicture.asset("assets/icons/home.svg"),
                   title: Text('Home'),
@@ -68,7 +138,10 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 1);
+                    setState(() {
+                      _currentIndex = 1;
+                      _isDrawerNavigation = true;
+                    });
                   },
                   leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
                   title: Text('Subscription'),
@@ -76,7 +149,10 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 2);
+                    setState(() {
+                      _currentIndex = 2;
+                      _isDrawerNavigation = true;
+                    });
                   },
                   leading: SvgPicture.asset(
                     "assets/icons/customer-service.svg",
@@ -86,7 +162,10 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 3);
+                    setState(() {
+                      _currentIndex = 3;
+                      _isDrawerNavigation = true;
+                    });
                   },
                   leading: SvgPicture.asset("assets/icons/setting.svg"),
                   title: Text('Settings'),
@@ -97,7 +176,9 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                   title: Text('Terms & Conditions'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () async {
+                    await authProvider.logout(context);
+                  },
                   leading: SvgPicture.asset("assets/icons/logout-03.svg"),
                   title: Text('Logout'),
                 ),
@@ -107,7 +188,9 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
         ),
       ),
       child: Scaffold(
-        body: _pages[_currentIndex],
+        body: _isDrawerNavigation
+            ? _drawerPages[_currentIndex]
+            : _bottomNavPages[_currentIndex],
         bottomNavigationBar: _buildBottomNavBar(),
       ),
     );
@@ -115,8 +198,13 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
 
   BottomNavigationBar _buildBottomNavBar() {
     return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      onTap: (index) => setState(() => _currentIndex = index),
+      currentIndex: _isDrawerNavigation
+          ? 0
+          : _currentIndex, // Reset to 0 if from drawer
+      onTap: (index) => setState(() {
+        _currentIndex = index;
+        _isDrawerNavigation = false; // Switch to bottom nav mode
+      }),
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.black,
       selectedItemColor: Colors.red,
@@ -169,235 +257,3 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
     }
   }
 }
-
-// // main_wrapper.dart
-// import 'package:cage/res/components/app_color.dart';
-// import 'package:cage/view/homeview.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
-// import 'package:flutter_svg/svg.dart';
-
-// class PromotorBottomNavBar extends StatefulWidget {
-//   const PromotorBottomNavBar({Key? key}) : super(key: key);
-
-//   @override
-//   State<PromotorBottomNavBar> createState() => _PromotorBottomNavBarState();
-// }
-
-// class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
-//   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
-//   int _currentIndex = 0;
-
-//   final List<Widget> _pages = [
-//     Homeview(),
-//     Container(color: AppColor.red),
-//     Container(color: AppColor.red),
-//     Container(color: AppColor.red),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return AdvancedDrawer(
-//       backdrop: Container(
-//         width: double.infinity,
-//         height: double.infinity,
-//         decoration: BoxDecoration(
-//           color: AppColor.red,
-//         ),
-//       ),
-//       controller: _advancedDrawerController,
-//       animationCurve: Curves.easeInOut,
-//       animationDuration: const Duration(milliseconds: 300),
-//       childDecoration: const BoxDecoration(
-//         borderRadius: BorderRadius.all(Radius.circular(16)),
-//       ),
-//       drawer: SafeArea(
-//         child: Container(
-//           child: ListTileTheme(
-//             textColor: Colors.white,
-//             iconColor: Colors.white,
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               mainAxisSize: MainAxisSize.max,
-//               children: [
-//                 Padding(
-//                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
-//                   child: SvgPicture.asset("assets/icons/Group 9 (1).svg"),
-//                 ),
-//                 ListTile(
-//                   onTap: () {},
-//                   leading: SvgPicture.asset("assets/icons/home.svg"),
-//                   title: Text('Home'),
-//                 ),
-//                 ListTile(
-//                   onTap: () {},
-//                   leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
-//                   title: Text('Subscription'),
-//                 ),
-//                 ListTile(
-//                   onTap: () {},
-//                   leading: SvgPicture.asset(
-//                     "assets/icons/customer-service.svg",
-//                   ),
-//                   title: Text('Support'),
-//                 ),
-
-//                 ListTile(
-//                   onTap: () {},
-//                   leading: SvgPicture.asset("assets/icons/setting.svg"),
-//                   title: Text('Settings'),
-//                 ),
-//                 ListTile(
-//                   onTap: () {},
-//                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
-//                   title: Text('Terms & Conditions'),
-//                 ),
-//                 ListTile(
-//                   onTap: () {},
-//                   leading: SvgPicture.asset("assets/icons/logout-03.svg"),
-//                   title: Text('Logout'),
-//                 ),
-//                 // Add more drawer items as needed
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//       child:Scaffold(
-//         body:  _pages[_currentIndex],
-//         bottomNavigationBar: _buildBottomNavBar(),
-//       ));
-//     //  AdvancedDrawer(
-//     //   backdrop: Container(
-//     //     width: double.infinity,
-//     //     height: double.infinity,
-//     //     decoration: BoxDecoration(
-//     //       gradient: LinearGradient(
-//     //         begin: Alignment.topLeft,
-//     //         end: Alignment.bottomRight,
-//     //         colors: [Colors.blueGrey, Colors.blueGrey.withOpacity(0.2)],
-//     //       ),
-//     //     ),
-//     //   ),
-//     //   controller: _drawerController,
-//     //   animationCurve: Curves.easeInOut,
-//     //   animationDuration: const Duration(milliseconds: 300),
-//     //   childDecoration: const BoxDecoration(
-//     //     borderRadius: BorderRadius.all(Radius.circular(16)),
-//     //   ),
-//     //   drawer: _buildDrawer(),
-//     //   child: Scaffold(
-//     //     appBar: AppBar(
-//     //       title: Text(_getTitle(_currentIndex)),
-//     //       leading: IconButton(
-//     //         onPressed: _handleMenuButtonPressed,
-//     //         icon: ValueListenableBuilder<AdvancedDrawerValue>(
-//     //           valueListenable: _drawerController,
-//     //           builder: (_, value, __) {
-//     //             return AnimatedSwitcher(
-//     //               duration: Duration(milliseconds: 250),
-//     //               child: Icon(
-//     //                 value.visible ? Icons.clear : Icons.menu,
-//     //                 key: ValueKey<bool>(value.visible),
-//     //               ),
-//     //             );
-//     //           },
-//     //         ),
-//     //       ),
-//     //     ),
-//     //     body: _pages[_currentIndex],
-//     //     bottomNavigationBar: _buildBottomNavBar(),
-//     //   ),
-//     // );
-//   }
-
-//   Widget _buildDrawer() {
-//     return SafeArea(
-//       child: Container(
-//         child: ListTileTheme(
-//           textColor: Colors.white,
-//           iconColor: Colors.white,
-//           child: Column(
-//             mainAxisSize: MainAxisSize.max,
-//             children: [
-//               Container(
-//                 width: 128.0,
-//                 height: 128.0,
-//                 margin: const EdgeInsets.only(top: 24.0, bottom: 64.0),
-//                 clipBehavior: Clip.antiAlias,
-//                 decoration: BoxDecoration(
-//                   color: Colors.black26,
-//                   shape: BoxShape.circle,
-//                 ),
-//                 child: Image.asset('assets/images/flutter_logo.png'),
-//               ),
-//               ListTile(
-//                 onTap: () {
-//                   _drawerController.hideDrawer();
-//                   setState(() => _currentIndex = 0);
-//                 },
-//                 leading: Icon(Icons.home),
-//                 title: Text('Home'),
-//               ),
-//               ListTile(
-//                 onTap: () {
-//                   _drawerController.hideDrawer();
-//                   setState(() => _currentIndex = 3); // Profile
-//                 },
-//                 leading: Icon(Icons.account_circle_rounded),
-//                 title: Text('Profile'),
-//               ),
-//               Spacer(),
-//               DefaultTextStyle(
-//                 style: TextStyle(fontSize: 12, color: Colors.white54),
-//                 child: Container(
-//                   margin: const EdgeInsets.symmetric(vertical: 16.0),
-//                   child: Text('Terms of Service | Privacy Policy'),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   BottomNavigationBar _buildBottomNavBar() {
-//     return BottomNavigationBar(
-//       currentIndex: _currentIndex,
-//       onTap: (index) => setState(() => _currentIndex = index),
-//       type: BottomNavigationBarType.fixed,
-//       backgroundColor: Colors.black,
-//       selectedItemColor: Colors.red,
-//       unselectedItemColor: Colors.grey,
-//       items: const [
-//         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-//         BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'Stats'),
-//         BottomNavigationBarItem(
-//           icon: Icon(Icons.fitness_center),
-//           label: 'Training',
-//         ),
-//         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-//       ],
-//     );
-//   }
-
-//   String _getTitle(int index) {
-//     switch (index) {
-//       case 0:
-//         return 'Home';
-//       case 1:
-//         return 'Stats';
-//       case 2:
-//         return 'Training';
-//       case 3:
-//         return 'Profile';
-//       default:
-//         return 'App';
-//     }
-//   }
-
-//   void _handleMenuButtonPressed() {
-//     _drawerController.showDrawer();
-//   }
-// }

@@ -6,6 +6,7 @@ import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:cage/view/settings_view.dart';
 import 'package:cage/view/support_view.dart';
+import 'package:cage/view/term_condition_view.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -25,17 +26,72 @@ class _MainWrapperState extends State<MainWrapper> {
   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
 
   int _currentIndex = 0;
+  bool _isDrawerNavigation = false; // Track if we're navigating from drawer
 
-  final List<Widget> _pages = [
-    Homeview(),
-    // ActivityView(),
-    SupportView(),
-    SettingsView(), // change again to notification
-    FighterPublicProfile(),
+  // Bottom Navigation Pages (Main App Flow)
+  final List<Widget> _bottomNavPages = [
+    Homeview(), // Home
+    ActivityView(), // Explore/Activity
+    NotificationView(), // Notifications
+    FighterPublicProfile(), // Profile
+  ];
+
+  // Drawer Navigation Pages (Settings/Support Flow)
+  final List<Widget> _drawerPages = [
+    Homeview(), // Home (same as bottom nav)
+    Container(),
+    SupportView(), // Support
+    SettingsView(), // Settings
+    TermConditionView(),
   ];
 
   void _handleMenuButtonPressed() {
     _drawerController.showDrawer();
+  }
+
+  // Subscription view for drawer navigation
+  Widget _buildSubscriptionView() {
+    return Scaffold(
+      backgroundColor: AppColor.black,
+      appBar: AppBar(
+        backgroundColor: AppColor.black,
+        title: Text('Subscription', style: TextStyle(color: AppColor.white)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColor.white),
+          onPressed: () {
+            setState(() {
+              _currentIndex = 0;
+              _isDrawerNavigation = false;
+            });
+          },
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.subscriptions, size: 64, color: AppColor.red),
+            SizedBox(height: 16),
+            Text(
+              'Subscription Plans',
+              style: TextStyle(
+                color: AppColor.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Manage your subscription here',
+              style: TextStyle(
+                color: AppColor.white.withValues(alpha: 0.7),
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -70,7 +126,10 @@ class _MainWrapperState extends State<MainWrapper> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 0);
+                    setState(() {
+                      _currentIndex = 0;
+                      _isDrawerNavigation = true;
+                    });
                   },
                   leading: SvgPicture.asset("assets/icons/home.svg"),
                   title: Text('Home'),
@@ -78,7 +137,10 @@ class _MainWrapperState extends State<MainWrapper> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 1);
+                    setState(() {
+                      _currentIndex = 1;
+                      _isDrawerNavigation = true;
+                    });
                   },
                   leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
                   title: Text('Subscription'),
@@ -86,7 +148,10 @@ class _MainWrapperState extends State<MainWrapper> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 2);
+                    setState(() {
+                      _currentIndex = 2;
+                      _isDrawerNavigation = true;
+                    });
                   },
                   leading: SvgPicture.asset(
                     "assets/icons/customer-service.svg",
@@ -96,7 +161,10 @@ class _MainWrapperState extends State<MainWrapper> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 3);
+                    setState(() {
+                      _currentIndex = 3;
+                      _isDrawerNavigation = true;
+                    });
                   },
                   leading: SvgPicture.asset("assets/icons/setting.svg"),
                   title: Text('Settings'),
@@ -119,7 +187,9 @@ class _MainWrapperState extends State<MainWrapper> {
         ),
       ),
       child: Scaffold(
-        body: _pages[_currentIndex],
+        body: _isDrawerNavigation
+            ? _drawerPages[_currentIndex]
+            : _bottomNavPages[_currentIndex],
         bottomNavigationBar: _buildBottomNavBar(),
       ),
     );
@@ -127,8 +197,13 @@ class _MainWrapperState extends State<MainWrapper> {
 
   BottomNavigationBar _buildBottomNavBar() {
     return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      onTap: (index) => setState(() => _currentIndex = index),
+      currentIndex: _isDrawerNavigation
+          ? 0
+          : _currentIndex, // Reset to 0 if from drawer
+      onTap: (index) => setState(() {
+        _currentIndex = index;
+        _isDrawerNavigation = false; // Switch to bottom nav mode
+      }),
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.black,
       selectedItemColor: AppColor.white,

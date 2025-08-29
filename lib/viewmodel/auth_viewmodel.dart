@@ -477,20 +477,25 @@ class AuthViewmodel extends ChangeNotifier {
       return;
     }
 
-    try {
-      // Check if Firebase is initialized
-      if (Firebase.apps.isEmpty) {
-        Utils.flushBarErrorMassage(
-          "Firebase is not initialized. Please restart the app.",
-          context,
-        );
-        return;
-      }
+    // Check if Firebase is initialized
+    if (Firebase.apps.isEmpty) {
+      Utils.flushBarErrorMassage(
+        "Firebase is not initialized. Please restart the app.",
+        context,
+      );
+      return;
+    }
 
-      // Attempt login
+    // Set loading to true when login process starts
+    setloaoding(true);
+
+    try {
+      // Attempt login - this will throw an exception if login fails
       await loginWithEmailPassword(email, password, context);
 
-      // If login successful, check user role and navigate accordingly
+      // Only proceed with navigation if login was successful (no exception thrown)
+      print('Login successful, proceeding with navigation...');
+
       final uid = Utils.getCurrentUid();
       if (uid != null) {
         try {
@@ -537,7 +542,7 @@ class AuthViewmodel extends ChangeNotifier {
             );
           }
         } catch (firestoreError) {
-          print('Firestore error during login: $firestoreError');
+          print('Firestore error after successful login: $firestoreError');
           if (firestoreError.toString().contains('permission-denied')) {
             Utils.flushBarErrorMassage(
               "Permission denied. Please check your Firebase configuration.",
@@ -549,11 +554,21 @@ class AuthViewmodel extends ChangeNotifier {
               context,
             );
           }
+          // Set loading to false on error
+          setloaoding(false);
         }
+      } else {
+        print('No UID found after successful login');
+        Utils.flushBarErrorMassage("Login error. Please try again.", context);
+        // Set loading to false on error
+        setloaoding(false);
       }
     } catch (e) {
-      // Error is already handled in loginWithEmailPassword method
-      print('Login failed: $e');
+      // Login failed - error message already shown by loginWithEmailPassword
+      print('Login failed, staying on login screen: $e');
+      // Set loading to false on login failure
+      setloaoding(false);
+      return;
     }
   }
 

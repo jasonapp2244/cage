@@ -1,4 +1,5 @@
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
@@ -11,6 +12,7 @@ import 'package:cage/repository/home_repository.dart';
 import 'package:cage/models/user_model.dart';
 import 'package:cage/models/promoter_model.dart';
 import 'package:cage/view/Profile/Promoter/edit_promoter_profile.dart';
+import 'package:provider/provider.dart';
 
 class PromoterHome extends StatefulWidget {
   final AdvancedDrawerController? drawerController;
@@ -469,7 +471,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                 SizedBox(height: Responsive.h(2)),
 
                 Container(
-                  height: Responsive.h(28),
+                  height: Responsive.h(30),
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: 10,

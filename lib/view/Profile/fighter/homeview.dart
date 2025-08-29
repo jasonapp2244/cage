@@ -101,8 +101,7 @@ class _HomeviewState extends State<Homeview> {
                             ),
                             Text(
                               user.isFighter
-                                  ? (user.roleData as FighterDataModel)
-                                            .location ??
+                                  ? _extractCityAndCountry((user.roleData as FighterDataModel).location) ??
                                         "Location not set"
                                   : "Location not set",
                               style: TextStyle(
@@ -111,9 +110,9 @@ class _HomeviewState extends State<Homeview> {
                                 fontWeight: FontWeight.normal,
                                 fontSize: Responsive.sp(8.5),
                               ),
-                              maxLines: 3,
+                              maxLines: 2,
                               softWrap: true,
-                              overflow: TextOverflow.visible,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         );
@@ -420,5 +419,55 @@ class _HomeviewState extends State<Homeview> {
 
   void _handleMenuButtonPressed() {
     _advancedDrawerController.showDrawer();
+  }
+
+  /// Extract city and country from location data
+  String? _extractCityAndCountry(String? locationData) {
+    if (locationData == null || locationData.isEmpty) {
+      return null;
+    }
+
+    // Debug: Print the raw location data to see what we're working with
+    print("Raw location data: '$locationData'");
+
+    // Check if it's coordinates (contains only numbers, dots, minus signs and comma)
+    if (RegExp(r'^[\d\.-]+,\s*[\d\.-]+$').hasMatch(locationData.trim())) {
+      // This is coordinates format like "latitude, longitude"
+      print("Detected coordinates format: $locationData");
+      return "Location set"; // Generic message for coordinates
+    }
+
+    // Check if it's a JSON-like string or other format
+    if (locationData.startsWith('{') || locationData.contains('latitude') || locationData.contains('longitude')) {
+      print("Detected complex location data: $locationData");
+      return "Location set"; // Generic message for complex data
+    }
+
+    // If it's an address string, parse it
+    final parts = locationData.split(',').map((e) => e.trim()).toList();
+    print("Address parts: $parts");
+    
+    if (parts.length >= 4) {
+      // For US format: "Street, City, State ZipCode, Country"
+      // Extract city (index length-3) and country (last index)
+      final city = parts[parts.length - 3];
+      final country = parts[parts.length - 1];
+      return "$city, $country";
+    } else if (parts.length == 3) {
+      // For format: "Street, City, Country"
+      final city = parts[1];
+      final country = parts[2];
+      return "$city, $country";
+    } else if (parts.length == 2) {
+      // For format: "City, Country"
+      final city = parts[0];
+      final country = parts[1];
+      return "$city, $country";
+    } else if (parts.length == 1) {
+      // If only one part, return it as is
+      return parts[0];
+    }
+    
+    return locationData; // Fallback to original data
   }
 }

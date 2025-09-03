@@ -1,9 +1,7 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -113,7 +111,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                       Column(
                         children: [
                           Text(
-                            "Hi👋Jhon Doe",
+                            "Hi 👋 James",
                             style: TextStyle(
                               color: AppColor.white,
                               fontFamily: AppFonts.appFont,
@@ -172,7 +170,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Wins",
+                                  "Active Event",
                                   style: TextStyle(
                                     color: AppColor.white,
                                     fontFamily: AppFonts.appFont,
@@ -212,7 +210,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Knockouts",
+                                  "Pending Applications",
                                   style: TextStyle(
                                     color: AppColor.white,
                                     fontFamily: AppFonts.appFont,
@@ -241,7 +239,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Recent Fights",
+                        "Upcoming Events",
                         style: TextStyle(
                           color: AppColor.white,
                           fontFamily: AppFonts.appFont,
@@ -599,7 +597,7 @@ void _showEventDetailsBottomSheet(BuildContext context) {
                     "Looking for aggressive strikers with clean records. The winner will be "
                     "featured on our official YouTube broadcast with cash bonus + sponsor exposure.",
                     style: GoogleFonts.dmSans(
-                      color: AppColor.white.withOpacity(0.8),
+                      color: AppColor.white.withValues(alpha:0.8),
                       fontSize: Responsive.sp(12),
                     ),
                   ),

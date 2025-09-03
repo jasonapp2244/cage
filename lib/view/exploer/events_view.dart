@@ -342,7 +342,7 @@ class EventsView extends StatelessWidget {
                       "Looking for aggressive strikers with clean records. The winner will be "
                       "featured on our official YouTube broadcast with cash bonus + sponsor exposure.",
                       style: GoogleFonts.dmSans(
-                        color: AppColor.white.withOpacity(0.8),
+                        color: AppColor.white.withValues(alpha:0.8),
                         fontSize: Responsive.sp(12),
                       ),
                     ),

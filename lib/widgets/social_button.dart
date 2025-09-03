@@ -1,6 +1,5 @@
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/view/auth/loginview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 

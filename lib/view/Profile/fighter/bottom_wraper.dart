@@ -1,10 +1,8 @@
 // main_wrapper.dart
 import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/tab_controller.dart';
-import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:flutter/material.dart';
@@ -30,9 +28,9 @@ class _MainWrapperState extends State<MainWrapper> {
     FighterPersonalProfileView(),
   ];
 
-  void _handleMenuButtonPressed() {
-    _drawerController.showDrawer();
-  }
+  // void _handleMenuButtonPressed() {
+  //   _drawerController.showDrawer();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -158,20 +156,20 @@ class _MainWrapperState extends State<MainWrapper> {
     );
   }
 
-  String _getTitle(int index) {
-    switch (index) {
-      case 0:
-        return 'Home';
-      case 1:
-        return 'Stats';
-      case 2:
-        return 'Training';
-      case 3:
-        return 'Profile';
-      default:
-        return 'App';
-    }
-  }
+  // String _getTitle(int index) {
+  //   switch (index) {
+  //     case 0:
+  //       return 'Home';
+  //     case 1:
+  //       return 'Stats';
+  //     case 2:
+  //       return 'Training';
+  //     case 3:
+  //       return 'Profile';
+  //     default:
+  //       return 'App';
+  //   }
+  // }
 }
 
 // // main_wrapper.dart

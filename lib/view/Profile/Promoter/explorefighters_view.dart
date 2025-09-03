@@ -15,7 +15,7 @@ class ExploreFighters extends StatelessWidget {
       backgroundColor: AppColor.black,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -118,7 +118,7 @@ class ExploreFighters extends StatelessWidget {
                         borderRadius: BorderRadius.circular(22),
                         color: AppColor.black,
                         border: Border.all(
-                          color: AppColor.white.withOpacity(0.1),
+                          color: AppColor.white.withValues(alpha:0.1),
                           width: 1,
                         ),
                       ),
@@ -181,14 +181,14 @@ class ExploreFighters extends StatelessWidget {
                               SvgPicture.asset(
                                 "assets/icons/location-05.svg",
                                 height: 16,
-                                color: AppColor.white.withOpacity(0.7),
+                                color: AppColor.white.withValues(alpha:0.7),
                               ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   "San Francisco, California",
                                   style: GoogleFonts.dmSans(
-                                    color: AppColor.white.withOpacity(0.7),
+                                    color: AppColor.white.withValues(alpha:0.7),
                                     fontSize: 12,
                                   ),
                                 ),

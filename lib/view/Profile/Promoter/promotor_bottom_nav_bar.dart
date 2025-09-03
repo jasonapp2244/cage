@@ -3,7 +3,6 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
 import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
-import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -27,9 +26,9 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
     PromoterView(),
   ];
 
-  void _handleMenuButtonPressed() {
-    _drawerController.showDrawer();
-  }
+  // void _handleMenuButtonPressed() {
+  //   _drawerController.showDrawer();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +146,7 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
           icon: CircleAvatar(
             radius: 15,
             backgroundColor: AppColor.white,
-            backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
+            backgroundImage: AssetImage("assets/images/image.png"),
           ),
           label: '',
         ),
@@ -155,20 +154,20 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
     );
   }
 
-  String _getTitle(int index) {
-    switch (index) {
-      case 0:
-        return 'Home';
-      case 1:
-        return 'Stats';
-      case 2:
-        return 'Training';
-      case 3:
-        return 'Profile';
-      default:
-        return 'App';
-    }
-  }
+  // String _getTitle(int index) {
+  //   switch (index) {
+  //     case 0:
+  //       return 'Home';
+  //     case 1:
+  //       return 'Stats';
+  //     case 2:
+  //       return 'Training';
+  //     case 3:
+  //       return 'Profile';
+  //     default:
+  //       return 'App';
+  //   }
+  // }
 }
 
 // // main_wrapper.dart

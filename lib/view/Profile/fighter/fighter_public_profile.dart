@@ -2,7 +2,6 @@ import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/Profile/fighter/eidt_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -671,7 +670,7 @@ class FighterPublicProfile extends StatelessWidget {
                   height: Responsive.h(20),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: AppColor.white.withOpacity(0.1),
+                      color: AppColor.white.withValues(alpha:0.1),
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(14),
@@ -679,7 +678,7 @@ class FighterPublicProfile extends StatelessWidget {
                   child: Center(
                     child: Text(
                       "Photos will be displayed here",
-                      style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+                      style: TextStyle(color: AppColor.white.withValues(alpha:0.5)),
                     ),
                   ),
                 ),
@@ -703,7 +702,7 @@ class FighterPublicProfile extends StatelessWidget {
                   height: Responsive.h(20),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: AppColor.white.withOpacity(0.1),
+                      color: AppColor.white.withValues(alpha:0.1),
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(14),
@@ -711,7 +710,7 @@ class FighterPublicProfile extends StatelessWidget {
                   child: Center(
                     child: Text(
                       "Videos will be displayed here",
-                      style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+                      style: TextStyle(color: AppColor.white.withValues(alpha:0.5)),
                     ),
                   ),
                 ),

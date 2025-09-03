@@ -77,7 +77,7 @@ class _PromoterViewState extends State<PromoterView>
                       ),
                     ),
                     Text(
-                      "Profi",
+                      "Profile",
                       style: TextStyle(
                         fontSize: Responsive.textScaleFactor * 24,
                         color: AppColor.white,
@@ -96,7 +96,7 @@ class _PromoterViewState extends State<PromoterView>
                   children: [
                     CircleAvatar(
                       radius: 35,
-                      backgroundColor: AppColor.white.withOpacity(0.1),
+                      backgroundColor: AppColor.white.withValues(alpha:0.1),
                       child: Image(
                         image: AssetImage("assets/images/image.png"),
                       ),
@@ -179,7 +179,7 @@ class _PromoterViewState extends State<PromoterView>
                         decoration: BoxDecoration(
                           color: AppColor.black,
                           border: Border.all(
-                            color: AppColor.white.withOpacity(0.1),
+                            color: AppColor.white.withValues(alpha:0.1),
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(14),
@@ -219,7 +219,7 @@ class _PromoterViewState extends State<PromoterView>
                         decoration: BoxDecoration(
                           color: AppColor.black,
                           border: Border.all(
-                            color: AppColor.white.withOpacity(0.1),
+                            color: AppColor.white.withValues(alpha:0.1),
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(14),
@@ -292,7 +292,7 @@ class _PromoterViewState extends State<PromoterView>
                   width: double.infinity,
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: AppColor.white.withOpacity(0.1),
+                      color: AppColor.white.withValues(alpha:0.1),
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(14),
@@ -326,7 +326,7 @@ class _PromoterViewState extends State<PromoterView>
                                 Text(
                                   "3h ago",
                                   style: TextStyle(
-                                    color: AppColor.white.withOpacity(0.4),
+                                    color: AppColor.white.withValues(alpha:0.4),
                                     fontFamily: AppFonts.appFont,
                                     fontWeight: FontWeight.bold,
                                     fontSize: Responsive.sp(10),
@@ -368,7 +368,7 @@ class _PromoterViewState extends State<PromoterView>
                         Tab(text: 'Videos'),
                       ],
                       labelColor: AppColor.white,
-                      unselectedLabelColor: AppColor.white.withOpacity(0.5),
+                      unselectedLabelColor: AppColor.white.withValues(alpha:0.5),
                       indicatorColor: AppColor.red,
                       indicatorSize: TabBarIndicatorSize.tab,
                       labelStyle: TextStyle(
@@ -392,7 +392,7 @@ class _PromoterViewState extends State<PromoterView>
                                 margin: EdgeInsets.only(bottom: Responsive.h(1)),
                                 decoration: BoxDecoration(
                                   border: Border.all(
-                                    color: AppColor.white.withOpacity(0.1),
+                                    color: AppColor.white.withValues(alpha:0.1),
                                     width: 1,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
@@ -409,7 +409,7 @@ class _PromoterViewState extends State<PromoterView>
                                   subtitle: Text(
                                     event['date'],
                                     style: TextStyle(
-                                      color: AppColor.white.withOpacity(0.7),
+                                      color: AppColor.white.withValues(alpha:0.7),
                                       fontFamily: AppFonts.appFont,
                                     ),
                                   ),
@@ -486,7 +486,7 @@ class _PromoterViewState extends State<PromoterView>
                                   child: Center(
                                     child: Icon(
                                       Icons.play_circle_filled,
-                                      color: AppColor.white.withOpacity(0.8),
+                                      color: AppColor.white.withValues(alpha:0.8),
                                       size: Responsive.sp(30),
                                     ),
                                   ),

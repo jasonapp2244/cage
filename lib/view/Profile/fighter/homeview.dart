@@ -3,7 +3,6 @@ import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
@@ -15,8 +14,8 @@ class Homeview extends StatefulWidget {
 }
 
 class _HomeviewState extends State<Homeview> {
-  final _advancedDrawerController =
-      AdvancedDrawerController(); // Add controller
+  // final _advancedDrawerController =
+  //     AdvancedDrawerController(); // Add controller
 
   @override
   Widget build(BuildContext context) {
@@ -381,7 +380,7 @@ class _HomeviewState extends State<Homeview> {
     );
   }
 
-  void _handleMenuButtonPressed() {
-    _advancedDrawerController.showDrawer();
-  }
+  // void _handleMenuButtonPressed() {
+  //   _advancedDrawerController.showDrawer();
+  // }
 }

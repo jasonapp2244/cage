@@ -106,7 +106,7 @@ class ExploerPromoter extends StatelessWidget {
                         borderRadius: BorderRadius.circular(22),
                         color: AppColor.black,
                         border: Border.all(
-                          color: AppColor.white.withOpacity(0.1),
+                          color: AppColor.white.withValues(alpha:0.1),
                           width: 1,
                         ),
                       ),
@@ -169,14 +169,14 @@ class ExploerPromoter extends StatelessWidget {
                               SvgPicture.asset(
                                 "assets/icons/location-05.svg",
                                 height: 16,
-                                color: AppColor.white.withOpacity(0.7),
+                                color: AppColor.white.withValues(alpha:0.7),
                               ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   "San Francisco, California",
                                   style: GoogleFonts.dmSans(
-                                    color: AppColor.white.withOpacity(0.7),
+                                    color: AppColor.white.withValues(alpha:0.7),
                                     fontSize: 12,
                                   ),
                                 ),

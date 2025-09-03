@@ -1,6 +1,5 @@
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/Promoter/promotor_subcribtion_view.dart';
-import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/fighter/Payment_View.dart';
 import 'package:cage/view/Profile/Promoter/about_companay_name.dart';
 import 'package:cage/view/Profile/Promoter/company_name_view.dart';
@@ -196,11 +195,11 @@ class Routes {
         return MaterialPageRoute(
           builder: (BuildContext context) => WhoThepromoterView(),
         );
-      case RoutesName.WhoThepromoterView:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => PromoterView(),
-          // WhoThepromoterView(),
-        );
+      // case RoutesName.WhoThepromoterView:
+      //   return MaterialPageRoute(
+      //     builder: (BuildContext context) => PromoterView(),
+      //     // WhoThepromoterView(),
+      //   );
       case RoutesName.PromoterHome:
         return MaterialPageRoute(
           builder: (BuildContext context) => PromoterHome(),

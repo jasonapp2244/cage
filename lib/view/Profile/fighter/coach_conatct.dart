@@ -60,7 +60,7 @@ class CoachConatctView extends StatelessWidget {
                     // focusNode: emailFoucsNode,
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(

@@ -3,6 +3,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
+import 'package:cage/view/Profile/post_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -13,6 +14,8 @@ class FighterPersonalProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     Responsive.init(context);
     return Scaffold(
+      floatingActionButton:FanFloatingMenuWidget(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       backgroundColor: AppColor.black,
       body: SafeArea(
         child: SingleChildScrollView(

@@ -1,7 +1,9 @@
 // main_wrapper.dart
 import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
+import 'package:cage/view/Profile/fighter/settings_view.dart';
 import 'package:cage/view/Profile/tab_controller.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';
@@ -18,7 +20,6 @@ class MainWrapper extends StatefulWidget {
 }
 
 class _MainWrapperState extends State<MainWrapper> {
-  final AdvancedDrawerController _drawerController = AdvancedDrawerController();
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
@@ -28,13 +29,10 @@ class _MainWrapperState extends State<MainWrapper> {
     FighterPersonalProfileView(),
   ];
 
-  // void _handleMenuButtonPressed() {
-  //   _drawerController.showDrawer();
-  // }
-
   @override
   Widget build(BuildContext context) {
     final drawerProvider = Provider.of<DrawerControllerProvider>(context);
+    
     return AdvancedDrawer(
       backdrop: Container(
         width: double.infinity,
@@ -62,7 +60,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.controller.hideDrawer();
                     setState(() => _currentIndex = 0);
                   },
                   leading: SvgPicture.asset("assets/icons/home.svg"),
@@ -70,7 +68,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.controller.hideDrawer();
                     setState(() => _currentIndex = 1);
                   },
                   leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
@@ -78,7 +76,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.controller.hideDrawer();
                     setState(() => _currentIndex = 2);
                   },
                   leading: SvgPicture.asset(
@@ -88,19 +86,31 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
-                    setState(() => _currentIndex = 3);
+                    drawerProvider.controller.hideDrawer();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => SettingsView()),
+                    );
                   },
                   leading: SvgPicture.asset("assets/icons/setting.svg"),
                   title: Text('Settings'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    drawerProvider.controller.hideDrawer();
+                  },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
                   title: Text('Terms & Conditions'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    drawerProvider.controller.hideDrawer();
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      RoutesName.spalsh,
+                      (route) => false,
+                    );
+                  },
                   leading: SvgPicture.asset("assets/icons/logout-03.svg"),
                   title: Text('Logout'),
                 ),
@@ -110,11 +120,67 @@ class _MainWrapperState extends State<MainWrapper> {
         ),
       ),
       child: Scaffold(
-        body: _pages[_currentIndex],
+        // appBar: AppBar(
+        //   backgroundColor: Colors.black,
+        //   leading: IconButton(
+        //     onPressed: () {
+        //       drawerProvider.controller.showDrawer();
+        //     },
+        //     icon: ValueListenableBuilder<AdvancedDrawerValue>(
+        //       valueListenable: drawerProvider.controller,
+        //       builder: (_, value, __) {
+        //         return AnimatedSwitcher(
+        //           duration: const Duration(milliseconds: 250),
+        //           child: value.visible
+        //               ? Icon(Icons.clear, color: AppColor.white, key: UniqueKey())
+        //               : Icon(Icons.menu, color: AppColor.white, key: UniqueKey()),
+        //         );
+        //       },
+        //     ),
+        //   ),
+        //   title: Text(
+        //     _getAppBarTitle(),
+        //     style: TextStyle(color: AppColor.white),
+        //   ),
+        // ),
+        body: WillPopScope(
+          onWillPop: () async {
+            // If drawer is open, close it instead of navigating back
+            if (drawerProvider.controller.value.visible) {
+              drawerProvider.controller.hideDrawer();
+              return false;
+            }
+            
+            // Handle back button for bottom navigation
+            if (_currentIndex != 0) {
+              setState(() => _currentIndex = 0);
+              return false;
+            }
+            
+            // Allow default back behavior for home screen
+            return true;
+          },
+          child: _pages[_currentIndex],
+        ),
         bottomNavigationBar: _buildBottomNavBar(),
       ),
     );
   }
+
+  // String _getAppBarTitle() {
+  //   switch (_currentIndex) {
+  //     case 0:
+  //       return 'Home';
+  //     case 1:
+  //       return 'Activity';
+  //     case 2:
+  //       return 'Notifications';
+  //     case 3:
+  //       return 'Profile';
+  //     default:
+  //       return 'Cage';
+  //   }
+  // }
 
   BottomNavigationBar _buildBottomNavBar() {
     return BottomNavigationBar(
@@ -126,7 +192,6 @@ class _MainWrapperState extends State<MainWrapper> {
       unselectedItemColor: Colors.grey,
       items: [
         BottomNavigationBarItem(
-          // assets/icons/home_seleted.svg
           activeIcon: SvgPicture.asset("assets/icons/Group 1000002074.svg"),
           icon: SvgPicture.asset("assets/icons/home_unseleted.svg"),
           label: '',
@@ -136,14 +201,14 @@ class _MainWrapperState extends State<MainWrapper> {
           icon: SvgPicture.asset("assets/icons/exploer.svg"),
           label: '',
         ),
-        // assets/icons/home_unseleted.svg
         BottomNavigationBarItem(
-          activeIcon: SvgPicture.asset("assets/icons/notification_selected.svg"),
+          activeIcon: SvgPicture.asset(
+            "assets/icons/notification_selected.svg",
+          ),
           icon: SvgPicture.asset("assets/icons/notification.svg"),
           label: '',
         ),
         BottomNavigationBarItem(
-          // activeIcon: SvgPicture.asset("assets/icons/notification.svg"),
           icon: CircleAvatar(
             radius: 15,
             backgroundColor: AppColor.white,
@@ -155,6 +220,200 @@ class _MainWrapperState extends State<MainWrapper> {
       ],
     );
   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // main_wrapper.dart
+// import 'package:cage/provider/darwer_provider.dart';
+// import 'package:cage/res/components/app_color.dart';
+// import 'package:cage/utils/routes/routes_name.dart';
+// import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
+// import 'package:cage/view/Profile/fighter/settings_view.dart';
+// import 'package:cage/view/Profile/tab_controller.dart';
+// import 'package:cage/view/Profile/fighter/homeview.dart';
+// import 'package:cage/view/notification_view.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
+// import 'package:flutter_svg/svg.dart';
+// import 'package:provider/provider.dart';
+
+// class MainWrapper extends StatefulWidget {
+//   const MainWrapper({Key? key}) : super(key: key);
+
+//   @override
+//   State<MainWrapper> createState() => _MainWrapperState();
+// }
+
+// class _MainWrapperState extends State<MainWrapper> {
+//   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
+//   int _currentIndex = 0;
+
+//   final List<Widget> _pages = [
+//     Homeview(),
+//     ActivityView(),
+//     NotificationView(),
+//     FighterPersonalProfileView(),
+//   ];
+
+//   // void _handleMenuButtonPressed() {
+//   //   _drawerController.showDrawer();
+//   // }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final drawerProvider = Provider.of<DrawerControllerProvider>(context);
+//     return AdvancedDrawer(
+//       backdrop: Container(
+//         width: double.infinity,
+//         height: double.infinity,
+//         decoration: BoxDecoration(color: AppColor.red),
+//       ),
+//       controller: drawerProvider.controller,
+//       animationCurve: Curves.easeInOut,
+//       animationDuration: const Duration(milliseconds: 300),
+//       childDecoration: const BoxDecoration(
+//         borderRadius: BorderRadius.all(Radius.circular(16)),
+//       ),
+//       drawer: SafeArea(
+//         child: Container(
+//           child: ListTileTheme(
+//             textColor: Colors.white,
+//             iconColor: Colors.white,
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               mainAxisSize: MainAxisSize.max,
+//               children: [
+//                 Padding(
+//                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
+//                   child: SvgPicture.asset("assets/icons/Group 9 (1).svg"),
+//                 ),
+//                 ListTile(
+//                   onTap: () {
+//                     _drawerController.hideDrawer();
+//                     // setState(() => _currentIndex = 0);
+//                     Navigator.pushNamedAndRemoveUntil(
+//                       context,
+//                       RoutesName.home,
+//                       (route) => false,
+//                     );
+//                   },
+//                   leading: SvgPicture.asset("assets/icons/home.svg"),
+//                   title: Text('Home'),
+//                 ),
+//                 ListTile(
+//                   onTap: () {
+//                     _drawerController.hideDrawer();
+//                     setState(() => _currentIndex = 1);
+//                   },
+//                   leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
+//                   title: Text('Subscription'),
+//                 ),
+//                 ListTile(
+//                   onTap: () {
+//                     _drawerController.hideDrawer();
+//                     setState(() => _currentIndex = 2);
+//                   },
+//                   leading: SvgPicture.asset(
+//                     "assets/icons/customer-service.svg",
+//                   ),
+//                   title: Text('Support'),
+//                 ),
+//                 ListTile(
+//                   onTap: () {
+//                     // _drawerController.hideDrawer();
+//                     // setState(() => _currentIndex = 3);
+//                     Navigator.push(
+//                       context,
+//                       MaterialPageRoute(builder: (_) => SettingsView()),
+//                     ); 
+//                     // if (Navigator.canPop(context)) {
+//                     //   Navigator.pop(context);
+//                     // }
+//                   },
+//                   leading: SvgPicture.asset("assets/icons/setting.svg"),
+//                   title: Text('Settings'),
+//                 ),
+//                 ListTile(
+//                   onTap: () {},
+//                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
+//                   title: Text('Terms & Conditions'),
+//                 ),
+//                 ListTile(
+//                   onTap: () {
+//                     Navigator.pushNamedAndRemoveUntil(
+//                       context,
+//                       RoutesName.spalsh,
+//                       (route) => false,
+//                     );
+//                   },
+//                   leading: SvgPicture.asset("assets/icons/logout-03.svg"),
+//                   title: Text('Logout'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//       child: Scaffold(
+//         body: _pages[_currentIndex],
+//         bottomNavigationBar: _buildBottomNavBar(),
+//       ),
+//     );
+//   }
+
+//   BottomNavigationBar _buildBottomNavBar() {
+//     return BottomNavigationBar(
+//       currentIndex: _currentIndex,
+//       onTap: (index) => setState(() => _currentIndex = index),
+//       type: BottomNavigationBarType.fixed,
+//       backgroundColor: Colors.black,
+//       selectedItemColor: AppColor.white,
+//       unselectedItemColor: Colors.grey,
+//       items: [
+//         BottomNavigationBarItem(
+//           // assets/icons/home_seleted.svg
+//           activeIcon: SvgPicture.asset("assets/icons/Group 1000002074.svg"),
+//           icon: SvgPicture.asset("assets/icons/home_unseleted.svg"),
+//           label: '',
+//         ),
+//         BottomNavigationBarItem(
+//           activeIcon: SvgPicture.asset("assets/icons/exploer_seleted.svg"),
+//           icon: SvgPicture.asset("assets/icons/exploer.svg"),
+//           label: '',
+//         ),
+//         // assets/icons/home_unseleted.svg
+//         BottomNavigationBarItem(
+//           activeIcon: SvgPicture.asset(
+//             "assets/icons/notification_selected.svg",
+//           ),
+//           icon: SvgPicture.asset("assets/icons/notification.svg"),
+//           label: '',
+//         ),
+//         BottomNavigationBarItem(
+//           // activeIcon: SvgPicture.asset("assets/icons/notification.svg"),
+//           icon: CircleAvatar(
+//             radius: 15,
+//             backgroundColor: AppColor.white,
+//             foregroundColor: AppColor.red,
+//             backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
+//           ),
+//           label: '',
+//         ),
+//       ],
+//     );
+//   }
 
   // String _getTitle(int index) {
   //   switch (index) {
@@ -170,7 +429,25 @@ class _MainWrapperState extends State<MainWrapper> {
   //       return 'App';
   //   }
   // }
-}
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // // main_wrapper.dart
 // import 'package:cage/res/components/app_color.dart';

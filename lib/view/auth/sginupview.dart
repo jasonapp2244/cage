@@ -1,5 +1,6 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/view/auth/loginview.dart';
 import 'package:cage/widgets/auth_button.dart';
 import 'package:cage/widgets/social_button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
@@ -58,9 +59,20 @@ class _SginupviewState extends State<Sginupview> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: Responsive.h(2)), // 2% of screen height
-                SvgPicture.asset(
-                  "assets/images/Frame 1171275875 (2).svg",
-                  width: Responsive.w(25), // 50% of screen width
+                // SvgPicture.asset(
+                //   "assets/images/Frame 1171275875 (2).svg",
+                //   width: Responsive.w(25), // 50% of screen width
+                // ),
+                Hero(
+                  tag: 'app-logo',
+                  child: SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: SvgPicture.asset(
+                      "assets/images/icon.svg",
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
                 SizedBox(height: Responsive.h(2)),
                 Text(
@@ -263,7 +275,7 @@ class _SginupviewState extends State<Sginupview> {
                     }
                   },
                 ),
-                SizedBox(height: Responsive.h(5)),
+                SizedBox(height: Responsive.h(3)),
                 Row(
                   children: [
                     Expanded(child: Divider(color: AppColor.white)),
@@ -303,19 +315,42 @@ class _SginupviewState extends State<Sginupview> {
                     text: "Have an account? ",
                     style: TextStyle(
                       color: AppColor.white,
-                      fontSize: Responsive.sp(10),
+                      fontSize: Responsive.textScaleFactor*14,
                     ),
                     children: [
                       TextSpan(
                         text: "Login here",
                         style: TextStyle(
                           color: AppColor.red,
-                          fontSize: Responsive.sp(10),
+                          fontSize: Responsive.textScaleFactor*14,
                           fontWeight: FontWeight.bold,
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            Navigator.pushNamed(context, RoutesName.login);
+                            // Navigator.pushNamed(context, RoutesName.login);
+                            Navigator.pushReplacement(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        Loginview(),
+                                transitionDuration: const Duration(
+                                  milliseconds: 500,
+                                ),
+                                transitionsBuilder:
+                                    (
+                                      context,
+                                      animation,
+                                      secondaryAnimation,
+                                      child,
+                                    ) {
+                                      return FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      );
+                                    },
+                              ),
+                            );
                           },
                       ),
                     ],

@@ -36,7 +36,19 @@ class _HomeviewState extends State<Homeview> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SvgPicture.asset("assets/icons/Group 9.svg"),
+                    Hero(
+                      tag: 'app-logo',
+                      child: SizedBox(
+                        child: SvgPicture.asset(
+                          "assets/images/icon.svg",
+                          width: Responsive.w(10
+                          ),
+                          height: Responsive.w(10),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    // SvgPicture.asset("assets/icons/Group 9.svg"),
                     Column(
                       children: [
                         Text(

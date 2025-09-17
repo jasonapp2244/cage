@@ -55,6 +55,7 @@ class LastPhysicalExamView extends StatelessWidget {
                   SizedBox(height: Responsive.h(2)),
 
                   TextFormField(
+                    maxLines: 4,
                     style: TextStyle(color: AppColor.white),
                     // controller: emailController,
                     // focusNode: emailFoucsNode,
@@ -64,17 +65,17 @@ class LastPhysicalExamView extends StatelessWidget {
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(
-                          Responsive.w(12),
+                          16
                         ), // 6% of width
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: AppColor.red),
-                        borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       // prefixIcon: Padding(
                       //   padding: EdgeInsets.all(Responsive.w(3)), // 2% of width

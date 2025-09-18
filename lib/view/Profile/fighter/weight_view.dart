@@ -17,9 +17,9 @@ class WeightView extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsetsGeometry.symmetric(horizontal: 10),
-          child: 
-          
-          Column(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: Responsive.h(2)),
               GestureDetector(

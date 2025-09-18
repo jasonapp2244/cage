@@ -14,9 +14,6 @@ class Homeview extends StatefulWidget {
 }
 
 class _HomeviewState extends State<Homeview> {
-  // final _advancedDrawerController =
-  //     AdvancedDrawerController(); // Add controller
-
   @override
   Widget build(BuildContext context) {
     final drawerProvider = Provider.of<DrawerControllerProvider>(
@@ -41,8 +38,7 @@ class _HomeviewState extends State<Homeview> {
                       child: SizedBox(
                         child: SvgPicture.asset(
                           "assets/images/icon.svg",
-                          width: Responsive.w(10
-                          ),
+                          width: Responsive.w(10),
                           height: Responsive.w(10),
                           fit: BoxFit.contain,
                         ),

@@ -14,11 +14,17 @@ class HightView extends StatefulWidget {
 class _HightViewState extends State<HightView> {
   final FixedExtentScrollController _scrollController =
       FixedExtentScrollController();
-  List<int> heightValues = List.generate(
-    50,
-    (index) => 110 + index,
-  ); // 140-189 cm
-  int selectedHeight = 270;
+  List<String> heightValues = List.generate(
+    (8 * 12) - (2 * 12) + 1, // 2'0" → 8'0"
+    (index) {
+      int totalInches = (2 * 12) + index; // start from 24 inches (2 ft)
+      int feet = totalInches ~/ 12;
+      int inch = totalInches % 12;
+      return "$feet'$inch\"";
+    },
+  );
+
+  String selectedHeight = "5'7\""; // example
 
   @override
   void initState() {
@@ -111,7 +117,7 @@ class _HightViewState extends State<HightView> {
                                       '$height',
                                       style: TextStyle(
                                         fontFamily: AppFonts.appFont,
-                                        fontSize: 42,
+                                        fontSize: Responsive.sp(25),
                                         color: height == selectedHeight
                                             ? AppColor.white
                                             : Colors.grey,
@@ -127,7 +133,7 @@ class _HightViewState extends State<HightView> {
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          'cm',
+                                          'ft in',
                                           style: TextStyle(
                                             fontFamily: AppFonts.appFont,
                                             fontSize: 18,
@@ -154,29 +160,15 @@ class _HightViewState extends State<HightView> {
                       text: "Next",
                       onTap: () {
                         print('Selected height: $selectedHeight cm');
-                        Navigator.pushNamed(context, RoutesName.fightwon);
+                        Navigator.pushNamed(context, RoutesName.weightview);
                       },
                     ),
-
-                    // ElevatedButton(
-                    //   onPressed: () {
-                    //     print('Selected height: $selectedHeight cm');
-                    //     // Add your navigation logic here
-                    //   },
-                    //   child: const Text('Next', style: TextStyle(fontSize: 18)),
-                    //   style: ElevatedButton.styleFrom(
-                    //     padding: const EdgeInsets.symmetric(
-                    //       horizontal: 60,
-                    //       vertical: 16,
-                    //     ),
-                    //     shape: RoundedRectangleBorder(
-                    //       borderRadius: BorderRadius.circular(30),
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
+
+              // 👇 Static CM text in center
+              // After your wheel picker container (inside the Stack)
             ],
           ),
         ),
@@ -190,182 +182,3 @@ class _HightViewState extends State<HightView> {
     super.dispose();
   }
 }
-
-// import 'package:cage/res/components/app_color.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_material_pickers/helpers/show_number_picker.dart';
-// import 'package:google_fonts/google_fonts.dart';
-
-// class HightView extends StatefulWidget {
-//   @override
-//   _HightViewState createState() => _HightViewState();
-// }
-
-// class _HightViewState extends State<HightView> {
-//   final FixedExtentScrollController _scrollController =
-//       FixedExtentScrollController();
-//   List<int> heightValues = List.generate(
-//     50,
-//     (index) => 140 + index,
-//   ); // Generates values from 140 to 189
-//   int selectedHeight = 170;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     // Set initial position to 170cm (index 30)
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       _scrollController.jumpToItem(heightValues.indexOf(selectedHeight));
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: AppColor.black,
-//       body: SafeArea(
-//         child: Padding(
-//           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.start,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text(
-//                 "What’s your height?",
-//                 style: GoogleFonts.dmSans(
-//                   fontSize: 32,
-//                   color: AppColor.white,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//               Text(
-//                 "Please enter your height in feet and inches",
-//                 style: GoogleFonts.dmSans(
-//                   fontSize: 18,
-//                   color: AppColor.white,
-//                   fontWeight: FontWeight.normal,
-//                 ),
-//               ),
-
-//               Center(
-//                 child: Column(
-//                   mainAxisAlignment: MainAxisAlignment.center,
-//                   children: [
-//                     SizedBox(height: 40),
-//                     // Wheel picker
-//                     Stack(
-//                       children: [
-//                         Positioned(
-//                           top: 5,
-//                           left: 5,
-//                           child: Container(
-//                             height: 20,
-//                             width: 20,
-//                             child: Text(
-//                               "data",
-//                               style: TextStyle(
-//                                 fontSize: 44,
-//                                 color: AppColor.white,
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                         Container(
-//                           color: AppColor.black,
-//                           height: 300,
-//                           child: ListWheelScrollView(
-//                             controller: _scrollController,
-//                             itemExtent: 50,
-//                             perspective: 0.005,
-//                             diameterRatio: 2.5,
-//                             onSelectedItemChanged: (index) {
-//                               setState(() {
-//                                 selectedHeight = heightValues[index];
-//                               });
-//                             },
-//                             children: heightValues.map((height) {
-//                               return Center(
-//                                 child: Container(
-//                                   decoration: BoxDecoration(
-//                                     border: Border(
-//                                       top: BorderSide(
-//                                         color: height == selectedHeight
-//                                             ? AppColor.red
-//                                             : AppColor.black,
-//                                       ),
-//                                     ),
-//                                   ),
-//                                   child: Column(
-//                                     children: [
-//                                       Row(
-//                                         mainAxisAlignment:
-//                                             MainAxisAlignment.center,
-//                                         children: [
-//                                           Text(
-//                                             '$height ',
-//                                             style: GoogleFonts.dmSans(
-//                                               fontSize: 32,
-//                                               color: height == selectedHeight
-//                                                   ? AppColor.red
-//                                                   : AppColor.white,
-//                                               fontWeight:
-//                                                   height == selectedHeight
-//                                                   ? FontWeight.bold
-//                                                   : FontWeight.normal,
-//                                             ),
-//                                           ),
-//                                           Text(
-//                                             'cm',
-//                                             style: GoogleFonts.dmSans(
-//                                               fontSize: 18,
-//                                               color: height == selectedHeight
-//                                                   ? AppColor.red
-//                                                   : AppColor.white,
-//                                               fontWeight:
-//                                                   height == selectedHeight
-//                                                   ? FontWeight.bold
-//                                                   : FontWeight.normal,
-//                                             ),
-//                                           ),
-//                                         ],
-//                                       ),
-//                                     ],
-//                                   ),
-//                                 ),
-//                               );
-//                             }).toList(),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                     SizedBox(height: 40),
-//                     ElevatedButton(
-//                       onPressed: () {
-//                         // Handle the "Next" button press
-//                         print('Selected height: $selectedHeight cm');
-//                         // Navigate to next screen or perform action
-//                       },
-//                       child: Text('Next'),
-//                       style: ElevatedButton.styleFrom(
-//                         padding: EdgeInsets.symmetric(
-//                           horizontal: 40,
-//                           vertical: 15,
-//                         ),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   @override
-//   void dispose() {
-//     _scrollController.dispose();
-//     super.dispose();
-//   }
-// }

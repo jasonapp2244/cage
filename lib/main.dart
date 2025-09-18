@@ -2,7 +2,9 @@ import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/provider/role_provider.dart';
 import 'package:cage/provider/tab_controller.dart';
 import 'package:cage/res/components/app_color.dart';
-import 'package:cage/view/Profile/fighter/weight_view.dart';
+import 'package:cage/utils/routes/routes.dart';
+import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/view/auth/splash_view.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,20 +29,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: RoutesName.spalsh,
+
+      onGenerateRoute: Routes.generateRoutes,
+
       theme: ThemeData(
         textSelectionTheme: TextSelectionThemeData(
           cursorColor: AppColor.red,
-          selectionColor: AppColor.red.withValues(
-            alpha: 0.5,
-          ),
+          selectionColor: AppColor.red.withValues(alpha: 0.5),
           selectionHandleColor: AppColor.red,
         ),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-     home: WeightView(),
-      // initialRoute: RoutesName.spalsh, 
-      // onGenerateRoute: Routes.generateRoutes,
     );
   }
 }

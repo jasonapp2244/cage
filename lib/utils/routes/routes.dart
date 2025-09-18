@@ -16,6 +16,7 @@ import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/fighter/age_view.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:cage/view/Profile/fighter/review_view.dart';
+import 'package:cage/view/Profile/fighter/weight_view.dart';
 import 'package:cage/view/change_password_view.dart';
 import 'package:cage/view/Profile/fighter/coach_conatct.dart';
 import 'package:cage/view/Profile/fighter/coach_view.dart';
@@ -238,6 +239,11 @@ class Routes {
       case RoutesName.login:
         return MaterialPageRoute(
           builder: (BuildContext context) => Loginview(),
+        );
+
+      case RoutesName.weightview:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => WeightView(),
         );
 
       case RoutesName.spalsh:

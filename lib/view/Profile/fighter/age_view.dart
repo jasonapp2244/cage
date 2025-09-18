@@ -112,7 +112,8 @@ class _AgeViewState extends State<AgeView> {
                                         '$height',
                                         style: TextStyle(
                                           fontFamily: AppFonts.appFont,
-                                          fontSize: 55,
+                                          fontSize:
+                                              Responsive.textScaleFactor * 35,
                                           color: height == selectedHeight
                                               ? AppColor.white
                                               : Colors.grey,

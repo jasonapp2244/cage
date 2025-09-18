@@ -67,7 +67,7 @@ class _HightViewState extends State<HightView> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Please enter your height in centimeters',
+                'Please enter your height in feet',
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               Center(
@@ -117,7 +117,8 @@ class _HightViewState extends State<HightView> {
                                       '$height',
                                       style: TextStyle(
                                         fontFamily: AppFonts.appFont,
-                                        fontSize: Responsive.sp(25),
+                                        fontSize:
+                                            Responsive.textScaleFactor * 35,
                                         color: height == selectedHeight
                                             ? AppColor.white
                                             : Colors.grey,
@@ -126,27 +127,27 @@ class _HightViewState extends State<HightView> {
                                             : FontWeight.normal,
                                       ),
                                     ),
-                                    SizedBox(width: 2),
-                                    Column(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          'ft in',
-                                          style: TextStyle(
-                                            fontFamily: AppFonts.appFont,
-                                            fontSize: 18,
-                                            color: height == selectedHeight
-                                                ? AppColor.white
-                                                : Colors.grey,
-                                            fontWeight: height == selectedHeight
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    //  SizedBox(width: 2),
+                                    // Column(
+                                    //   mainAxisAlignment: MainAxisAlignment.end,
+                                    //   crossAxisAlignment:
+                                    //       CrossAxisAlignment.end,
+                                    //   children: [
+                                    //     Text(
+                                    //       'ft in',
+                                    //       style: TextStyle(
+                                    //         fontFamily: AppFonts.appFont,
+                                    //         fontSize: 18,
+                                    //         color: height == selectedHeight
+                                    //             ? AppColor.white
+                                    //             : Colors.grey,
+                                    //         fontWeight: height == selectedHeight
+                                    //             ? FontWeight.bold
+                                    //             : FontWeight.normal,
+                                    //       ),
+                                    //     ),
+                                    //   ],
+                                    // ),
                                   ],
                                 ),
                               );

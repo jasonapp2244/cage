@@ -44,6 +44,7 @@ class WeightView extends StatelessWidget {
                 'Enter your current weight in kilograms or pounds (e.g., 154 lbs).',
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
+              SizedBox(height: Responsive.h(5)),
               Container(height: 420, child: ScaleGaugeWidget()),
               const SizedBox(height: 40),
               Button(

@@ -12,12 +12,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class LastPhysicalExamView extends StatefulWidget {
+  const LastPhysicalExamView({super.key});
+
   @override
   State<LastPhysicalExamView> createState() => _LastPhysicalExamViewState();
 }
 
 class _LastPhysicalExamViewState extends State<LastPhysicalExamView> {
-  TextEditingController _lastExamController = TextEditingController();
+  final TextEditingController _lastExamController = TextEditingController();
   DateTime? selectedDate;
   
   @override

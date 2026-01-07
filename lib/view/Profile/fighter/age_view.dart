@@ -10,11 +10,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class AgeView extends StatefulWidget {
+  const AgeView({super.key});
+
   @override
-  _AgeViewState createState() => _AgeViewState();
+  AgeViewState createState() => AgeViewState();
 }
 
-class _AgeViewState extends State<AgeView> {
+class AgeViewState extends State<AgeView> {
   final FixedExtentScrollController _scrollController =
       FixedExtentScrollController();
   List<int> heightValues = List.generate(

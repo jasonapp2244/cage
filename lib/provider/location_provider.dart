@@ -8,7 +8,7 @@ import '../utils/routes/utils.dart';
 class LocationProvider extends ChangeNotifier {
   // State variables
   LatLng? _currentLocation;
-  Set<Marker> _markers = {};
+  final Set<Marker> _markers = {};
   List<LocationPrediction> _predictions = [];
   bool _isSearching = false;
   bool _isSavingLocation = false;

@@ -10,6 +10,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 class UpdateprofleView extends StatelessWidget {
+  const UpdateprofleView({super.key});
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthViewmodel>(context);

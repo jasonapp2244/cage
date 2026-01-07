@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
           cursorColor: AppColor.red,
           selectionColor: AppColor.red.withValues(
             alpha: 0.5,
-          ), // Changed from withValues to withOpacity
+          ), // Changed from withValues to withValues(alpha:
           selectionHandleColor: AppColor.red,
         ),
         // colorScheme: ColorScheme.fromSwatch(primarySwatch: AppColor.red),

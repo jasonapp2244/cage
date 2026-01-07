@@ -11,7 +11,7 @@ import 'package:flutter_svg/svg.dart' show SvgPicture;
 import 'package:provider/provider.dart';
 
 class SupportView extends StatefulWidget {
-  SupportView({super.key});
+  const SupportView({super.key});
 
   @override
   State<SupportView> createState() => _SupportViewState();
@@ -136,7 +136,7 @@ class _SupportViewState extends State<SupportView> {
                             Text(
                               "Create your first support ticket!",
                               style: TextStyle(
-                                color: AppColor.white.withOpacity(0.7),
+                                color: AppColor.white.withValues(alpha: 0.7),
                                 fontSize: 14,
                               ),
                             ),

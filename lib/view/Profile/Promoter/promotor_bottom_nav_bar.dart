@@ -1,12 +1,8 @@
 // main_wrapper.dart
-import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
 import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
-import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
-import 'package:cage/view/Profile/fighter/homeview.dart';
-import 'package:cage/view/Profile/tab_controller.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:cage/view/settings_view.dart';
 import 'package:cage/view/support_view.dart';
@@ -18,7 +14,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 class PromotorBottomNavBar extends StatefulWidget {
-  const PromotorBottomNavBar({Key? key}) : super(key: key);
+  const PromotorBottomNavBar({super.key});
 
   @override
   State<PromotorBottomNavBar> createState() => _PromotorBottomNavBarState();

@@ -12,12 +12,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class EyeTestView extends StatefulWidget {
+  const EyeTestView({super.key});
+
   @override
   State<EyeTestView> createState() => _EyeTestViewState();
 }
 
 class _EyeTestViewState extends State<EyeTestView> {
-  TextEditingController _eyeTestController = TextEditingController();
+  final TextEditingController _eyeTestController = TextEditingController();
   DateTime? selectedDate;
 
   @override

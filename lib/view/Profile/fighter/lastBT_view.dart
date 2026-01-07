@@ -12,6 +12,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class LastbloodtestView extends StatefulWidget {
+  const LastbloodtestView({super.key});
+
   @override
   State<LastbloodtestView> createState() => _LastbloodtestViewState();
 }

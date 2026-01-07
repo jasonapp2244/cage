@@ -98,10 +98,6 @@ class PromoterProfileViewModel extends ChangeNotifier {
       notifyListeners();
 
       final uid = Utils.getCurrentUid();
-      if (uid == null) {
-        _errorMessage = 'User not authenticated';
-        return false;
-      }
 
       final authProvider = Provider.of<AuthViewmodel>(context, listen: false);
 

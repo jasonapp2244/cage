@@ -2,9 +2,7 @@ import 'package:cage/fonts/fonts.dart';
 import 'package:cage/provider/change_password_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
-import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/utils/routes/utils.dart';
-import 'package:cage/view/Profile/fighter/updateProfle_view.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -290,7 +288,6 @@ import 'package:google_fonts/google_fonts.dart';
 //     );
 //   }
 // }
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ChangePasswordView extends StatelessWidget {

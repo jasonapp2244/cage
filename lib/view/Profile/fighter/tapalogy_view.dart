@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 class TapalogyView extends StatelessWidget {
   TextEditingController urlController = TextEditingController();
 
+  TapalogyView({super.key});
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthViewmodel>(context);

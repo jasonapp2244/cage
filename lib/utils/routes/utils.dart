@@ -8,7 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 
 class Utils {
-  static tosatMassage(String massage) {
+  static void tosatMassage(String massage) {
     Fluttertoast.showToast(
       toastLength: Toast.LENGTH_LONG,
       backgroundColor: AppColor.red,
@@ -110,7 +110,7 @@ class Utils {
   }
 }
 
-snakBar(String massage, BuildContext context) {
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason> snakBar(String massage, BuildContext context) {
   return ScaffoldMessenger.of(
     context,
   ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(massage)));

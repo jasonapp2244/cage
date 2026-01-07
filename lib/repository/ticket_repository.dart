@@ -7,7 +7,6 @@ class TicketRepository {
   static Future<void> createTicket(TicketModel ticket) async {
     try {
       final userId = Utils.getCurrentUid();
-      if (userId == null) throw Exception("User not authenticated");
 
       final ticketMap = ticket.toJson();
       ticketMap['userId'] = userId;
@@ -43,7 +42,6 @@ class TicketRepository {
   static Stream<List<TicketModel>> fetchUserTickets() {
     try {
       final userId = Utils.getCurrentUid();
-      if (userId == null) throw Exception("User not authenticated");
 
       return FirebaseFirestore.instance
           .collection('userData')

@@ -11,11 +11,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class CoachNameView extends StatefulWidget {
+  const CoachNameView({super.key});
+
   @override
-  _CoachNameViewState createState() => _CoachNameViewState();
+  CoachNameViewState createState() => CoachNameViewState();
 }
 
-class _CoachNameViewState extends State<CoachNameView> {
+class CoachNameViewState extends State<CoachNameView> {
   late TextEditingController _managerNameController;
 
   @override
@@ -109,7 +111,7 @@ class _CoachNameViewState extends State<CoachNameView> {
                 text: "Next",
                 onTap: () {
                   var uid = Utils.getCurrentUid();
-                  if (uid != null && _managerNameController.text.isNotEmpty) {
+                  if (_managerNameController.text.isNotEmpty) {
                     authProvider.addUserFieldByRole(
                       uid: uid,
                       fieldName: 'coachName',

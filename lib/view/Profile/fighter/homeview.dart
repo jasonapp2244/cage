@@ -298,7 +298,7 @@ class _HomeviewState extends State<Homeview> {
                   ],
                 ),
 
-                Container(
+                SizedBox(
                   height: 200,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -307,7 +307,7 @@ class _HomeviewState extends State<Homeview> {
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                        child: Container(
+                        child: SizedBox(
                           child: Container(
                             width: Responsive.w(50),
                             height: Responsive.h(100),

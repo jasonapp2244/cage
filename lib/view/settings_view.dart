@@ -2,14 +2,11 @@ import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
-import 'package:cage/view/change_password_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cage/view/notifications_settings_view.dart';
 import 'package:cage/repository/home_repository.dart';
 import 'package:cage/models/user_model.dart';
-import 'package:cage/view/Profile/Promoter/edit_promoter_profile.dart';
-import 'package:cage/view/Profile/fighter/eidt_profile.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});

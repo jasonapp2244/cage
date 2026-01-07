@@ -1,5 +1,4 @@
 import 'package:cage/fonts/fonts.dart';
-import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
@@ -11,8 +10,6 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:cage/repository/home_repository.dart';
 import 'package:cage/models/user_model.dart';
 import 'package:cage/models/promoter_model.dart';
-import 'package:cage/view/Profile/Promoter/edit_promoter_profile.dart';
-import 'package:provider/provider.dart';
 
 class PromoterHome extends StatefulWidget {
   final AdvancedDrawerController? drawerController;
@@ -356,7 +353,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                 ),
                 SizedBox(height: Responsive.h(2)),
 
-                Container(
+                SizedBox(
                   height: 300,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -366,7 +363,6 @@ class _PromoterHomeState extends State<PromoterHome> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2.0),
                         child: Container(
-                          child: Container(
                             width: Responsive.w(80),
                             height: Responsive.h(100),
                             decoration: BoxDecoration(
@@ -430,7 +426,6 @@ class _PromoterHomeState extends State<PromoterHome> {
                                 ],
                               ),
                             ),
-                          ),
                         ),
                       );
                     },
@@ -470,7 +465,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                 ),
                 SizedBox(height: Responsive.h(2)),
 
-                Container(
+                SizedBox(
                   height: Responsive.h(30),
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -480,7 +475,6 @@ class _PromoterHomeState extends State<PromoterHome> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2.0),
                         child: Container(
-                          child: Container(
                             width: Responsive.w(50),
                             height: Responsive.h(50),
                             decoration: BoxDecoration(
@@ -595,7 +589,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                                 ],
                               ),
                             ),
-                          ),
+                          
                         ),
                       );
                     },
@@ -720,7 +714,7 @@ void _showEventDetailsBottomSheet(BuildContext context) {
                     "Looking for aggressive strikers with clean records. The winner will be "
                     "featured on our official YouTube broadcast with cash bonus + sponsor exposure.",
                     style: GoogleFonts.dmSans(
-                      color: AppColor.white.withOpacity(0.8),
+                      color: AppColor.white.withValues(alpha: 0.8),
                       fontSize: Responsive.sp(12),
                     ),
                   ),

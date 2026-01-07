@@ -41,28 +41,30 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBx9pMB1itKlxrbyL3HkSdMvtUuY-AXjCA',
-    appId: '1:862265403047:web:4e20d5142faa90d3bd9d82',
-    messagingSenderId: '862265403047',
-    projectId: 'cage-2025',
-    authDomain: 'cage-2025.firebaseapp.com',
-    storageBucket: 'cage-2025.firebasestorage.app',
+    apiKey: 'AIzaSyC_KH3e0e1Gxe02lq2ZopiSAlmaAwfQam8',
+    appId: '1:230307676453:web:afc90758369ae0776d5acc',
+    messagingSenderId: '230307676453',
+    projectId: 'cage-connect',
+    authDomain: 'cage-connect.firebaseapp.com',
+    storageBucket: 'cage-connect.firebasestorage.app',
+    measurementId: 'G-BM43JCX5CF',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDoTcuHJdf44cHFlIZaP43mdTiBZT97Lfs',
-    appId: '1:862265403047:android:dff27272bb1b365ebd9d82',
-    messagingSenderId: '862265403047',
-    projectId: 'cage-2025',
-    storageBucket: 'cage-2025.firebasestorage.app',
+    apiKey: 'AIzaSyBYFOw4Q_GXAlsNG_jP0dtF_t5ot_Du3Uc',
+    appId: '1:230307676453:android:0b0863703d8519316d5acc',
+    messagingSenderId: '230307676453',
+    projectId: 'cage-connect',
+    storageBucket: 'cage-connect.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAPfgvqPXk1m5Za4eYBDWe7BkOeEQEiR1U',
-    appId: '1:862265403047:ios:c493e2a21b4d436dbd9d82',
-    messagingSenderId: '862265403047',
-    projectId: 'cage-2025',
-    storageBucket: 'cage-2025.firebasestorage.app',
+    apiKey: 'AIzaSyDwuHlPVOwjb9LRGPMHwloiZJ0DiEPesMk',
+    appId: '1:230307676453:ios:f35405230f2b647b6d5acc',
+    messagingSenderId: '230307676453',
+    projectId: 'cage-connect',
+    storageBucket: 'cage-connect.firebasestorage.app',
+    iosClientId: '230307676453-qgp9eimk4djgbmatq1bimjeh57rj79eg.apps.googleusercontent.com',
     iosBundleId: 'com.craz.cage',
   );
 

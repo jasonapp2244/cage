@@ -10,6 +10,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class HightView extends StatefulWidget {
+  const HightView({super.key});
+
   @override
   _HightViewState createState() => _HightViewState();
 }

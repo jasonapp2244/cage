@@ -8,12 +8,12 @@ class DrawerWrapper extends StatelessWidget {
   const DrawerWrapper({
     required this.child,
     required this.title,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final _advancedDrawerController = AdvancedDrawerController();
+    final advancedDrawerController = AdvancedDrawerController();
 
     return AdvancedDrawer(
       backdrop: Container(
@@ -23,34 +23,14 @@ class DrawerWrapper extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.blueGrey, Colors.blueGrey.withOpacity(0.2)],
+            colors: [Colors.blueGrey, Colors.blueGrey.withValues(alpha:0.2)],
           ),
         ),
       ),
-      controller: _advancedDrawerController,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-          leading: IconButton(
-            onPressed: () => _advancedDrawerController.showDrawer(),
-            icon: ValueListenableBuilder<AdvancedDrawerValue>(
-              valueListenable: _advancedDrawerController,
-              builder: (_, value, __) {
-                return AnimatedSwitcher(
-                  duration: Duration(milliseconds: 250),
-                  child: Icon(
-                    value.visible ? Icons.clear : Icons.menu,
-                    key: ValueKey<bool>(value.visible),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        body: child,
-      ),
+      controller: advancedDrawerController,
+      
       drawer: SafeArea(
-        child: Container(
+        child: SizedBox(
           child: ListTileTheme(
             textColor: Colors.white,
             iconColor: Colors.white,
@@ -84,6 +64,26 @@ class DrawerWrapper extends StatelessWidget {
             ),
           ),
         ),
+      ),child: Scaffold(
+        appBar: AppBar(
+          title: Text(title),
+          leading: IconButton(
+            onPressed: () => advancedDrawerController.showDrawer(),
+            icon: ValueListenableBuilder<AdvancedDrawerValue>(
+              valueListenable: advancedDrawerController,
+              builder: (_, value, _) {
+                return AnimatedSwitcher(
+                  duration: Duration(milliseconds: 250),
+                  child: Icon(
+                    value.visible ? Icons.clear : Icons.menu,
+                    key: ValueKey<bool>(value.visible),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        body: child,
       ),
     );
   }

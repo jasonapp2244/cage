@@ -18,10 +18,10 @@ class CustomRatingBar extends StatefulWidget {
   });
 
   @override
-  _CustomRatingBarState createState() => _CustomRatingBarState();
+  CustomRatingBarState createState() => CustomRatingBarState();
 }
 
-class _CustomRatingBarState extends State<CustomRatingBar> {
+class CustomRatingBarState extends State<CustomRatingBar> {
   double _currentRating = 0.0;
 
   @override

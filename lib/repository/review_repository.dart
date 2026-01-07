@@ -16,9 +16,6 @@ class ReviewRepository {
   }) async {
     try {
       final reviewerId = Utils.getCurrentUid();
-      if (reviewerId == null) {
-        throw Exception('User not authenticated');
-      }
 
       // Generate a unique review ID
       final reviewId = _firestore.collection('temp').doc().id;

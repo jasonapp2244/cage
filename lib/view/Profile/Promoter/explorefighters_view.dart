@@ -1,5 +1,4 @@
 import 'package:cage/models/fighter_model.dart';
-import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/fighter_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
@@ -10,7 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class ExploreFightersView extends StatefulWidget {
-  ExploreFightersView({super.key});
+  const ExploreFightersView({super.key});
 
   @override
   State<ExploreFightersView> createState() => _FightersViewState();
@@ -65,7 +64,7 @@ class _FightersViewState extends State<ExploreFightersView> {
               Row(
                 children: [
                   Expanded(
-                    child: Container(
+                    child: SizedBox(
                       height: Responsive.h(7.0),
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
@@ -203,7 +202,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                             Text(
                               "Be the first fighter to join!",
                               style: TextStyle(
-                                color: AppColor.white.withOpacity(0.7),
+                                color: AppColor.white.withValues(alpha: 0.7),
                                 fontSize: 14,
                               ),
                             ),
@@ -235,7 +234,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                               borderRadius: BorderRadius.circular(22),
                               color: AppColor.black,
                               border: Border.all(
-                                color: AppColor.white.withOpacity(0.1),
+                                color: AppColor.white.withValues(alpha: 0.1),
                                 width: 1,
                               ),
                             ),
@@ -258,7 +257,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                               borderRadius: BorderRadius.circular(22),
                               color: AppColor.black,
                               border: Border.all(
-                                color: AppColor.white.withOpacity(0.1),
+                                color: AppColor.white.withValues(alpha: 0.1),
                                 width: 1,
                               ),
                             ),
@@ -279,7 +278,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                             borderRadius: BorderRadius.circular(22),
                             color: AppColor.black,
                             border: Border.all(
-                              color: AppColor.white.withOpacity(0.1),
+                              color: AppColor.white.withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -365,15 +364,17 @@ class _FightersViewState extends State<ExploreFightersView> {
                                     SvgPicture.asset(
                                       "assets/icons/boxing.svg",
                                       height: 16,
-                                      color: AppColor.white.withOpacity(0.7),
+                                      color: AppColor.white.withValues(
+                                        alpha: 0.7,
+                                      ),
                                     ),
                                     const SizedBox(width: 4),
                                     Expanded(
                                       child: Text(
                                         fighter.fightingStyle!,
                                         style: GoogleFonts.dmSans(
-                                          color: AppColor.white.withOpacity(
-                                            0.7,
+                                          color: AppColor.white.withValues(
+                                            alpha: 0.7,
                                           ),
                                           fontSize: 12,
                                         ),
@@ -476,11 +477,11 @@ class _FightersViewState extends State<ExploreFightersView> {
     } else if (parts.length == 1) {
       // Single location name - limit length
       return parts[0].length > 12
-          ? parts[0].substring(0, 12) + "..."
+          ? "${parts[0].substring(0, 12)}..."
           : parts[0];
     }
 
-    return location.length > 12 ? location.substring(0, 12) + "..." : location;
+    return location.length > 12 ? "${location.substring(0, 12)}..." : location;
   }
 }
 
@@ -490,7 +491,7 @@ Widget _buildStatChip(String location) {
     child: Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColor.red.withOpacity(0.2),
+        color: AppColor.red.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

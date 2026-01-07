@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,11 +7,13 @@ import 'package:provider/provider.dart';
 import 'package:cage/provider/location_provider.dart';
 
 class SelectLocationView extends StatefulWidget {
+  const SelectLocationView({super.key});
+
   @override
-  _SelectLocationViewState createState() => _SelectLocationViewState();
+  SelectLocationViewState createState() => SelectLocationViewState();
 }
 
-class _SelectLocationViewState extends State<SelectLocationView> {
+class SelectLocationViewState extends State<SelectLocationView> {
   final Completer<GoogleMapController> _controller = Completer();
   final TextEditingController _searchController = TextEditingController();
   String _mapStyle = '';
@@ -180,7 +181,7 @@ class _SelectLocationViewState extends State<SelectLocationView> {
                   bottom: 30,
                   left: 16,
                   right: 16,
-                  child: Container(
+                  child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: locationProvider.isSavingLocation

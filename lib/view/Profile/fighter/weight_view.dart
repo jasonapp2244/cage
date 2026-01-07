@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class WeighView extends StatefulWidget {
+  const WeighView({super.key});
+
   @override
   WeightState createState() => WeightState();
 }

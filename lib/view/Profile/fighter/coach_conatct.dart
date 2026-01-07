@@ -11,7 +11,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class CoachConatctView extends StatelessWidget {
-  TextEditingController _coachContactController = new TextEditingController();
+final  TextEditingController _coachContactController =  TextEditingController();
+
+  CoachConatctView({super.key});
 
   @override
   Widget build(BuildContext context) {

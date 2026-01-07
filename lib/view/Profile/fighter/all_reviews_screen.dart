@@ -59,7 +59,7 @@ class AllReviewsScreen extends StatelessWidget {
           ),
         ),
         SizedBox(width: Responsive.w(2)),
-        Container(
+        SizedBox(
           width: 15,
           child: Text(
             "$rating",
@@ -140,7 +140,7 @@ class AllReviewsScreen extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.rate_review_outlined,
-                      color: AppColor.white.withOpacity(0.5),
+                      color: AppColor.white.withValues(alpha: 0.5),
                       size: 64,
                     ),
                     SizedBox(height: 16),
@@ -157,7 +157,7 @@ class AllReviewsScreen extends StatelessWidget {
                     Text(
                       "Be the first to review this fighter",
                       style: TextStyle(
-                        color: AppColor.white.withOpacity(0.7),
+                        color: AppColor.white.withValues(alpha: 0.7),
                         fontFamily: AppFonts.appFont,
                         fontSize: Responsive.sp(14),
                       ),
@@ -177,10 +177,10 @@ class AllReviewsScreen extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColor.white.withOpacity(0.05),
+                      color: AppColor.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppColor.white.withOpacity(0.1),
+                        color: AppColor.white.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Row(
@@ -221,7 +221,7 @@ class AllReviewsScreen extends StatelessWidget {
                             //                   reviews,
                             //                 ).round()
                             //             ? AppColor.red
-                            //             : AppColor.white.withOpacity(0.3),
+                            //             : AppColor.white.withValues(alpha: 0.3),
                             //         size: 20,
                             //       );
                             //     }),
@@ -311,7 +311,7 @@ class AllReviewsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColor.black,
-        border: Border.all(color: AppColor.white.withOpacity(0.1), width: 1),
+        border: Border.all(color: AppColor.white.withValues(alpha: 0.1), width: 1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -351,7 +351,7 @@ class AllReviewsScreen extends StatelessWidget {
                     Text(
                       review.reviewerRole,
                       style: TextStyle(
-                        color: AppColor.white.withOpacity(0.7),
+                        color: AppColor.white.withValues(alpha: 0.7),
                         fontFamily: AppFonts.appFont,
                         fontSize: Responsive.sp(12),
                       ),
@@ -368,7 +368,7 @@ class AllReviewsScreen extends StatelessWidget {
                         Icons.star,
                         color: index < review.rating
                             ? AppColor.red
-                            : AppColor.white.withOpacity(0.3),
+                            : AppColor.white.withValues(alpha: 0.3),
                         size: 16,
                       );
                     }),
@@ -379,7 +379,7 @@ class AllReviewsScreen extends StatelessWidget {
                       review.createdAt.toIso8601String(),
                     ),
                     style: TextStyle(
-                      color: AppColor.white.withOpacity(0.5),
+                      color: AppColor.white.withValues(alpha: 0.5),
                       fontFamily: AppFonts.appFont,
                       fontSize: Responsive.sp(10),
                     ),

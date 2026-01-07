@@ -16,7 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:cage/view/Profile/tab_controller.dart';
 
 class MainWrapper extends StatefulWidget {
-  const MainWrapper({Key? key}) : super(key: key);
+  const MainWrapper({super.key});
 
   @override
   State<MainWrapper> createState() => _MainWrapperState();
@@ -111,7 +111,7 @@ class _MainWrapperState extends State<MainWrapper> {
         borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
       drawer: SafeArea(
-        child: Container(
+        child: SizedBox(
           child: ListTileTheme(
             textColor: Colors.white,
             iconColor: Colors.white,
@@ -363,7 +363,7 @@ class _MainWrapperState extends State<MainWrapper> {
 //     //       gradient: LinearGradient(
 //     //         begin: Alignment.topLeft,
 //     //         end: Alignment.bottomRight,
-//     //         colors: [Colors.blueGrey, Colors.blueGrey.withOpacity(0.2)],
+//     //         colors: [Colors.blueGrey, Colors.blueGrey.withValues(alpha: (0.2)],
 //     //       ),
 //     //     ),
 //     //   ),

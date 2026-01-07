@@ -4,17 +4,14 @@ import 'package:cage/view/Profile/Promoter/company_name_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_email_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_number_view.dart';
 import 'package:cage/view/Profile/Promoter/event_history.dart';
-import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
-import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
 import 'package:cage/view/Profile/Promoter/promotor_subcribtion_view.dart';
 import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/Promoter/upload_company_logo.dart';
-import 'package:cage/view/Profile/Promoter/who_thePromoter_view.dart';
+import 'package:cage/view/Profile/Promoter/who_the_promoter_view.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
-import 'package:cage/view/Profile/fighter/Payment_View.dart';
+import 'package:cage/view/Profile/fighter/payment_view.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
-import 'package:cage/view/Profile/fighter/fighter_public_profile.dart';
 import 'package:cage/view/Profile/fighter/age_view.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:cage/view/Profile/fighter/review_view.dart';
@@ -245,15 +242,15 @@ class Routes {
           builder: (BuildContext context) => SelectLocationView(),
         );
 
-      case RoutesName.UploadCompanyLogo:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => UploadCompanyLogo(),
-        );
+      // case RoutesName.UploadCompanyLogo:
+      //   return MaterialPageRoute(
+      //     builder: (BuildContext context) => UploadCompanyLogo(),
+      //   );
 
-      case RoutesName.PromoterHome:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => ExploreFightersView(),
-        );
+      // case RoutesName.PromoterHome:
+      //   return MaterialPageRoute(
+      //     builder: (BuildContext context) => ExploreFightersView(),
+      //   );
 
       case RoutesName.weightView:
         return MaterialPageRoute(

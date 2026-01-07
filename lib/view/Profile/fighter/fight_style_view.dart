@@ -66,7 +66,7 @@ class _FightStyleViewState extends State<FightStyleView> {
 
                   DropdownButtonFormField<String>(
                     style: TextStyle(color: AppColor.white),
-                    dropdownColor: AppColor.white.withOpacity(
+                    dropdownColor: AppColor.white.withValues(alpha: 
                       0.1,
                     ), // background of dropdown menu
                     decoration: InputDecoration(
@@ -83,7 +83,7 @@ class _FightStyleViewState extends State<FightStyleView> {
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
                       ),
                       filled: true,
-                      fillColor: AppColor.white.withOpacity(0.08),
+                      fillColor: AppColor.white.withValues(alpha: 0.08),
 
                       hintText: "Select",
                       hintStyle: GoogleFonts.dmSans(

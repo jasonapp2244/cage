@@ -312,7 +312,7 @@
 //                   height: Responsive.h(20),
 //                   decoration: BoxDecoration(
 //                     border: Border.all(
-//                       color: AppColor.white.withOpacity(0.1),
+//                       color: AppColor.white.withValues(alpha: (0.1),
 //                       width: 2,
 //                     ),
 //                     borderRadius: BorderRadius.circular(14),
@@ -320,7 +320,7 @@
 //                   child: Center(
 //                     child: Text(
 //                       "Photos will be displayed here",
-//                       style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+//                       style: TextStyle(color: AppColor.white.withValues(alpha: (0.5)),
 //                     ),
 //                   ),
 //                 ),
@@ -345,7 +345,7 @@
 //                   height: Responsive.h(20),
 //                   decoration: BoxDecoration(
 //                     border: Border.all(
-//                       color: AppColor.white.withOpacity(0.1),
+//                       color: AppColor.white.withValues(alpha: (0.1),
 //                       width: 2,
 //                     ),
 //                     borderRadius: BorderRadius.circular(14),
@@ -353,7 +353,7 @@
 //                   child: Center(
 //                     child: Text(
 //                       "Videos will be displayed here",
-//                       style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+//                       style: TextStyle(color: AppColor.white.withValues(alpha: (0.5)),
 //                     ),
 //                   ),
 //                 ),

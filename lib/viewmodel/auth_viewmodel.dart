@@ -17,7 +17,7 @@ class AuthViewmodel extends ChangeNotifier {
   bool _isloading = false;
   bool get loading => _isloading;
 
-  setloaoding(bool value) {
+  void setloaoding(bool value) {
     _isloading = value;
     notifyListeners();
   }
@@ -497,73 +497,66 @@ class AuthViewmodel extends ChangeNotifier {
       print('Login successful, proceeding with navigation...');
 
       final uid = Utils.getCurrentUid();
-      if (uid != null) {
-        try {
-          final userDoc = await FirebaseFirestore.instance
-              .collection('userData')
-              .doc(uid)
-              .get();
+      try {
+        final userDoc = await FirebaseFirestore.instance
+            .collection('userData')
+            .doc(uid)
+            .get();
 
-          if (userDoc.exists) {
-            final userData = userDoc.data();
-            final role = userData?['role'];
-            print('Login - User data: $userData');
-            print('Login - Detected role: $role');
+        if (userDoc.exists) {
+          final userData = userDoc.data();
+          final role = userData?['role'];
+          print('Login - User data: $userData');
+          print('Login - Detected role: $role');
 
-            if (role == 'Fighter') {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                RoutesName.home,
-                (route) => false,
-              );
-            } else if (role == 'Promoter') {
-              print(
-                'Login - Navigating to promoter home route: ${RoutesName.PromoterHome}',
-              );
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                RoutesName.PromotorBottomNavBar,
-                (route) => false,
-              );
-            } else {
-              // No role set, go to role selection
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                RoutesName.roleView,
-                (route) => false,
-              );
-            }
+          if (role == 'Fighter') {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RoutesName.home,
+              (route) => false,
+            );
+          } else if (role == 'Promoter') {
+            print(
+              'Login - Navigating to promoter home route: ${RoutesName.PromoterHome}',
+            );
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              RoutesName.PromotorBottomNavBar,
+              (route) => false,
+            );
           } else {
-            // No user data, go to role selection
+            // No role set, go to role selection
             Navigator.pushNamedAndRemoveUntil(
               context,
               RoutesName.roleView,
               (route) => false,
             );
           }
-        } catch (firestoreError) {
-          print('Firestore error after successful login: $firestoreError');
-          if (firestoreError.toString().contains('permission-denied')) {
-            Utils.flushBarErrorMassage(
-              "Permission denied. Please check your Firebase configuration.",
-              context,
-            );
-          } else {
-            Utils.flushBarErrorMassage(
-              "Error accessing user data. Please try again.",
-              context,
-            );
-          }
-          // Set loading to false on error
-          setloaoding(false);
+        } else {
+          // No user data, go to role selection
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            RoutesName.roleView,
+            (route) => false,
+          );
         }
-      } else {
-        print('No UID found after successful login');
-        Utils.flushBarErrorMassage("Login error. Please try again.", context);
+      } catch (firestoreError) {
+        print('Firestore error after successful login: $firestoreError');
+        if (firestoreError.toString().contains('permission-denied')) {
+          Utils.flushBarErrorMassage(
+            "Permission denied. Please check your Firebase configuration.",
+            context,
+          );
+        } else {
+          Utils.flushBarErrorMassage(
+            "Error accessing user data. Please try again.",
+            context,
+          );
+        }
         // Set loading to false on error
         setloaoding(false);
       }
-    } catch (e) {
+        } catch (e) {
       // Login failed - error message already shown by loginWithEmailPassword
       print('Login failed, staying on login screen: $e');
       // Set loading to false on login failure

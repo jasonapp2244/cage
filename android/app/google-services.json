@@ -1,26 +1,43 @@
 {
   "project_info": {
-    "project_number": "862265403047",
-    "project_id": "cage-2025",
-    "storage_bucket": "cage-2025.firebasestorage.app"
+    "project_number": "230307676453",
+    "project_id": "cage-connect",
+    "storage_bucket": "cage-connect.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:862265403047:android:dff27272bb1b365ebd9d82",
+        "mobilesdk_app_id": "1:230307676453:android:0b0863703d8519316d5acc",
         "android_client_info": {
           "package_name": "com.test1.cage"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "230307676453-qm93u1vdbheo46hhsaog1e93b3iaonjj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDoTcuHJdf44cHFlIZaP43mdTiBZT97Lfs"
+          "current_key": "AIzaSyBYFOw4Q_GXAlsNG_jP0dtF_t5ot_Du3Uc"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "230307676453-qm93u1vdbheo46hhsaog1e93b3iaonjj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "230307676453-qgp9eimk4djgbmatq1bimjeh57rj79eg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.craz.cage"
+              }
+            }
+          ]
         }
       }
     }

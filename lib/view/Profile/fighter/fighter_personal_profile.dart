@@ -140,7 +140,7 @@ class FighterPublicProfile extends StatelessWidget {
             Text(
               "Please complete your profile setup",
               style: TextStyle(
-                color: AppColor.white.withOpacity(0.7),
+                color: AppColor.white.withValues(alpha: 0.7),
                 fontSize: 14,
               ),
             ),
@@ -253,7 +253,7 @@ class FighterPublicProfile extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      fighter.fightWin?.toString() ?? "0",
+                      fighter.fightWin.toString() ?? "0",
                       style: TextStyle(
                         color: AppColor.white,
                         fontFamily: AppFonts.appFont,
@@ -294,7 +294,7 @@ class FighterPublicProfile extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        fighter.fightsLose?.toString() ?? "0",
+                        fighter.fightsLose.toString() ?? "0",
                         style: TextStyle(
                           color: AppColor.white,
                           fontFamily: AppFonts.appFont,
@@ -336,7 +336,7 @@ class FighterPublicProfile extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        fighter.fightsKnockout?.toString() ?? "0",
+                        fighter.fightsKnockout.toString() ?? "0",
                         style: TextStyle(
                           color: AppColor.white,
                           fontFamily: AppFonts.appFont,
@@ -716,7 +716,7 @@ class FighterPublicProfile extends StatelessWidget {
                 height: 100,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColor.white.withOpacity(0.1),
+                    color: AppColor.white.withValues(alpha: 0.1),
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(14),
@@ -738,7 +738,7 @@ class FighterPublicProfile extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColor.white.withOpacity(0.1),
+                    color: AppColor.white.withValues(alpha: 0.1),
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(14),
@@ -750,14 +750,14 @@ class FighterPublicProfile extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.rate_review_outlined,
-                        color: AppColor.white.withOpacity(0.5),
+                        color: AppColor.white.withValues(alpha: 0.5),
                         size: 32,
                       ),
                       SizedBox(height: 8),
                       Text(
                         "No reviews yet",
                         style: TextStyle(
-                          color: AppColor.white.withOpacity(0.7),
+                          color: AppColor.white.withValues(alpha: 0.7),
                           fontFamily: AppFonts.appFont,
                           fontSize: Responsive.sp(12),
                         ),
@@ -772,7 +772,7 @@ class FighterPublicProfile extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: AppColor.white.withOpacity(0.1),
+                  color: AppColor.white.withValues(alpha: 0.1),
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(14),
@@ -817,7 +817,7 @@ class FighterPublicProfile extends StatelessWidget {
                               Text(
                                 latestReview.reviewerRole,
                                 style: TextStyle(
-                                  color: AppColor.white.withOpacity(0.7),
+                                  color: AppColor.white.withValues(alpha: 0.7),
                                   fontFamily: AppFonts.appFont,
                                   fontSize: Responsive.sp(8),
                                 ),
@@ -834,7 +834,7 @@ class FighterPublicProfile extends StatelessWidget {
                                   Icons.star,
                                   color: index < latestReview.rating
                                       ? AppColor.red
-                                      : AppColor.white.withOpacity(0.3),
+                                      : AppColor.white.withValues(alpha: 0.3),
                                   size: 14,
                                 );
                               }),
@@ -845,7 +845,7 @@ class FighterPublicProfile extends StatelessWidget {
                                 latestReview.createdAt.toIso8601String(),
                               ),
                               style: TextStyle(
-                                color: AppColor.white.withOpacity(0.5),
+                                color: AppColor.white.withValues(alpha: 0.5),
                                 fontFamily: AppFonts.appFont,
                                 fontSize: Responsive.sp(8),
                               ),
@@ -912,7 +912,7 @@ class FighterPublicProfile extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Container(
+                        SizedBox(
                           width: 200,
                           child: ElevatedButton(
                             onPressed: () {
@@ -974,7 +974,7 @@ class FighterPublicProfile extends StatelessWidget {
           height: Responsive.h(20),
           decoration: BoxDecoration(
             border: Border.all(
-              color: AppColor.white.withOpacity(0.1),
+              color: AppColor.white.withValues(alpha: 0.1),
               width: 2,
             ),
             borderRadius: BorderRadius.circular(14),
@@ -982,7 +982,7 @@ class FighterPublicProfile extends StatelessWidget {
           child: Center(
             child: Text(
               "Photos will be displayed here",
-              style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+              style: TextStyle(color: AppColor.white.withValues(alpha: 0.5)),
             ),
           ),
         ),
@@ -1006,7 +1006,7 @@ class FighterPublicProfile extends StatelessWidget {
           height: Responsive.h(20),
           decoration: BoxDecoration(
             border: Border.all(
-              color: AppColor.white.withOpacity(0.1),
+              color: AppColor.white.withValues(alpha: 0.1),
               width: 2,
             ),
             borderRadius: BorderRadius.circular(14),
@@ -1014,7 +1014,7 @@ class FighterPublicProfile extends StatelessWidget {
           child: Center(
             child: Text(
               "Videos will be displayed here",
-              style: TextStyle(color: AppColor.white.withOpacity(0.5)),
+              style: TextStyle(color: AppColor.white.withValues(alpha: 0.5)),
             ),
           ),
         ),
@@ -1354,7 +1354,7 @@ class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
                   Icons.star,
                   color: index < _selectedRating
                       ? AppColor.red
-                      : AppColor.white.withOpacity(0.3),
+                      : AppColor.white.withValues(alpha: 0.3),
                   size: Responsive.sp(28),
                 ),
               );
@@ -1366,7 +1366,7 @@ class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
                 ? "$_selectedRating star${_selectedRating > 1 ? 's' : ''}"
                 : "Select a rating",
             style: GoogleFonts.dmSans(
-              color: AppColor.white.withOpacity(0.7),
+              color: AppColor.white.withValues(alpha: 0.7),
               fontSize: Responsive.sp(12),
             ),
           ),
@@ -1392,18 +1392,18 @@ class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
             decoration: InputDecoration(
               hintText: "Share your experience with this fighter...",
               hintStyle: GoogleFonts.dmSans(
-                color: AppColor.white.withOpacity(0.5),
+                color: AppColor.white.withValues(alpha: 0.5),
                 fontSize: Responsive.sp(12),
               ),
               filled: true,
-              fillColor: AppColor.white.withOpacity(0.05),
+              fillColor: AppColor.white.withValues(alpha: 0.05),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColor.white.withOpacity(0.2)),
+                borderSide: BorderSide(color: AppColor.white.withValues(alpha: 0.2)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColor.white.withOpacity(0.2)),
+                borderSide: BorderSide(color: AppColor.white.withValues(alpha: 0.2)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -1414,7 +1414,7 @@ class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
           SizedBox(height: Responsive.h(3)),
 
           // Submit Button
-          Container(
+          SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _isSubmitting ? null : _submitReview,

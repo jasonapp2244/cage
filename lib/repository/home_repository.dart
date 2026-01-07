@@ -98,7 +98,7 @@ class UserRepository {
       // Safe date parsing
 
       // Usage:
-      dynamic? roleData;
+      dynamic roleData;
       if (_isValidRoleData(data['fighterData'])) {
         roleData = FighterDataModel.fromMap(
           Map<String, dynamic>.from(data['fighterData']),

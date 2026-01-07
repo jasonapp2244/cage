@@ -10,12 +10,12 @@ class CustomCalendar extends StatefulWidget {
   final DateTime? lastDate;
 
   const CustomCalendar({
-    Key? key,
+    super.key,
     required this.onDateSelected,
     this.initialDate,
     this.firstDate,
     this.lastDate,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomCalendar> createState() => _CustomCalendarState();
@@ -173,7 +173,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
                 color: isSelected
                     ? AppColor.red
                     : isToday
-                    ? AppColor.red.withOpacity(0.3)
+                    ? AppColor.red.withValues(alpha:  0.3)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
                 border: isToday && !isSelected
@@ -189,7 +189,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
                       ? AppColor.white
                       : isEnabled
                       ? AppColor.white
-                      : AppColor.white.withOpacity(0.3),
+                      : AppColor.white.withValues(alpha: 0.3),
                   fontSize: Responsive.sp(14),
                   fontWeight: isSelected || isToday
                       ? FontWeight.bold
@@ -230,7 +230,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
               'Cancel',
               style: TextStyle(
                 fontFamily: AppFonts.appFont,
-                color: AppColor.white.withOpacity(0.7),
+                color: AppColor.white.withValues(alpha: 0.7),
                 fontSize: Responsive.sp(16),
               ),
             ),

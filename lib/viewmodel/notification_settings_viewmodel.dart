@@ -33,10 +33,6 @@ class NotificationSettingsViewmodel extends ChangeNotifier {
       _setError(null);
 
       final uid = Utils.getCurrentUid();
-      if (uid == null) {
-        _setError('User not authenticated');
-        return;
-      }
 
       final doc = await FirebaseFirestore.instance
           .collection('userData')
@@ -155,9 +151,6 @@ class NotificationSettingsViewmodel extends ChangeNotifier {
   Future<void> _saveSettingsToFirebase() async {
     try {
       final uid = Utils.getCurrentUid();
-      if (uid == null) {
-        throw Exception('User not authenticated');
-      }
 
       await FirebaseFirestore.instance.collection('userData').doc(uid).set({
         'notificationSettings': _settings.toMap(),
@@ -201,8 +194,4 @@ class NotificationSettingsViewmodel extends ChangeNotifier {
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }

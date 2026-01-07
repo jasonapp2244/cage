@@ -13,6 +13,8 @@ import 'package:provider/provider.dart';
 class FightingStyleView extends StatelessWidget {
   TextEditingController controller = TextEditingController();
 
+  FightingStyleView({super.key});
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthViewmodel>(context);

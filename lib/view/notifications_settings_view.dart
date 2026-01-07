@@ -222,8 +222,8 @@ class _NotificationsSettingsViewState extends State<NotificationsSettingsView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColor.red,
-            thumbColor: MaterialStateProperty.all(Colors.white),
+            activeThumbColor: AppColor.red,
+            thumbColor: WidgetStateProperty.all(Colors.white),
 
             activeTrackColor: Color(0xffED1C24),
             inactiveThumbColor: AppColor.white.withValues(alpha: 0.6),

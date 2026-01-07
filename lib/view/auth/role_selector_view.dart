@@ -110,6 +110,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
+  const RoleSelectionScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final roleProvider = Provider.of<RoleProvider>(context);
@@ -217,7 +219,6 @@ class RoleSelectionScreen extends StatelessWidget {
                     );
                   }
                 },
-                child: const Text('Continue', style: TextStyle(fontSize: 18)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.red,
                   foregroundColor: AppColor.white,
@@ -226,6 +227,7 @@ class RoleSelectionScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(22),
                   ),
                 ),
+                child: const Text('Continue', style: TextStyle(fontSize: 18)),
               ),
             ],
           ),
@@ -247,8 +249,8 @@ class RoleSelectionCard extends StatelessWidget {
     required this.isSelected,
     required this.svgImage,
     required this.onTap,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -259,7 +261,7 @@ class RoleSelectionCard extends StatelessWidget {
         height: 120,
         padding: const EdgeInsets.all(0),
         decoration: BoxDecoration(
-          color: isSelected ? AppColor.black : AppColor.white.withOpacity(0.5),
+          color: isSelected ? AppColor.black : AppColor.white.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.red : Colors.grey.shade300,

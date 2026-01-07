@@ -3,6 +3,7 @@ class AppExceptions implements Exception {
   final _prefix;
   AppExceptions(this._massage, this._prefix);
 
+  @override
   String toString() {
     return "$_massage,$_prefix";
   }

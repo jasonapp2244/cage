@@ -2,7 +2,6 @@ import 'package:cage/repository/auth_repository.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/auth/loginview.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:io';

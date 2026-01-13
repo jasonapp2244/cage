@@ -179,18 +179,22 @@ class _SupportViewState extends State<SupportView> {
 
   Widget _buildTicketCard(TicketModel ticket) {
     Color statusColor;
-    switch (ticket.status) {
+    switch (ticket.status.toLowerCase()) {
       case 'open':
-        statusColor = Colors.green;
+        statusColor = Colors.blue;
         break;
       case 'in-progress':
-        statusColor = const Color(0xFFFF7700);
+      case 'in progress':
+        statusColor = Colors.orange;
         break;
       case 'closed':
         statusColor = Colors.grey;
         break;
-      default:
+      case 'resolved':
         statusColor = Colors.green;
+        break;
+      default:
+        statusColor = Colors.blue;
     }
 
     return Container(
@@ -245,14 +249,44 @@ class _SupportViewState extends State<SupportView> {
               ],
             ),
             SizedBox(height: Responsive.h(1)),
-            Text(
-              ticket.subject,
-              style: TextStyle(
-                fontSize: Responsive.textScaleFactor * 14,
-                color: AppColor.white,
-                fontFamily: AppFonts.appFont,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    ticket.subject,
+                    style: TextStyle(
+                      fontSize: Responsive.textScaleFactor * 14,
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Responsive.w(2),
+                    vertical: Responsive.h(0.5),
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(ticket.status).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _getStatusColor(ticket.status),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    ticket.status.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: Responsive.textScaleFactor * 10,
+                      color: _getStatusColor(ticket.status),
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: Responsive.h(1)),
             Text(
@@ -270,5 +304,21 @@ class _SupportViewState extends State<SupportView> {
         ),
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return Colors.blue;
+      case 'in progress':
+      case 'in-progress':
+        return Colors.orange;
+      case 'closed':
+        return Colors.grey;
+      case 'resolved':
+        return Colors.green;
+      default:
+        return Colors.blue;
+    }
   }
 }

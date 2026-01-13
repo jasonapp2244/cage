@@ -5,6 +5,8 @@ import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:cage/view/settings_view.dart';
+import 'package:cage/view/contact_us_view.dart';
+import 'package:cage/view/privacy_policy_view.dart';
 import 'package:cage/view/support_view.dart';
 import 'package:cage/view/term_condition_view.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
@@ -43,6 +45,8 @@ class _MainWrapperState extends State<MainWrapper> {
     SupportView(), // Support
     SettingsView(), // Settings
     TermConditionView(),
+    PrivacyPolicyView(), // Privacy Policy
+    ContactUsView(), // Contact Us
   ];
 
   void _handleMenuButtonPressed() {
@@ -170,9 +174,37 @@ class _MainWrapperState extends State<MainWrapper> {
                   title: Text('Settings'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    _drawerController.hideDrawer();
+                    setState(() {
+                      _currentIndex = 4;
+                      _isDrawerNavigation = true;
+                    });
+                  },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
                   title: Text('Terms & Conditions'),
+                ),
+                ListTile(
+                  onTap: () {
+                    _drawerController.hideDrawer();
+                    setState(() {
+                      _currentIndex = 5;
+                      _isDrawerNavigation = true;
+                    });
+                  },
+                  leading: SvgPicture.asset("assets/icons/term_condition.svg"),
+                  title: Text('Privacy Policy'),
+                ),
+                ListTile(
+                  onTap: () {
+                    _drawerController.hideDrawer();
+                    setState(() {
+                      _currentIndex = 6;
+                      _isDrawerNavigation = true;
+                    });
+                  },
+                  leading: SvgPicture.asset("assets/icons/mail-02.svg"),
+                  title: Text('Contact Us'),
                 ),
                 ListTile(
                   onTap: () async {

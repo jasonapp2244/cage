@@ -5,6 +5,8 @@ import 'package:cage/view/Profile/Promoter/test.dart';
 import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:cage/view/settings_view.dart';
+import 'package:cage/view/contact_us_view.dart';
+import 'package:cage/view/privacy_policy_view.dart';
 import 'package:cage/view/support_view.dart';
 import 'package:cage/view/term_condition_view.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
@@ -25,7 +27,7 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
   int _currentIndex = 0;
   bool _isDrawerNavigation = false; // Track if we're navigating from drawer
 
-    // We'll create the pages in the build method to access the drawer controller
+  // We'll create the pages in the build method to access the drawer controller
   List<Widget> get _bottomNavPages => [
     PromoterHome(drawerController: _drawerController), // Promoter Home
     ExploreFightersView(), // Explore Fighters
@@ -35,11 +37,15 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
 
   // Drawer Navigation Pages (Settings/Support Flow)
   List<Widget> get _drawerPages => [
-    PromoterHome(drawerController: _drawerController), // Home (same as bottom nav)
+    PromoterHome(
+      drawerController: _drawerController,
+    ), // Home (same as bottom nav)
     _buildSubscriptionView(), // Subscription
     SupportView(), // Support
     SettingsView(), // Settings
     TermConditionView(),
+    PrivacyPolicyView(), // Privacy Policy
+    ContactUsView(), // Contact Us
   ];
 
   void _handleMenuButtonPressed() {
@@ -94,7 +100,7 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthViewmodel>(context);
-    
+
     return AdvancedDrawer(
       backdrop: Container(
         width: double.infinity,
@@ -167,9 +173,37 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                   title: Text('Settings'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    _drawerController.hideDrawer();
+                    setState(() {
+                      _currentIndex = 4;
+                      _isDrawerNavigation = true;
+                    });
+                  },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
                   title: Text('Terms & Conditions'),
+                ),
+                ListTile(
+                  onTap: () {
+                    _drawerController.hideDrawer();
+                    setState(() {
+                      _currentIndex = 5;
+                      _isDrawerNavigation = true;
+                    });
+                  },
+                  leading: SvgPicture.asset("assets/icons/term_condition.svg"),
+                  title: Text('Privacy Policy'),
+                ),
+                ListTile(
+                  onTap: () {
+                    _drawerController.hideDrawer();
+                    setState(() {
+                      _currentIndex = 6;
+                      _isDrawerNavigation = true;
+                    });
+                  },
+                  leading: SvgPicture.asset("assets/icons/mail-02.svg"),
+                  title: Text('Contact Us'),
                 ),
                 ListTile(
                   onTap: () async {

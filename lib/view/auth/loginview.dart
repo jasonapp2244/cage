@@ -21,6 +21,7 @@ class Loginview extends StatefulWidget {
 
 class _LoginviewState extends State<Loginview> {
   final ValueNotifier<bool> _obsecurePassword = ValueNotifier<bool>(true);
+  bool _rememberMe = false;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   FocusNode emailFoucsNode = FocusNode();
@@ -193,14 +194,36 @@ class _LoginviewState extends State<Loginview> {
                   },
                 ),
                 SizedBox(height: Responsive.h(1.5)),
-                GestureDetector(
-                  onTap: () {
-                    _showForgotPasswordBottomSheet(context, emailController);
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.only(right: Responsive.w(5)),
-                    child: Align(
-                      alignment: Alignment.centerRight,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (value) {
+                            setState(() {
+                              _rememberMe = value ?? false;
+                            });
+                          },
+                          activeColor: AppColor.red,
+                          checkColor: AppColor.white,
+                          side: BorderSide(color: AppColor.white, width: 1.5),
+                        ),
+                        Text(
+                          "Remember Me",
+                          style: GoogleFonts.dmSans(
+                            color: AppColor.white,
+                            fontWeight: FontWeight.normal,
+                            fontSize: Responsive.sp(10),
+                          ),
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        _showForgotPasswordBottomSheet(context, emailController);
+                      },
                       child: Text(
                         "Forgot Password?",
                         style: GoogleFonts.dmSans(
@@ -210,7 +233,7 @@ class _LoginviewState extends State<Loginview> {
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
                 SizedBox(height: Responsive.h(2.5)),
                 AuthButton(
@@ -221,6 +244,7 @@ class _LoginviewState extends State<Loginview> {
                       emailController.text,
                       passwordController.text,
                       context,
+                      rememberMe: _rememberMe,
                     );
                     
                   },

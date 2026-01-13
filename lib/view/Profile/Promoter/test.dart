@@ -1,14 +1,18 @@
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/models/event_model.dart';
+import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/user_model.dart';
+import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/services/event_service.dart';
 import 'package:cage/utils/routes/responsive.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/Promoter/edit_promoter_profile.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:cage/repository/home_repository.dart';
-import 'package:cage/models/user_model.dart';
-import 'package:cage/models/promoter_model.dart';
+import 'package:intl/intl.dart';
 
 class PromoterProfileView extends StatelessWidget {
   const PromoterProfileView({super.key});
@@ -185,7 +189,39 @@ class PromoterProfileView extends StatelessWidget {
                   },
                 ),
 
-                SizedBox(height: Responsive.h(1)),
+                SizedBox(height: Responsive.h(2)),
+
+                // Create Event Button
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.CreateEventView);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: Responsive.h(2)),
+                    decoration: BoxDecoration(
+                      color: AppColor.red,
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add, color: AppColor.white, size: 20),
+                        SizedBox(width: Responsive.w(2)),
+                        Text(
+                          "Create Event",
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontFamily: AppFonts.appFont,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Responsive.sp(14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(2)),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -294,6 +330,234 @@ class PromoterProfileView extends StatelessWidget {
                 ),
                 SizedBox(height: Responsive.h(2)),
 
+                // Active Events Section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Active Events",
+                    style: TextStyle(
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(16),
+                    ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
+
+                // Active Events List
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, userSnapshot) {
+                    if (!userSnapshot.hasData) {
+                      return Container(
+                        height: Responsive.h(20),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Loading events...",
+                            style: TextStyle(
+                              color: AppColor.white.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final userId = userSnapshot.data!.id;
+                    final eventService = EventService();
+
+                    return StreamBuilder<List<EventModel>>(
+                      stream: eventService.getActiveEventsByPromoter(userId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Container(
+                            height: Responsive.h(20),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColor.red,
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Container(
+                            height: Responsive.h(20),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "No active events",
+                                style: TextStyle(
+                                  color: AppColor.white.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final events = snapshot.data!;
+                        return SizedBox(
+                          height: Responsive.h(30),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: events.length,
+                            itemBuilder: (context, index) {
+                              final event = events[index];
+                              return _buildEventCard(context, event, false);
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                SizedBox(height: Responsive.h(2)),
+
+                // Event History Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Event History",
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.bold,
+                        fontSize: Responsive.sp(16),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () =>
+                          Navigator.pushNamed(context, RoutesName.EventHistory),
+                      child: Row(
+                        children: [
+                          Text(
+                            "View All",
+                            style: TextStyle(
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(10),
+                            ),
+                          ),
+                          SizedBox(width: Responsive.w(2)),
+                          SvgPicture.asset("assets/icons/Vector (2).svg"),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(1)),
+
+                // Event History List
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, userSnapshot) {
+                    if (!userSnapshot.hasData) {
+                      return Container(
+                        height: Responsive.h(20),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Loading history...",
+                            style: TextStyle(
+                              color: AppColor.white.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final userId = userSnapshot.data!.id;
+                    final eventService = EventService();
+
+                    return StreamBuilder<List<EventModel>>(
+                      stream: eventService.getPastEventsByPromoter(userId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Container(
+                            height: Responsive.h(20),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColor.red,
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Container(
+                            height: Responsive.h(20),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "No past events",
+                                style: TextStyle(
+                                  color: AppColor.white.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final events = snapshot.data!
+                            .take(3)
+                            .toList(); // Show only 3 recent
+                        return Column(
+                          children: events.map((event) {
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: Responsive.h(1)),
+                              child: _buildEventCard(context, event, true),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    );
+                  },
+                ),
+                SizedBox(height: Responsive.h(2)),
+
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -321,7 +585,9 @@ class PromoterProfileView extends StatelessWidget {
                   child: Center(
                     child: Text(
                       "Photos will be displayed here",
-                      style: TextStyle(color: AppColor.white.withValues(alpha: 0.5)),
+                      style: TextStyle(
+                        color: AppColor.white.withValues(alpha: 0.5),
+                      ),
                     ),
                   ),
                 ),
@@ -354,7 +620,9 @@ class PromoterProfileView extends StatelessWidget {
                   child: Center(
                     child: Text(
                       "Videos will be displayed here",
-                      style: TextStyle(color: AppColor.white.withValues(alpha: 0.5)),
+                      style: TextStyle(
+                        color: AppColor.white.withValues(alpha: 0.5),
+                      ),
                     ),
                   ),
                 ),
@@ -557,6 +825,126 @@ class PromoterProfileView extends StatelessWidget {
                 fontFamily: AppFonts.appFont,
                 fontWeight: FontWeight.bold,
                 fontSize: Responsive.sp(24),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build Event Card Widget
+  Widget _buildEventCard(
+    BuildContext context,
+    EventModel event,
+    bool isHistory,
+  ) {
+    Responsive.init(context);
+    return GestureDetector(
+      onTap: () {
+        // Navigate to event details
+        // You can create an event detail view later
+      },
+      child: Container(
+        width: isHistory ? double.infinity : Responsive.w(70),
+        margin: EdgeInsets.only(right: isHistory ? 0 : Responsive.w(2)),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: AppColor.white.withValues(alpha: 0.1),
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail Image
+            if (event.thumbnailImageUrl != null)
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: event.thumbnailImageUrl!,
+                  width: double.infinity,
+                  height: Responsive.h(15),
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    height: Responsive.h(15),
+                    color: AppColor.white.withValues(alpha: 0.1),
+                    child: Center(
+                      child: CircularProgressIndicator(color: AppColor.red),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    height: Responsive.h(15),
+                    color: AppColor.white.withValues(alpha: 0.1),
+                    child: Icon(
+                      Icons.image,
+                      color: AppColor.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ),
+              )
+            else
+              Container(
+                height: Responsive.h(15),
+                color: AppColor.white.withValues(alpha: 0.1),
+                child: Icon(
+                  Icons.image,
+                  color: AppColor.white.withValues(alpha: 0.5),
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Event Title
+                  Text(
+                    event.eventTitle,
+                    style: TextStyle(
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(12),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: Responsive.h(0.5)),
+                  // Event Date
+                  Text(
+                    DateFormat('MMM dd, yyyy').format(event.eventDate),
+                    style: TextStyle(
+                      color: AppColor.white.withValues(alpha: 0.7),
+                      fontFamily: AppFonts.appFont,
+                      fontSize: Responsive.sp(10),
+                    ),
+                  ),
+                  if (isHistory)
+                    Padding(
+                      padding: EdgeInsets.only(top: Responsive.h(0.5)),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Responsive.w(2),
+                          vertical: Responsive.h(0.3),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          "Past Event",
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontFamily: AppFonts.appFont,
+                            fontSize: Responsive.sp(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ],

@@ -1,12 +1,15 @@
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/models/event_model.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/widgets/auth_button.dart';
 import 'package:cage/widgets/likes.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class EventsView extends StatelessWidget {
   const EventsView({super.key});
@@ -110,8 +113,39 @@ class EventsView extends StatelessWidget {
                                 children: [
                                   // View Details Button
                                   GestureDetector(
-                                    onTap: () =>
-                                        _showEventDetailsBottomSheet(context),
+                                    onTap: () {
+                                      // Create a dummy event for now - this will be replaced when we integrate Firebase
+                                      // For now, just show the bottom sheet with placeholder data
+                                      _showEventDetailsBottomSheet(
+                                        context,
+                                        EventModel(
+                                          id: '',
+                                          promoterId: '',
+                                          promoterName:
+                                              'Elite Fight Promotions',
+                                          eventTitle:
+                                              "Jake \"The Beast\" Miller - 🏆 Win (KO)",
+                                          description:
+                                              "Looking for aggressive strikers with clean records. The winner will be featured on our official YouTube broadcast with cash bonus + sponsor exposure.",
+                                          eventDate: DateTime.now().add(
+                                            const Duration(days: 30),
+                                          ),
+                                          eventTime: '7:00 PM',
+                                          location: 'Las Vegas, NV',
+                                          eventType:
+                                              'Professional | Lightweight',
+                                          weightClass: 'Lightweight 155 lbs',
+                                          requiredRecord: 'Min. 2 wins',
+                                          ageLimit: '18-35',
+                                          fightingStylePreferred:
+                                              'MMA / BJJ / Muay Thai',
+                                          deadlineToApply: DateTime.now().add(
+                                            const Duration(days: 15),
+                                          ),
+                                          createdAt: DateTime.now(),
+                                        ),
+                                      );
+                                    },
                                     child: Container(
                                       width: Responsive.w(40),
                                       padding: const EdgeInsets.all(8.0),
@@ -274,7 +308,7 @@ class EventsView extends StatelessWidget {
     );
   }
 
-  void _showEventDetailsBottomSheet(BuildContext context) {
+  void _showEventDetailsBottomSheet(BuildContext context, EventModel event) {
     showModalBottomSheet(
       context: context,
       barrierColor: AppColor.white.withValues(alpha: 0.2),
@@ -317,18 +351,44 @@ class EventsView extends StatelessWidget {
                     // Event Image
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        "assets/images/Frame 1000002190.png",
-                        width: double.infinity,
-                        height: Responsive.h(25),
-                        fit: BoxFit.cover,
-                      ),
+                      child: event.thumbnailImageUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: event.thumbnailImageUrl!,
+                              width: double.infinity,
+                              height: Responsive.h(25),
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                height: Responsive.h(25),
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColor.red,
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                height: Responsive.h(25),
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                child: Icon(
+                                  Icons.image,
+                                  color: AppColor.white.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            )
+                          : Container(
+                              height: Responsive.h(25),
+                              color: AppColor.white.withValues(alpha: 0.1),
+                              child: Icon(
+                                Icons.image,
+                                color: AppColor.white.withValues(alpha: 0.5),
+                              ),
+                            ),
                     ),
                     SizedBox(height: Responsive.h(2)),
 
                     // Event Title
                     Text(
-                      "Jake \"The Beast\" Miller - 🏆 Win (KO)",
+                      event.eventTitle,
                       style: GoogleFonts.dmSans(
                         color: AppColor.white,
                         fontSize: Responsive.sp(16),
@@ -339,10 +399,9 @@ class EventsView extends StatelessWidget {
 
                     // Event Description
                     Text(
-                      "Looking for aggressive strikers with clean records. The winner will be "
-                      "featured on our official YouTube broadcast with cash bonus + sponsor exposure.",
+                      event.description,
                       style: GoogleFonts.dmSans(
-                        color: AppColor.white.withValues(alpha:0.8),
+                        color: AppColor.white.withValues(alpha: 0.8),
                         fontSize: Responsive.sp(12),
                       ),
                     ),
@@ -359,41 +418,83 @@ class EventsView extends StatelessWidget {
                     ),
                     SizedBox(height: Responsive.h(0.5)),
 
+                    // Host Information
+                    if (event.promoterProfileImage != null)
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundImage: CachedNetworkImageProvider(
+                              event.promoterProfileImage!,
+                            ),
+                          ),
+                          SizedBox(width: Responsive.w(2)),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                event.promoterName,
+                                style: GoogleFonts.dmSans(
+                                  color: AppColor.white,
+                                  fontSize: Responsive.sp(12),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                "Hosted By",
+                                style: GoogleFonts.dmSans(
+                                  color: AppColor.white.withValues(alpha: 0.7),
+                                  fontSize: Responsive.sp(10),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    SizedBox(height: Responsive.h(1)),
+
                     // Additional Info Section
-                    _buildDetailRow("Date", "October 15, 2023"),
-                    _buildDetailRow("Location", "Las Vegas, NV"),
+                    _buildDetailRow(
+                      "Event Date",
+                      DateFormat('MMMM dd, yyyy').format(event.eventDate),
+                    ),
+                    _buildDetailRow("Event Time", event.eventTime),
+                    _buildDetailRow("Location", event.location),
 
                     SizedBox(height: Responsive.h(0.5)),
-                    SvgPicture.asset("assets/images/Frame 1000002180.svg"),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColor.red),
-                        borderRadius: BorderRadius.circular(22),
-                        color: AppColor.black,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Center(
-                          child: Text(
-                            "Open Map",
-                            style: GoogleFonts.dmSans(
-                              color: AppColor.white,
-                              fontSize: Responsive.sp(10),
-                              fontWeight: FontWeight.bold,
+                    if (event.locationCoordinates != null)
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColor.red),
+                          borderRadius: BorderRadius.circular(22),
+                          color: AppColor.black,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Text(
+                              "Open Map",
+                              style: GoogleFonts.dmSans(
+                                color: AppColor.white,
+                                fontSize: Responsive.sp(10),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    _buildDetailRow("Event Type", "Professional | Lightweight"),
-                    _buildDetailRow("Weight Class", "Lightweight 155 lbs"),
-                    _buildDetailRow("Required Record", "Min. 2 wins"),
-                    _buildDetailRow("Age Limit", "18–35"),
+                    _buildDetailRow("Event Type", event.eventType),
+                    _buildDetailRow("Weight Class", event.weightClass),
+                    _buildDetailRow("Required Record", event.requiredRecord),
+                    _buildDetailRow("Age Limit", event.ageLimit),
                     _buildDetailRow(
                       "Fighting Style Preferred",
-                      "MMA / BJJ / Muay Thai",
+                      event.fightingStylePreferred,
                     ),
-                    _buildDetailRow("Deadline to Apply", "June 15, 2025"),
+                    _buildDetailRow(
+                      "Deadline to Apply",
+                      DateFormat('MMMM dd, yyyy').format(event.deadlineToApply),
+                    ),
                     // Action Button
                     AuthButton(
                       buttontext: "Rate Promoter",

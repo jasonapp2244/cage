@@ -3,6 +3,7 @@ import 'package:cage/view/Profile/Promoter/about_company_name.dart';
 import 'package:cage/view/Profile/Promoter/company_name_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_email_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_number_view.dart';
+import 'package:cage/view/Profile/Promoter/create_event_view.dart';
 import 'package:cage/view/Profile/Promoter/event_history.dart';
 import 'package:cage/view/Profile/Promoter/promotor_subcribtion_view.dart';
 import 'package:cage/view/Profile/Promoter/test.dart';
@@ -21,6 +22,7 @@ import 'package:cage/view/Profile/fighter/coach_conatct.dart';
 import 'package:cage/view/Profile/fighter/coach_view.dart';
 import 'package:cage/view/Profile/fighter/createnew_ticticket_view.dart';
 import 'package:cage/view/Profile/fighter/enter_name_view.dart';
+import 'package:cage/view/Profile/fighter/pose_image_upload_view.dart';
 import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/Profile/fighter/eye_test_view.dart';
 import 'package:cage/view/Profile/fighter/fight_knockout_view.dart';
@@ -41,6 +43,8 @@ import 'package:cage/view/auth/sginupview.dart';
 import 'package:cage/view/auth/splash_view.dart';
 import 'package:cage/view/support_view.dart';
 import 'package:cage/view/Profile/fighter/tapalogy_view.dart';
+import 'package:cage/view/contact_us_view.dart';
+import 'package:cage/view/privacy_policy_view.dart';
 import 'package:cage/view/term_condition_view.dart';
 import 'package:cage/view/Profile/fighter/updateProfle_view.dart';
 import 'package:flutter/material.dart';
@@ -143,6 +147,14 @@ class Routes {
         return MaterialPageRoute(
           builder: (BuildContext context) => TermConditionView(),
         );
+      case RoutesName.PrivacyPolicyView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PrivacyPolicyView(),
+        );
+      case RoutesName.ContactUsView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ContactUsView(),
+        );
 
       case RoutesName.fightKnouckout:
         return MaterialPageRoute(
@@ -160,6 +172,11 @@ class Routes {
       case RoutesName.nameview:
         return MaterialPageRoute(
           builder: (BuildContext context) => EnterNameView(),
+        );
+
+      case RoutesName.poseImageUploadView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => PoseImageUploadView(),
         );
 
       case RoutesName.roleView:
@@ -199,6 +216,10 @@ class Routes {
       case RoutesName.PromoterProfileView:
         return MaterialPageRoute(
           builder: (BuildContext context) => PromoterProfileView(),
+        );
+      case RoutesName.CreateEventView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const CreateEventView(),
         );
 
       case RoutesName.aboutCompanayName:

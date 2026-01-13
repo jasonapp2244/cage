@@ -6,14 +6,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-class TermConditionView extends StatefulWidget {
-  const TermConditionView({super.key});
+class PrivacyPolicyView extends StatefulWidget {
+  const PrivacyPolicyView({super.key});
 
   @override
-  State<TermConditionView> createState() => _TermConditionViewState();
+  State<PrivacyPolicyView> createState() => _PrivacyPolicyViewState();
 }
 
-class _TermConditionViewState extends State<TermConditionView> {
+class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = true;
   String _content = '';
@@ -22,10 +22,10 @@ class _TermConditionViewState extends State<TermConditionView> {
   @override
   void initState() {
     super.initState();
-    _loadTerms();
+    _loadPrivacyPolicy();
   }
 
-  Future<void> _loadTerms() async {
+  Future<void> _loadPrivacyPolicy() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -56,7 +56,7 @@ class _TermConditionViewState extends State<TermConditionView> {
       
       final doc = await _firestore
           .collection('appSettings')
-          .doc('termsAndConditions')
+          .doc('privacyPolicy')
           .get();
 
       if (doc.exists && doc.data() != null) {
@@ -75,18 +75,18 @@ class _TermConditionViewState extends State<TermConditionView> {
           });
         } else {
           setState(() {
-            _content = 'No terms and conditions available yet.';
+            _content = 'No privacy policy available yet.';
           });
         }
       } else {
         setState(() {
-          _content = 'No terms and conditions available yet.';
+          _content = 'No privacy policy available yet.';
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load terms and conditions: $e';
-        _content = 'Error loading terms and conditions. Please try again later.';
+        _errorMessage = 'Failed to load privacy policy: $e';
+        _content = 'Error loading privacy policy. Please try again later.';
       });
     } finally {
       setState(() {
@@ -116,7 +116,7 @@ class _TermConditionViewState extends State<TermConditionView> {
                     ),
                   ),
                   Text(
-                    "Terms & Conditions",
+                    "Privacy Policy",
                     style: TextStyle(
                       fontSize: Responsive.textScaleFactor * 24,
                       color: AppColor.white,
@@ -156,7 +156,7 @@ class _TermConditionViewState extends State<TermConditionView> {
                               ),
                               SizedBox(height: Responsive.h(3)),
                               ElevatedButton(
-                                onPressed: _loadTerms,
+                                onPressed: _loadPrivacyPolicy,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColor.red,
                                 ),
@@ -173,7 +173,7 @@ class _TermConditionViewState extends State<TermConditionView> {
                             ),
                             child: Text(
                               _content.isEmpty
-                                  ? 'No terms and conditions available yet.'
+                                  ? 'No privacy policy available yet.'
                                   : _content,
                               style: TextStyle(
                                 fontSize: Responsive.textScaleFactor * 12,

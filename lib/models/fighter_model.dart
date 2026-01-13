@@ -15,6 +15,7 @@ class FighterDataModel {
   final String? eyeExam;
   final String? uploadProfile;
   final String urlProfile;
+  final String? poseImageUrl;
   final String? weight;
   final String? location;
   final double? latitude;
@@ -37,6 +38,7 @@ class FighterDataModel {
     this.eyeExam,
     this.uploadProfile,
     required this.urlProfile,
+    this.poseImageUrl,
     this.weight,
     this.location,
     this.latitude,
@@ -63,6 +65,7 @@ class FighterDataModel {
       eyeExam: map['eyeExam'],
       uploadProfile: map['uploadProfile'],
       urlProfile: map['urlProfile'] ?? 'https',
+      poseImageUrl: map['poseImageUrl'],
       weight: map['weight'],
       location: map['selectLocation'] is Map<String, dynamic> 
           ? map['selectLocation']['address'] 

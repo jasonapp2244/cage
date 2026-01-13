@@ -15,6 +15,7 @@ class RoutesName {
   static const String roleView = "role_view";
 
   static const String nameview = "name_view";
+  static const String poseImageUploadView = "pose_image_upload_view";
   static const String supportView = "support_view";
 
   static const String namecoachview = "namecoach_view";
@@ -66,6 +67,8 @@ class RoutesName {
   static const String Change_Password_View = "Change_Password_View";
 
   static const String TermConditionView = "Term_Condition_View";
+  static const String PrivacyPolicyView = "Privacy_Policy_View";
+  static const String ContactUsView = "Contact_Us_View";
 
   static const String PromotorSubcribtionView = "PromotorSubcribtionView";
 
@@ -84,5 +87,6 @@ class RoutesName {
   static const String EventHistory = "Event_History";
   static const String PromoterHome = "Promoter_Home";
   static const String PromoterProfileView = "Promoter_Profile_View";
+  static const String CreateEventView = "Create_Event_View";
   static const String weightView = 'weight';
 }

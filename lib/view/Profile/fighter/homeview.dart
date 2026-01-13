@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/models/fighter_model.dart';
 import 'package:cage/models/user_model.dart';
@@ -144,10 +145,46 @@ class _HomeviewState extends State<Homeview> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 0.0),
-                        child: Image(
-                          width: Responsive.w(70),
-                          // height: Responsive.h(65),
-                          image: AssetImage("assets/icons/Mask group.png"),
+                        child: StreamBuilder<UserModel>(
+                          stream: UserRepository.fetchCurrentUserStream(),
+                          builder: (context, snapshot) {
+                            String? poseImageUrl;
+
+                            if (snapshot.hasData &&
+                                snapshot.data != null &&
+                                snapshot.data!.isFighter) {
+                              final fighterData =
+                                  snapshot.data!.roleData as FighterDataModel;
+                              poseImageUrl = fighterData.poseImageUrl;
+                            }
+
+                            if (poseImageUrl != null && poseImageUrl.isNotEmpty) {
+                              return CachedNetworkImage(
+                                imageUrl: poseImageUrl,
+                                width: Responsive.w(70),
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  width: Responsive.w(70),
+                                  height: Responsive.h(50),
+                                  color: AppColor.black,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: AppColor.red,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Image(
+                                  width: Responsive.w(70),
+                                  image: AssetImage("assets/icons/Mask group.png"),
+                                ),
+                              );
+                            } else {
+                              return Image(
+                                width: Responsive.w(70),
+                                image: AssetImage("assets/icons/Mask group.png"),
+                              );
+                            }
+                          },
                         ),
                       ),
                       StreamBuilder<UserModel>(

@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/auth/loginview.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -20,11 +26,94 @@ class _SplashViewState extends State<SplashView> {
 
   Future<void> _initializeApp() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    Timer(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => Loginview()),
-      );
+
+    // Check if user is already logged in with Firebase Auth
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      // User is already authenticated, check role and navigate
+      _navigateBasedOnRole(currentUser.uid);
+      return;
+    }
+
+    // Check for saved credentials
+    final credentials = await Utils.getLoginCredentials();
+    final savedEmail = credentials['email'];
+    final savedPassword = credentials['password'];
+    final isLoggedIn = credentials['isLoggedIn'] == 'true';
+
+    if (isLoggedIn && savedEmail != null && savedPassword != null) {
+      // Auto-login with saved credentials
+      if (mounted) {
+        final authProvider = Provider.of<AuthViewmodel>(context, listen: false);
+        try {
+          await authProvider.performLogin(
+            savedEmail,
+            savedPassword,
+            context,
+          );
+          // Navigation will be handled in performLogin method
+          return;
+        } catch (e) {
+          // Login failed, clear credentials and go to login screen
+          await Utils.clearLoginCredentials();
+          if (mounted) {
+            _navigateToLogin();
+          }
+          return;
+        }
+      }
+    }
+
+    // No saved credentials or auto-login failed, go to login screen
+    if (mounted) {
+      _navigateToLogin();
+    }
+  }
+
+  Future<void> _navigateBasedOnRole(String uid) async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('userData')
+          .doc(uid)
+          .get();
+
+      if (userDoc.exists && userDoc.data() != null) {
+        final role = userDoc.data()!['role'];
+        if (role == 'Fighter') {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, RoutesName.home);
+          }
+        } else if (role == 'Promoter') {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, RoutesName.PromotorBottomNavBar);
+          }
+        } else {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, RoutesName.roleView);
+          }
+        }
+      } else {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, RoutesName.roleView);
+        }
+      }
+    } catch (e) {
+      // Error fetching user data, go to login
+      if (mounted) {
+        _navigateToLogin();
+      }
+    }
+  }
+
+  void _navigateToLogin() {
+    Timer(const Duration(seconds: 1), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => Loginview()),
+        );
+      }
     });
   }
 

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
@@ -440,6 +441,47 @@ class FighterPublicProfile extends StatelessWidget {
             ),
           ],
         ),
+
+        SizedBox(height: Responsive.h(2)),
+
+        // Pose Image Display
+        if (fighter.poseImageUrl != null && fighter.poseImageUrl!.isNotEmpty)
+          Container(
+            width: double.infinity,
+            height: Responsive.h(50),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColor.white.withValues(alpha: 0.1),
+                width: 2,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: CachedNetworkImage(
+                imageUrl: fighter.poseImageUrl!,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: AppColor.black,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColor.red,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: AppColor.black,
+                  child: Center(
+                    child: Icon(
+                      Icons.error_outline,
+                      color: AppColor.red,
+                      size: 48,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
 
         SizedBox(height: Responsive.h(1)),
 

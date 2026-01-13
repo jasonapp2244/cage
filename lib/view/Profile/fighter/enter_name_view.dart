@@ -116,13 +116,12 @@ class EnterNameView extends StatelessWidget {
                     );
                   } else {
                     var uid = Utils.getCurrentUid();
-                    authProvider.addUserFieldByRole
-(
+                    authProvider.addUserFieldByRole(
                       uid: uid,
                       fieldName: 'fullName',
                       value: fullNameController.text.toString(),
                     );
-                    Navigator.pushNamed(context, RoutesName.namecoachview);
+                    Navigator.pushNamed(context, RoutesName.poseImageUploadView);
                   }
                 },
               ),

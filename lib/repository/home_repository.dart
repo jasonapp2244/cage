@@ -22,7 +22,18 @@ class UserRepository {
 
   // Fetch current user data as a stream with proper error handling
   static Stream<UserModel> fetchCurrentUserStream() {
-    final userId = Utils.getCurrentUid();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // Return an empty stream if user is not logged in
+      return Stream.value(UserModel(
+        id: '',
+        email: '',
+        createdAt: DateTime.now(),
+        roleData: null,
+      ));
+    }
+    
+    final userId = user.uid;
 
     return FirebaseFirestore.instance
         .collection('userData')

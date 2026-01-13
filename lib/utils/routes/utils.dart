@@ -69,6 +69,32 @@ class Utils {
     await storage.deleteAll();
   }
 
+  // Save login credentials
+  static Future<void> saveLoginCredentials(String email, String password) async {
+    await storage.write(key: 'saved_email', value: email);
+    await storage.write(key: 'saved_password', value: password);
+    await storage.write(key: 'is_logged_in', value: 'true');
+  }
+
+  // Get saved login credentials
+  static Future<Map<String, String?>> getLoginCredentials() async {
+    final email = await storage.read(key: 'saved_email');
+    final password = await storage.read(key: 'saved_password');
+    final isLoggedIn = await storage.read(key: 'is_logged_in');
+    return {
+      'email': email,
+      'password': password,
+      'isLoggedIn': isLoggedIn,
+    };
+  }
+
+  // Clear login credentials
+  static Future<void> clearLoginCredentials() async {
+    await storage.delete(key: 'saved_email');
+    await storage.delete(key: 'saved_password');
+    await storage.delete(key: 'is_logged_in');
+  }
+
   static String getCurrentUid() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {

@@ -27,17 +27,30 @@ class AuthViewmodel extends ChangeNotifier {
     String email,
     String password,
     String phoneNumber,
-    BuildContext context,
-  ) async {
-    PhoneAuthCredential? credential;
-    await completeSignUp(
-      email,
-      password,
+    BuildContext context, {
+    bool rememberMe = false,
+  }) async {
+    // Set loading to true when signup process starts
+    setloaoding(true);
 
-      //credential ,
-      phoneNumber,
-      context,
-    );
+    try {
+      PhoneAuthCredential? credential;
+      await completeSignUp(
+        email,
+        password,
+
+        //credential ,
+        phoneNumber,
+        context,
+        rememberMe: rememberMe,
+      );
+      // Loading is reset in completeSignUp before navigation
+    } catch (e) {
+      // Reset loading state on error
+      setloaoding(false);
+      // Re-throw to let error handlers in completeSignUp handle it
+      rethrow;
+    }
     // await FirebaseAuth.instance.verifyPhoneNumber(
     //   phoneNumber: phoneNumber,
 
@@ -190,13 +203,33 @@ class AuthViewmodel extends ChangeNotifier {
     }
   }
 
+  Future<String?> uploadPoseImage(File imageFile, String uid) async {
+    try {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('poseImages')
+          .child('$uid.jpg');
+
+      UploadTask uploadTask = storageRef.putFile(imageFile);
+      TaskSnapshot snapshot = await uploadTask;
+
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading pose image: $e');
+      return null;
+    }
+  }
+
   Future<void> verifyOtpAndSignUp(
     String otp,
     String email,
     String password,
     String phoneNumber,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    bool rememberMe = false,
+  }) async {
     // final credential = PhoneAuthProvider.credential(
     //   verificationId: verificationIdGlobal!,
     //   smsCode: otp,
@@ -209,6 +242,7 @@ class AuthViewmodel extends ChangeNotifier {
       // credential,
       phoneNumber,
       context,
+      rememberMe: rememberMe,
     );
   }
 
@@ -217,8 +251,9 @@ class AuthViewmodel extends ChangeNotifier {
     String password,
     //  PhoneAuthCredential phoneCredential,
     String phoneNumber,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    bool rememberMe = false,
+  }) async {
     try {
       // Check if Firebase is initialized
       if (Firebase.apps.isEmpty) {
@@ -265,6 +300,14 @@ class AuthViewmodel extends ChangeNotifier {
         // Don't rethrow - let the user continue to role selection
       }
 
+      // Reset loading state before navigation
+      setloaoding(false);
+      
+      // Save login credentials if remember me is checked
+      if (rememberMe) {
+        await Utils.saveLoginCredentials(email, password);
+      }
+      
       // Navigate to role selector after successful signup
       Navigator.pushNamed(context, RoutesName.roleView);
     } on FirebaseAuthException catch (e) {
@@ -452,8 +495,9 @@ class AuthViewmodel extends ChangeNotifier {
   Future<void> performLogin(
     String email,
     String password,
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    bool rememberMe = false,
+  }) async {
     // Validate email
     if (email.isEmpty) {
       Utils.flushBarErrorMassage("Please Enter Email First", context);
@@ -508,6 +552,80 @@ class AuthViewmodel extends ChangeNotifier {
           print('Login - User data: $userData');
           print('Login - Detected role: $role');
 
+          // Check if user is blocked
+          final isBlocked = userData?['isBlocked'] ?? false;
+          if (isBlocked) {
+            // Check if it's a temporary block and if it has expired
+            final blockType = userData?['blockType'] as String?;
+            final blockUntil = userData?['blockUntil'];
+            final blockReason = userData?['blockReason'] as String?;
+
+            bool shouldBlock = true;
+            String blockMessage = 'Your account has been blocked.';
+
+            if (blockType == 'temporary' && blockUntil != null) {
+              DateTime? blockUntilDate;
+              if (blockUntil is Timestamp) {
+                blockUntilDate = blockUntil.toDate();
+              } else if (blockUntil is DateTime) {
+                blockUntilDate = blockUntil;
+              }
+
+              if (blockUntilDate != null) {
+                if (DateTime.now().isAfter(blockUntilDate)) {
+                  // Temporary block has expired, unblock the user
+                  shouldBlock = false;
+                  await FirebaseFirestore.instance
+                      .collection('userData')
+                      .doc(uid)
+                      .update({
+                    'isBlocked': false,
+                    'blockType': null,
+                    'blockUntil': null,
+                    'blockReason': null,
+                    'status': 'Active',
+                  });
+                  print('Temporary block expired, user unblocked');
+                } else {
+                  // Still blocked, show expiration date
+                  final formattedDate = '${blockUntilDate.day}/${blockUntilDate.month}/${blockUntilDate.year}';
+                  blockMessage = 'Your account has been temporarily blocked until $formattedDate.';
+                  if (blockReason != null && blockReason.isNotEmpty) {
+                    blockMessage += '\nReason: $blockReason';
+                  }
+                }
+              } else {
+                // Permanent block or invalid date
+                if (blockReason != null && blockReason.isNotEmpty) {
+                  blockMessage += '\nReason: $blockReason';
+                }
+              }
+            } else {
+              // Permanent block
+              if (blockReason != null && blockReason.isNotEmpty) {
+                blockMessage += '\nReason: $blockReason';
+              }
+            }
+
+            if (shouldBlock) {
+              // Sign out the user from Firebase Auth
+              await FirebaseAuth.instance.signOut();
+              // Clear saved login credentials
+              await Utils.clearLoginCredentials();
+              setloaoding(false);
+              Utils.flushBarErrorMassage(blockMessage, context);
+              return;
+            }
+          }
+
+          // Reset loading state before navigation
+          setloaoding(false);
+
+          // Save login credentials only if remember me is checked
+          if (rememberMe) {
+            await Utils.saveLoginCredentials(email, password);
+          }
+
           if (role == 'Fighter') {
             Navigator.pushNamedAndRemoveUntil(
               context,
@@ -533,6 +651,8 @@ class AuthViewmodel extends ChangeNotifier {
           }
         } else {
           // No user data, go to role selection
+          // Reset loading state before navigation
+          setloaoding(false);
           Navigator.pushNamedAndRemoveUntil(
             context,
             RoutesName.roleView,
@@ -612,10 +732,17 @@ class AuthViewmodel extends ChangeNotifier {
   }
 
   Future<void> logout(BuildContext context) async {
+    // Set loading to true when logout process starts
+    setloaoding(true);
+
     try {
       await FirebaseAuth.instance.signOut();
 
       await Utils.clearAll(); // Clear stored user id
+      await Utils.clearLoginCredentials(); // Clear saved login credentials
+
+      // Reset loading state before navigation
+      setloaoding(false);
 
       // Redirect to login
       Navigator.of(
@@ -623,6 +750,8 @@ class AuthViewmodel extends ChangeNotifier {
       ).pushReplacement(MaterialPageRoute(builder: (_) => const Loginview()));
     } catch (e) {
       print('Logout failed: $e');
+      // Reset loading state on error
+      setloaoding(false);
     }
   }
 }

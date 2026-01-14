@@ -3,7 +3,6 @@ import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
-import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/widgets/edit_profile_textfeild.dart';
 import 'package:firebase_storage/firebase_storage.dart';

@@ -10,6 +10,10 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:cage/repository/home_repository.dart';
 import 'package:cage/models/user_model.dart';
 import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/event_model.dart';
+import 'package:cage/services/event_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
 
 class PromoterHome extends StatefulWidget {
   final AdvancedDrawerController? drawerController;
@@ -20,6 +24,8 @@ class PromoterHome extends StatefulWidget {
 }
 
 class _PromoterHomeState extends State<PromoterHome> {
+  final EventService _eventService = EventService();
+
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
@@ -353,83 +359,171 @@ class _PromoterHomeState extends State<PromoterHome> {
                 ),
                 SizedBox(height: Responsive.h(2)),
 
-                SizedBox(
-                  height: 300,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 10,
-                    padding: EdgeInsets.symmetric(horizontal: 0),
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                        child: Container(
-                            width: Responsive.w(80),
-                            height: Responsive.h(100),
-                            decoration: BoxDecoration(
-                              border: BoxBorder.all(
-                                color: AppColor.white.withValues(alpha: 0.1),
+                // 🔹 Recent Events - Fetch from Firestore
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, userSnapshot) {
+                    if (!userSnapshot.hasData) {
+                      return SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: CircularProgressIndicator(color: AppColor.red),
+                        ),
+                      );
+                    }
+
+                    final currentUserId = userSnapshot.data!.id;
+
+                    return SizedBox(
+                      height: 300,
+                      child: StreamBuilder<List<EventModel>>(
+                        stream: _eventService.getEventsByPromoter(currentUserId),
+                        builder: (context, eventsSnapshot) {
+                          if (eventsSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(
+                                color: AppColor.red,
                               ),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                            );
+                          }
+
+                          if (eventsSnapshot.hasError) {
+                            print('Error loading events for promoter: ${eventsSnapshot.error}');
+                            print('Promoter ID: $currentUserId');
+                            return Center(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Image(
-                                    image: AssetImage(
-                                      "assets/images/Frame 1000002190.png",
-                                    ),
-                                  ),
-                                  SizedBox(height: Responsive.h(1)),
                                   Text(
-                                    "Jake \"The Beast\" Miller - 🏆 Win (KO)",
-                                    style: TextStyle(
-                                      color: AppColor.white,
-                                      fontFamily: AppFonts.appFont,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: Responsive.textScaleFactor * 18,
-                                    ),
+                                    'Error loading events',
+                                    style: TextStyle(color: AppColor.white),
                                   ),
-                                  SizedBox(height: Responsive.h(1)),
-                                  GestureDetector(
-                                    onTap: () =>
-                                        _showEventDetailsBottomSheet(context),
-                                    child: Container(
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        borderRadius:
-                                            BorderRadiusDirectional.circular(
-                                              22,
-                                            ),
-                                        color: AppColor.white.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            "View Details",
-                                            style: GoogleFonts.dmSans(
-                                              color: AppColor.white,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize:
-                                                  Responsive.textScaleFactor *
-                                                  12,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '${eventsSnapshot.error}',
+                                    style: TextStyle(
+                                      color: AppColor.white.withValues(alpha: 0.7),
+                                      fontSize: Responsive.sp(10),
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
-                            ),
-                        ),
-                      );
-                    },
-                  ),
+                            );
+                          }
+
+                          final events = eventsSnapshot.data ?? [];
+                          print('Loaded ${events.length} events for promoter: $currentUserId');
+
+                          if (events.isEmpty) {
+                            print('No events found for promoter: $currentUserId');
+                            return Center(
+                              child: Text(
+                                'No events yet',
+                                style: TextStyle(color: AppColor.white),
+                              ),
+                            );
+                          }
+
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: events.length,
+                            padding: EdgeInsets.symmetric(horizontal: 0),
+                            itemBuilder: (context, index) {
+                              final event = events[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                                child: Container(
+                                  width: Responsive.w(80),
+                                  height: Responsive.h(100),
+                                  decoration: BoxDecoration(
+                                    border: BoxBorder.all(
+                                      color: AppColor.white.withValues(alpha: 0.1),
+                                    ),
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: event.thumbnailImageUrl != null
+                                              ? ClipRRect(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: event.thumbnailImageUrl!,
+                                                    width: double.infinity,
+                                                    height: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                    errorWidget: (context, url, error) => Container(
+                                                      color: AppColor.white.withValues(alpha: 0.1),
+                                                      child: Icon(
+                                                        Icons.image,
+                                                        color: AppColor.white.withValues(alpha: 0.5),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              : Container(
+                                                  color: AppColor.white.withValues(alpha: 0.1),
+                                                  child: Icon(
+                                                    Icons.image,
+                                                    color: AppColor.white.withValues(alpha: 0.5),
+                                                  ),
+                                                ),
+                                        ),
+                                        SizedBox(height: Responsive.h(1)),
+                                        Text(
+                                          event.eventTitle,
+                                          style: TextStyle(
+                                            color: AppColor.white,
+                                            fontFamily: AppFonts.appFont,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: Responsive.textScaleFactor * 14,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: Responsive.h(1)),
+                                        GestureDetector(
+                                          onTap: () => _showEventDetailsBottomSheet(
+                                            context,
+                                            event,
+                                          ),
+                                          child: Container(
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadiusDirectional.circular(22),
+                                              color: AppColor.white.withValues(alpha: 0.1),
+                                            ),
+                                            child: Center(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Text(
+                                                  "View Details",
+                                                  style: GoogleFonts.dmSans(
+                                                    color: AppColor.white,
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: Responsive.textScaleFactor * 12,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
                 SizedBox(height: Responsive.h(2)),
 
@@ -646,7 +740,7 @@ class _PromoterHomeState extends State<PromoterHome> {
   }
 }
 
-void _showEventDetailsBottomSheet(BuildContext context) {
+void _showEventDetailsBottomSheet(BuildContext context, EventModel event) {
   showModalBottomSheet(
     context: context,
     barrierColor: AppColor.white.withValues(alpha: 0.2),
@@ -689,18 +783,35 @@ void _showEventDetailsBottomSheet(BuildContext context) {
                   // Event Image
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      "assets/images/Frame 1000002190.png",
-                      width: double.infinity,
-                      height: Responsive.h(25),
-                      fit: BoxFit.cover,
-                    ),
+                    child: event.thumbnailImageUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: event.thumbnailImageUrl!,
+                            width: double.infinity,
+                            height: Responsive.h(25),
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) => Container(
+                              height: Responsive.h(25),
+                              color: AppColor.white.withValues(alpha: 0.1),
+                              child: Icon(
+                                Icons.image,
+                                color: AppColor.white.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            height: Responsive.h(25),
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            child: Icon(
+                              Icons.image,
+                              color: AppColor.white.withValues(alpha: 0.5),
+                            ),
+                          ),
                   ),
                   SizedBox(height: Responsive.h(2)),
 
                   // Event Title
                   Text(
-                    "Jake \"The Beast\" Miller - 🏆 Win (KO)",
+                    event.eventTitle,
                     style: GoogleFonts.dmSans(
                       color: AppColor.white,
                       fontSize: Responsive.sp(16),
@@ -711,8 +822,7 @@ void _showEventDetailsBottomSheet(BuildContext context) {
 
                   // Event Description
                   Text(
-                    "Looking for aggressive strikers with clean records. The winner will be "
-                    "featured on our official YouTube broadcast with cash bonus + sponsor exposure.",
+                    event.description,
                     style: GoogleFonts.dmSans(
                       color: AppColor.white.withValues(alpha: 0.8),
                       fontSize: Responsive.sp(12),
@@ -732,8 +842,9 @@ void _showEventDetailsBottomSheet(BuildContext context) {
                   SizedBox(height: Responsive.h(0.5)),
 
                   // Additional Info Section
-                  _buildDetailRow("Date", "October 15, 2023"),
-                  _buildDetailRow("Location", "Las Vegas, NV"),
+                  _buildDetailRow("Date", DateFormat('MMMM d, yyyy').format(event.eventDate)),
+                  _buildDetailRow("Time", event.eventTime),
+                  _buildDetailRow("Location", event.location),
 
                   SizedBox(height: Responsive.h(0.5)),
                   SvgPicture.asset("assets/images/Frame 1000002180.svg"),
@@ -757,15 +868,12 @@ void _showEventDetailsBottomSheet(BuildContext context) {
                       ),
                     ),
                   ),
-                  _buildDetailRow("Event Type", "Professional | Lightweight"),
-                  _buildDetailRow("Weight Class", "Lightweight 155 lbs"),
-                  _buildDetailRow("Required Record", "Min. 2 wins"),
-                  _buildDetailRow("Age Limit", "18–35"),
-                  _buildDetailRow(
-                    "Fighting Style Preferred",
-                    "MMA / BJJ / Muay Thai",
-                  ),
-                  _buildDetailRow("Deadline to Apply", "June 15, 2025"),
+                  _buildDetailRow("Event Type", event.eventType),
+                  _buildDetailRow("Weight Class", event.weightClass),
+                  _buildDetailRow("Required Record", event.requiredRecord),
+                  _buildDetailRow("Age Limit", event.ageLimit),
+                  _buildDetailRow("Fighting Style Preferred", event.fightingStylePreferred),
+                  _buildDetailRow("Deadline to Apply", DateFormat('MMMM d, yyyy').format(event.deadlineToApply)),
                   // Action Button
                   AuthButton(
                     buttontext: "Edit",

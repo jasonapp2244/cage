@@ -269,7 +269,9 @@ class _SupportViewState extends State<SupportView> {
                     vertical: Responsive.h(0.5),
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(ticket.status).withOpacity(0.2),
+                    color: _getStatusColor(
+                      ticket.status,
+                    ).withValues(alpha:0.2),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: _getStatusColor(ticket.status),

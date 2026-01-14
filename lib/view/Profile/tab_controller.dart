@@ -7,14 +7,14 @@
 // import 'package:google_fonts/google_fonts.dart';
 // import 'package:provider/provider.dart';
 
-// class ActivityView extends StatefulWidget {
-//   const ActivityView({super.key});
+// class DiscoverView extends StatefulWidget {
+//   const DiscoverView({super.key});
 
 //   @override
-//   State<ActivityView> createState() => _ActivityViewState();
+//   State<DiscoverView> createState() => _DiscoverViewState();
 // }
 
-// class _ActivityViewState extends State<ActivityView> with SingleTickerProviderStateMixin {
+// class _DiscoverViewState extends State<DiscoverView> with SingleTickerProviderStateMixin {
 //   late TabController _tabController;
 //   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -181,14 +181,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class ActivityView extends StatefulWidget {
-  const ActivityView({super.key});
+class DiscoverView extends StatefulWidget {
+  const DiscoverView({super.key});
 
   @override
-  State<ActivityView> createState() => _ActivityViewState();
+  State<DiscoverView> createState() => _DiscoverViewState();
 }
 
-class _ActivityViewState extends State<ActivityView>
+class _DiscoverViewState extends State<DiscoverView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -233,10 +233,11 @@ class _ActivityViewState extends State<ActivityView>
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Profile",
+                    "Discover",
                     style: TextStyle(
                       fontSize: Responsive.textScaleFactor * 24,
                       color: AppColor.white,

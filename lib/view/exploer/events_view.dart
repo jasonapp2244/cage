@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:cage/services/event_service.dart';
 
 class EventsView extends StatelessWidget {
   const EventsView({super.key});
@@ -64,10 +65,56 @@ class EventsView extends StatelessWidget {
 
               // Events List
               Expanded(
-                child: ListView.builder(
-                  itemCount: 10,
-                  padding: EdgeInsets.zero,
-                  itemBuilder: (context, index) {
+                child: StreamBuilder<List<EventModel>>(
+                  stream: EventService().getActiveEvents(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(color: AppColor.red),
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      print('Error loading events: ${snapshot.error}');
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Error loading events',
+                              style: TextStyle(color: AppColor.white),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '${snapshot.error}',
+                              style: TextStyle(
+                                color: AppColor.white.withValues(alpha: 0.7),
+                                fontSize: Responsive.sp(10),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final events = snapshot.data ?? [];
+                    print('Loaded ${events.length} events');
+
+                    if (events.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No events available',
+                          style: TextStyle(color: AppColor.white),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: events.length,
+                      padding: EdgeInsets.zero,
+                      itemBuilder: (context, index) {
+                        final event = events[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 2.0,
@@ -89,12 +136,29 @@ class EventsView extends StatelessWidget {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(
-                                  "assets/images/Frame 1000002190.png",
-                                  width: double.infinity,
-                                  height: Responsive.h(20),
-                                  fit: BoxFit.cover,
-                                ),
+                                child: event.thumbnailImageUrl != null
+                                    ? CachedNetworkImage(
+                                        imageUrl: event.thumbnailImageUrl!,
+                                        width: double.infinity,
+                                        height: Responsive.h(20),
+                                        fit: BoxFit.cover,
+                                        errorWidget: (context, url, error) => Container(
+                                          height: Responsive.h(20),
+                                          color: AppColor.white.withValues(alpha: 0.1),
+                                          child: Icon(
+                                            Icons.image,
+                                            color: AppColor.white.withValues(alpha: 0.5),
+                                          ),
+                                        ),
+                                      )
+                                    : Container(
+                                        height: Responsive.h(20),
+                                        color: AppColor.white.withValues(alpha: 0.1),
+                                        child: Icon(
+                                          Icons.image,
+                                          color: AppColor.white.withValues(alpha: 0.5),
+                                        ),
+                                      ),
                               ),
                               SizedBox(height: Responsive.h(1)),
                               Text(
@@ -114,37 +178,7 @@ class EventsView extends StatelessWidget {
                                   // View Details Button
                                   GestureDetector(
                                     onTap: () {
-                                      // Create a dummy event for now - this will be replaced when we integrate Firebase
-                                      // For now, just show the bottom sheet with placeholder data
-                                      _showEventDetailsBottomSheet(
-                                        context,
-                                        EventModel(
-                                          id: '',
-                                          promoterId: '',
-                                          promoterName:
-                                              'Elite Fight Promotions',
-                                          eventTitle:
-                                              "Jake \"The Beast\" Miller - 🏆 Win (KO)",
-                                          description:
-                                              "Looking for aggressive strikers with clean records. The winner will be featured on our official YouTube broadcast with cash bonus + sponsor exposure.",
-                                          eventDate: DateTime.now().add(
-                                            const Duration(days: 30),
-                                          ),
-                                          eventTime: '7:00 PM',
-                                          location: 'Las Vegas, NV',
-                                          eventType:
-                                              'Professional | Lightweight',
-                                          weightClass: 'Lightweight 155 lbs',
-                                          requiredRecord: 'Min. 2 wins',
-                                          ageLimit: '18-35',
-                                          fightingStylePreferred:
-                                              'MMA / BJJ / Muay Thai',
-                                          deadlineToApply: DateTime.now().add(
-                                            const Duration(days: 15),
-                                          ),
-                                          createdAt: DateTime.now(),
-                                        ),
-                                      );
+                                      _showEventDetailsBottomSheet(context, event);
                                     },
                                     child: Container(
                                       width: Responsive.w(40),
@@ -190,6 +224,8 @@ class EventsView extends StatelessWidget {
                           ),
                         ),
                       ),
+                    );
+                      },
                     );
                   },
                 ),

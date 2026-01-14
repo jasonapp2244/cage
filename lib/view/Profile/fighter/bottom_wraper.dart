@@ -33,7 +33,7 @@ class _MainWrapperState extends State<MainWrapper> {
   // Bottom Navigation Pages (Main App Flow)
   final List<Widget> _bottomNavPages = [
     Homeview(), // Home
-    ActivityView(), // Explore/Activity
+    DiscoverView(), // Explore/Activity
     NotificationView(), // Notifications
     FighterPublicProfile(), // Profile
   ];

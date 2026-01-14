@@ -5,6 +5,36 @@ import 'package:cage/utils/routes/utils.dart';
 class ReviewRepository {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Check if a reviewer has already reviewed a specific user
+  static Future<bool> hasAlreadyReviewed({
+    required String reviewerId,
+    required String reviewedUserId,
+  }) async {
+    try {
+      final userDoc = await _firestore
+          .collection('userData')
+          .doc(reviewedUserId)
+          .get();
+
+      if (!userDoc.exists) return false;
+
+      final userData = userDoc.data()!;
+      final fighterData = userData['fighterData'];
+
+      if (fighterData == null || fighterData['reviews'] == null) {
+        return false;
+      }
+
+      final reviewsList = List<dynamic>.from(fighterData['reviews']);
+
+      // Check if reviewerId already exists in the reviews
+      return reviewsList.any((review) => review['reviewerId'] == reviewerId);
+    } catch (e) {
+      print('Error checking if already reviewed: $e');
+      return false;
+    }
+  }
+
   // Add a new review to a fighter's profile
   static Future<void> addReview({
     required String fighterUserId,
@@ -16,6 +46,16 @@ class ReviewRepository {
   }) async {
     try {
       final reviewerId = Utils.getCurrentUid();
+
+      // Check if the reviewer has already reviewed this user
+      final alreadyReviewed = await hasAlreadyReviewed(
+        reviewerId: reviewerId,
+        reviewedUserId: fighterUserId,
+      );
+
+      if (alreadyReviewed) {
+        throw Exception('You have already reviewed this user. Each user can only give one review.');
+      }
 
       // Generate a unique review ID
       final reviewId = _firestore.collection('temp').doc().id;

@@ -3,6 +3,7 @@ import 'package:cage/provider/change_password_provider.dart';
 import 'package:cage/provider/darwer_provider.dart';
 import 'package:cage/provider/fighter_provider.dart';
 import 'package:cage/provider/location_provider.dart';
+import 'package:cage/provider/promoter_provider.dart';
 import 'package:cage/provider/role_provider.dart';
 import 'package:cage/provider/tab_controller.dart';
 import 'package:cage/provider/ticket_provider.dart';
@@ -38,6 +39,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthViewmodel()),
         ChangeNotifierProvider(create: (_) => TabProvider()),
         ChangeNotifierProvider(create: (_) => FighterProvider()),
+        ChangeNotifierProvider(create: (_) => PromoterProvider()),
         ChangeNotifierProvider(create: (_) => TicketProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => ChangePasswordProvider()),
@@ -130,8 +132,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ),
           debugShowCheckedModeBanner: false,
           // You should use either home or initialRoute, not both
-          // home: ActivityView(),
-          initialRoute: RoutesName.spalsh, // Fixed typo from 'spalsh' to 'splash'
+          // home: DiscoverView(),
+          initialRoute:
+              RoutesName.spalsh, // Fixed typo from 'spalsh' to 'splash'
           onGenerateRoute: Routes.generateRoutes,
         );
       },

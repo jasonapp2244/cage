@@ -395,7 +395,30 @@ class PromoterProfileView extends StatelessWidget {
                           );
                         }
 
+                        if (snapshot.hasError) {
+                          print('Error loading active events: ${snapshot.error}');
+                          return Container(
+                            height: Responsive.h(20),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Error loading events',
+                                style: TextStyle(
+                                  color: AppColor.white.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
                         if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          print('No active events found for promoter: $userId');
                           return Container(
                             height: Responsive.h(20),
                             decoration: BoxDecoration(
@@ -417,6 +440,7 @@ class PromoterProfileView extends StatelessWidget {
                         }
 
                         final events = snapshot.data!;
+                        print('Loaded ${events.length} active events for promoter: $userId');
                         return SizedBox(
                           height: Responsive.h(30),
                           child: ListView.builder(
@@ -520,7 +544,30 @@ class PromoterProfileView extends StatelessWidget {
                           );
                         }
 
+                        if (snapshot.hasError) {
+                          print('Error loading past events: ${snapshot.error}');
+                          return Container(
+                            height: Responsive.h(20),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Error loading events',
+                                style: TextStyle(
+                                  color: AppColor.white.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
                         if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          print('No past events found for promoter: $userId');
                           return Container(
                             height: Responsive.h(20),
                             decoration: BoxDecoration(
@@ -541,9 +588,8 @@ class PromoterProfileView extends StatelessWidget {
                           );
                         }
 
-                        final events = snapshot.data!
-                            .take(3)
-                            .toList(); // Show only 3 recent
+                        final events = snapshot.data!.take(3).toList(); // Show only 3 recent
+                        print('Loaded ${snapshot.data!.length} past events (showing ${events.length}) for promoter: $userId');
                         return Column(
                           children: events.map((event) {
                             return Padding(

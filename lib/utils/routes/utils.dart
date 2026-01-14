@@ -70,7 +70,10 @@ class Utils {
   }
 
   // Save login credentials
-  static Future<void> saveLoginCredentials(String email, String password) async {
+  static Future<void> saveLoginCredentials(
+    String email,
+    String password,
+  ) async {
     await storage.write(key: 'saved_email', value: email);
     await storage.write(key: 'saved_password', value: password);
     await storage.write(key: 'is_logged_in', value: 'true');
@@ -81,11 +84,7 @@ class Utils {
     final email = await storage.read(key: 'saved_email');
     final password = await storage.read(key: 'saved_password');
     final isLoggedIn = await storage.read(key: 'is_logged_in');
-    return {
-      'email': email,
-      'password': password,
-      'isLoggedIn': isLoggedIn,
-    };
+    return {'email': email, 'password': password, 'isLoggedIn': isLoggedIn};
   }
 
   // Clear login credentials
@@ -120,13 +119,40 @@ class Utils {
     }
   }
 
-  /// Converts date from "22/08/2025" format to "12 Apr 2025" format
+  /// Converts date from various formats (ISO 8601, "22/08/2025", "14/1/2026", etc.) to "12 Apr 2025" format
   static String convertToReadableFormat(String dateString) {
     try {
-      // Parse the input date string (e.g., "22/08/2025")
-      final inputFormat = DateFormat('dd/MM/yyyy');
-      final date = inputFormat.parse(dateString);
+      DateTime? date;
 
+      // Try ISO 8601 format first (e.g., "2026-01-14T03:42:41.383322" or "2026-01-14T03:42:41Z")
+      try {
+        date = DateTime.parse(dateString);
+      } catch (_) {
+        // Try various slash-separated date formats
+        final formats = [
+          'dd/MM/yyyy', // "22/08/2025" - double digit day and month
+          'd/M/yyyy', // "14/1/2026" - single digit day and month
+          'dd/M/yyyy', // "14/1/2026" - double digit day, single digit month
+          'd/MM/yyyy', // "4/01/2026" - single digit day, double digit month
+        ];
+
+        for (final format in formats) {
+          try {
+            final inputFormat = DateFormat(format);
+            date = inputFormat.parse(dateString);
+            break;
+          } catch (_) {
+            // Continue to next format
+          }
+        }
+      }
+
+      // If date is still null, parsing failed
+      if (date == null) {
+        return dateString;
+      }
+
+      // Format to readable format (e.g., "12 Apr 2025")
       final outputFormat = DateFormat('dd MMM yyyy');
       return outputFormat.format(date);
     } catch (e) {
@@ -136,7 +162,10 @@ class Utils {
   }
 }
 
-ScaffoldFeatureController<SnackBar, SnackBarClosedReason> snakBar(String massage, BuildContext context) {
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason> snakBar(
+  String massage,
+  BuildContext context,
+) {
   return ScaffoldMessenger.of(
     context,
   ).showSnackBar(SnackBar(backgroundColor: Colors.red, content: Text(massage)));

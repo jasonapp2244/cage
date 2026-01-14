@@ -33,18 +33,30 @@ class EventService {
   }
 
   // Get all active events (for fighters to see)
+  // Note: Removed orderBy temporarily to avoid Firestore composite index requirement
+  // Events will be sorted client-side instead
   Stream<List<EventModel>> getActiveEvents() {
     return _firestore
         .collection(_collectionName)
         .where('eventDate', isGreaterThan: Timestamp.now())
-        .orderBy('eventDate', descending: false)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
+          final events = snapshot.docs.map((doc) {
             final data = doc.data();
             data['id'] = doc.id;
             return _mapDocumentToEvent(data);
           }).toList();
+          
+          // Sort by eventDate ascending (soonest first) on client side
+          events.sort((a, b) => a.eventDate.compareTo(b.eventDate));
+          
+          return events;
+        })
+        .handleError((error) {
+          if (kDebugMode) {
+            print('Error fetching active events: $error');
+          }
+          return <EventModel>[];
         });
   }
 
@@ -70,52 +82,97 @@ class EventService {
   }
 
   // Get events by promoter ID
+  // Note: Removed orderBy temporarily to avoid Firestore composite index requirement
+  // Events will be sorted client-side instead
   Stream<List<EventModel>> getEventsByPromoter(String promoterId) {
     return _firestore
         .collection(_collectionName)
         .where('promoterId', isEqualTo: promoterId)
-        .orderBy('eventDate', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
+          final events = snapshot.docs.map((doc) {
             final data = doc.data();
             data['id'] = doc.id;
             return _mapDocumentToEvent(data);
           }).toList();
+          
+          // Sort by eventDate descending (most recent first) on client side
+          events.sort((a, b) => b.eventDate.compareTo(a.eventDate));
+          
+          return events;
+        })
+        .handleError((error) {
+          if (kDebugMode) {
+            print('Error fetching events by promoter: $error');
+            print('Promoter ID: $promoterId');
+          }
+          return <EventModel>[];
         });
   }
 
   // Get active events by promoter (not past)
+  // Note: Removed orderBy temporarily to avoid Firestore composite index requirement
+  // Events will be sorted client-side instead
   Stream<List<EventModel>> getActiveEventsByPromoter(String promoterId) {
     return _firestore
         .collection(_collectionName)
         .where('promoterId', isEqualTo: promoterId)
-        .where('eventDate', isGreaterThan: Timestamp.now())
-        .orderBy('eventDate', descending: false)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id;
-            return _mapDocumentToEvent(data);
-          }).toList();
+          final now = DateTime.now();
+          final events = snapshot.docs
+              .map((doc) {
+                final data = doc.data();
+                data['id'] = doc.id;
+                return _mapDocumentToEvent(data);
+              })
+              .where((event) => event.eventDate.isAfter(now))
+              .toList();
+          
+          // Sort by eventDate ascending (soonest first) on client side
+          events.sort((a, b) => a.eventDate.compareTo(b.eventDate));
+          
+          return events;
+        })
+        .handleError((error) {
+          if (kDebugMode) {
+            print('Error fetching active events by promoter: $error');
+            print('Promoter ID: $promoterId');
+          }
+          return <EventModel>[];
         });
   }
 
   // Get past events by promoter (history)
+  // Note: Removed orderBy temporarily to avoid Firestore composite index requirement
+  // Events will be sorted client-side instead
   Stream<List<EventModel>> getPastEventsByPromoter(String promoterId) {
     return _firestore
         .collection(_collectionName)
         .where('promoterId', isEqualTo: promoterId)
-        .where('eventDate', isLessThan: Timestamp.now())
-        .orderBy('eventDate', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id;
-            return _mapDocumentToEvent(data);
-          }).toList();
+          final now = DateTime.now();
+          final events = snapshot.docs
+              .map((doc) {
+                final data = doc.data();
+                data['id'] = doc.id;
+                return _mapDocumentToEvent(data);
+              })
+              .where((event) => event.eventDate.isBefore(now))
+              .toList();
+          
+          // Sort by eventDate descending (most recent first) on client side
+          events.sort((a, b) => b.eventDate.compareTo(a.eventDate));
+          
+          return events;
+        })
+        .handleError((error) {
+          if (kDebugMode) {
+            print('Error fetching past events by promoter: $error');
+            print('Promoter ID: $promoterId');
+          }
+          return <EventModel>[];
         });
   }
 

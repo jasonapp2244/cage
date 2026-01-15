@@ -1,5 +1,10 @@
 // main_wrapper.dart
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cage/models/fighter_model.dart';
+import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/darwer_provider.dart';
+import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
@@ -227,6 +232,80 @@ class _MainWrapperState extends State<MainWrapper> {
     );
   }
 
+  Widget _buildProfileIcon({required bool isSelected}) {
+    return StreamBuilder<UserModel>(
+      stream: UserRepository.fetchCurrentUserStream(),
+      builder: (context, snapshot) {
+        String? imageUrl;
+        
+        if (snapshot.hasData && snapshot.data != null) {
+          final user = snapshot.data!;
+          if (user.isFighter && user.roleData is FighterDataModel) {
+            final fighter = user.roleData as FighterDataModel;
+            imageUrl = fighter.profileImageUrl;
+          } else if (user.isPromoter && user.roleData is PromoterDataModel) {
+            final promoter = user.roleData as PromoterDataModel;
+            imageUrl = promoter.profileImageUrl;
+          }
+        }
+
+        Widget avatarWidget;
+        if (imageUrl != null && imageUrl.isNotEmpty) {
+          avatarWidget = CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => CircleAvatar(
+              radius: 15,
+              backgroundColor: AppColor.white.withValues(alpha: 0.5),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColor.red,
+              ),
+            ),
+            errorWidget: (context, url, error) => CircleAvatar(
+              radius: 15,
+              backgroundColor: AppColor.white.withValues(alpha: 0.5),
+              backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
+            ),
+          );
+        } else {
+          avatarWidget = CircleAvatar(
+            radius: 15,
+            backgroundColor: AppColor.white.withValues(alpha: isSelected ? 1.0 : 0.5),
+            backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
+          );
+        }
+
+        if (isSelected) {
+          return Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColor.white,
+                width: 2,
+              ),
+            ),
+            child: ClipOval(
+              child: SizedBox(
+                width: 30,
+                height: 30,
+                child: avatarWidget,
+              ),
+            ),
+          );
+        } else {
+          return ClipOval(
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: avatarWidget,
+            ),
+          );
+        }
+      },
+    );
+  }
+
   BottomNavigationBar _buildBottomNavBar() {
     return BottomNavigationBar(
       currentIndex: _isDrawerNavigation
@@ -261,13 +340,8 @@ class _MainWrapperState extends State<MainWrapper> {
           label: '',
         ),
         BottomNavigationBarItem(
-          // activeIcon: SvgPicture.asset("assets/icons/notification.svg"),
-          icon: CircleAvatar(
-            radius: 15,
-            backgroundColor: AppColor.white,
-            foregroundColor: AppColor.red,
-            backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
-          ),
+          activeIcon: _buildProfileIcon(isSelected: true),
+          icon: _buildProfileIcon(isSelected: false),
           label: '',
         ),
       ],

@@ -1,10 +1,13 @@
-import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cage/models/fighter_model.dart';
+import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/user_model.dart';
+import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/view/Profile/fighter/profile_image_upload_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:image_picker/image_picker.dart';
 
 class ProfilePic extends StatefulWidget {
   const ProfilePic({super.key});
@@ -14,68 +17,53 @@ class ProfilePic extends StatefulWidget {
 }
 
 class _ProfilePicState extends State<ProfilePic> {
-  File? _pickedImage;
-  final ImagePicker _picker = ImagePicker();
-
-  Future<String?> _getProfileImage() async {
-    // Replace this with your actual logic to get the profile image URL
-    return "https://i.postimg.cc/0jqKB6mS/Profile-Image.png";
-  }
-
   Future<void> _pickImage() async {
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 85,
-      );
-
-      if (image != null) {
-        setState(() {
-          _pickedImage = File(image.path);
-        });
-
-        // Here you would typically upload the image to your server
-        // await _uploadImage(_pickedImage!);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick image: ${e.toString()}')),
-      );
-    }
+    // Navigate to profile image upload view instead
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileImageUploadView(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
-    return FutureBuilder<String?>(
-      future: _getProfileImage(),
+    return StreamBuilder<UserModel>(
+      stream: UserRepository.fetchCurrentUserStream(),
       builder: (context, snapshot) {
-        // If we have a locally picked image, show that instead of the network image
-        if (_pickedImage != null) {
-          return _buildImageWithEditButton(
-            Image.file(_pickedImage!, fit: BoxFit.cover),
-          );
-        }
-
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildPlaceholder();
         }
 
-        final imageUrl = snapshot.data;
-        final fullImageUrl = (imageUrl != null && imageUrl.isNotEmpty)
-            ? "https://devonlinetestserver.com/marcus_la/storage/app/public/profile_image/$imageUrl"
-            : "https://i.postimg.cc/0jqKB6mS/Profile-Image.png";
+        if (!snapshot.hasData || snapshot.data == null) {
+          return _buildPlaceholder();
+        }
 
-        return _buildImageWithEditButton(
-          CachedNetworkImage(
-            imageUrl: fullImageUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => _buildPlaceholder(),
-            errorWidget: (context, url, error) => _buildPlaceholder(),
-          ),
-        );
+        final user = snapshot.data!;
+        String? imageUrl;
+
+        if (user.isFighter && user.roleData is FighterDataModel) {
+          final fighter = user.roleData as FighterDataModel;
+          imageUrl = fighter.profileImageUrl;
+        } else if (user.isPromoter && user.roleData is PromoterDataModel) {
+          final promoter = user.roleData as PromoterDataModel;
+          imageUrl = promoter.profileImageUrl;
+        }
+
+        if (imageUrl != null && imageUrl.isNotEmpty) {
+          return _buildImageWithEditButton(
+            CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => _buildPlaceholder(),
+              errorWidget: (context, url, error) => _buildPlaceholder(),
+            ),
+          );
+        }
+
+        return _buildPlaceholder();
       },
     );
   }

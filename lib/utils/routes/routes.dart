@@ -1,12 +1,14 @@
+import 'package:cage/models/event_model.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/view/Profile/Promoter/about_company_name.dart';
 import 'package:cage/view/Profile/Promoter/company_name_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_email_view.dart';
 import 'package:cage/view/Profile/Promoter/contact_number_view.dart';
 import 'package:cage/view/Profile/Promoter/create_event_view.dart';
+import 'package:cage/view/Profile/Promoter/event_detail_view.dart';
 import 'package:cage/view/Profile/Promoter/event_history.dart';
 import 'package:cage/view/Profile/Promoter/promotor_subcribtion_view.dart';
-import 'package:cage/view/Profile/Promoter/test.dart';
+import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
 import 'package:cage/view/Profile/Promoter/upload_company_logo.dart';
 import 'package:cage/view/Profile/Promoter/who_the_promoter_view.dart';
 import 'package:cage/view/Profile/Promoter/promoter_home.dart';
@@ -220,6 +222,23 @@ class Routes {
       case RoutesName.CreateEventView:
         return MaterialPageRoute(
           builder: (BuildContext context) => const CreateEventView(),
+        );
+
+      case RoutesName.EventDetailView:
+        final event = setting.arguments;
+        if (event != null && event is EventModel) {
+          return MaterialPageRoute(
+            builder: (BuildContext context) => EventDetailView(
+              event: event,
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (BuildContext context) => Scaffold(
+            body: Center(
+              child: Text('Event not found'),
+            ),
+          ),
         );
 
       case RoutesName.aboutCompanayName:

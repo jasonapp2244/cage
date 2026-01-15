@@ -1,26 +1,39 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/models/event_model.dart';
 import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/fighter_model.dart';
 import 'package:cage/models/user_model.dart';
+import 'package:cage/models/review_model.dart';
 import 'package:cage/repository/report_repository.dart';
+import 'package:cage/repository/review_repository.dart';
+import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/services/event_service.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/Profile/fighter/all_reviews_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-class PromoterPublicProfile extends StatelessWidget {
+class PromoterPublicProfile extends StatefulWidget {
   final UserModel userData;
 
   const PromoterPublicProfile({super.key, required this.userData});
 
   @override
+  State<PromoterPublicProfile> createState() => _PromoterPublicProfileState();
+}
+
+class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
+
+  @override
   Widget build(BuildContext context) {
     Responsive.init(context);
 
-    if (userData.roleData is! PromoterDataModel) {
+    if (widget.userData.roleData is! PromoterDataModel) {
       return Scaffold(
         backgroundColor: AppColor.black,
         body: SafeArea(
@@ -34,8 +47,8 @@ class PromoterPublicProfile extends StatelessWidget {
       );
     }
 
-    final promoter = userData.roleData as PromoterDataModel;
-    final EventService _eventService = EventService();
+    final promoter = widget.userData.roleData as PromoterDataModel;
+    final EventService eventService = EventService();
 
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -70,7 +83,7 @@ class PromoterPublicProfile extends StatelessWidget {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () => _showReportDialog(context, userData),
+                      onTap: () => _showReportDialog(context, widget.userData),
                       child: Icon(
                         Icons.flag_outlined,
                         color: AppColor.red,
@@ -138,7 +151,7 @@ class PromoterPublicProfile extends StatelessWidget {
 
                 // Active Events List
                 StreamBuilder<List<EventModel>>(
-                  stream: _eventService.getActiveEventsByPromoter(userData.id),
+                  stream: eventService.getActiveEventsByPromoter(widget.userData.id),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Container(
@@ -151,9 +164,7 @@ class PromoterPublicProfile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColor.red,
-                          ),
+                          child: CircularProgressIndicator(color: AppColor.red),
                         ),
                       );
                     }
@@ -216,6 +227,379 @@ class PromoterPublicProfile extends StatelessWidget {
                 ),
 
                 SizedBox(height: Responsive.h(2)),
+
+                // Past Events Section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Past Events",
+                    style: TextStyle(
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(16),
+                    ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
+
+                // Past Events List
+                StreamBuilder<List<EventModel>>(
+                  stream: eventService.getPastEventsByPromoter(widget.userData.id),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container(
+                        height: Responsive.h(20),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: CircularProgressIndicator(color: AppColor.red),
+                        ),
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      return Container(
+                        height: Responsive.h(20),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Error loading events',
+                            style: TextStyle(
+                              color: AppColor.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Container(
+                        height: Responsive.h(20),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "No past events",
+                            style: TextStyle(
+                              color: AppColor.white.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final events = snapshot.data!;
+                    return SizedBox(
+                      height: Responsive.h(30),
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: events.length,
+                        itemBuilder: (context, index) {
+                          final event = events[index];
+                          return _buildEventCard(context, event);
+                        },
+                      ),
+                    );
+                  },
+                ),
+
+                SizedBox(height: Responsive.h(2)),
+
+                // Reviews Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Reviews",
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.normal,
+                        fontSize: Responsive.sp(10),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AllReviewsScreen(
+                              fighterUserId: widget.userData.id,
+                              fighterName: promoter.companyName ?? "Promoter",
+                              isPromoter: true,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            "View All",
+                            style: TextStyle(
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Responsive.sp(10),
+                            ),
+                          ),
+                          SizedBox(width: Responsive.w(2)),
+                          SvgPicture.asset("assets/icons/Vector (2).svg"),
+              ],
+            ),
+          ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(1)),
+
+                // Latest Review Section
+                FutureBuilder<ReviewModel?>(
+                  future: ReviewRepository.getLatestPromoterReview(widget.userData.id),
+                  builder: (context, reviewSnapshot) {
+                    if (reviewSnapshot.connectionState == ConnectionState.waiting) {
+                      return Container(
+                        width: double.infinity,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          color: AppColor.black,
+                        ),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColor.red,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final latestReview = reviewSnapshot.data;
+
+                    if (latestReview == null) {
+                      return Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          color: AppColor.black,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.rate_review_outlined,
+                                color: AppColor.white.withValues(alpha: 0.5),
+                                size: 32,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                "No reviews yet",
+                                style: TextStyle(
+                                  color: AppColor.white.withValues(alpha: 0.7),
+                                  fontFamily: AppFonts.appFont,
+                                  fontSize: Responsive.sp(12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColor.white.withValues(alpha: 0.1),
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        color: AppColor.black,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: AppColor.red,
+                                  child: Text(
+                                    latestReview.reviewerName.isNotEmpty
+                                        ? latestReview.reviewerName[0].toUpperCase()
+                                        : 'U',
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontFamily: AppFonts.appFont,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.sp(12),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: Responsive.w(2)),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        latestReview.reviewerName,
+                                        style: TextStyle(
+                                          color: AppColor.white,
+                                          fontFamily: AppFonts.appFont,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: Responsive.sp(10),
+                                        ),
+                                      ),
+                                      Text(
+                                        latestReview.reviewerRole,
+                                        style: TextStyle(
+                                          color: AppColor.white.withValues(alpha: 0.7),
+                                          fontFamily: AppFonts.appFont,
+                                          fontSize: Responsive.sp(8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Row(
+                                      children: List.generate(5, (index) {
+                                        return Icon(
+                                          Icons.star,
+                                          color: index < latestReview.rating
+                                              ? AppColor.red
+                                              : AppColor.white.withValues(alpha: 0.3),
+                                          size: 14,
+                                        );
+                                      }),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      Utils.convertToReadableFormat(
+                                        latestReview.createdAt.toIso8601String(),
+                                      ),
+                                      style: TextStyle(
+                                        color: AppColor.white.withValues(alpha: 0.5),
+                                        fontFamily: AppFonts.appFont,
+                                        fontSize: Responsive.sp(8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: Responsive.h(1)),
+                            Text(
+                              latestReview.comment,
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontSize: Responsive.sp(10),
+                                height: 1.3,
+                              ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // 🔹 Rate Promoter Button (only show when current user is a fighter)
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final currentUser = snapshot.data!;
+
+                      // Hide button if user is viewing their own profile
+                      if (currentUser.id == widget.userData.id) {
+                        return Container();
+                      }
+
+                      // Hide button if current user is a promoter
+                      if (currentUser.isPromoter) {
+                        return Container();
+                      }
+
+                      // Show button only if current user is a fighter
+                      if (currentUser.isFighter) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            SizedBox(height: Responsive.h(2)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                SizedBox(
+                                  width: 200,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      _ratePromoterBottomSheet(context);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColor.red,
+                                      foregroundColor: AppColor.white,
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: Responsive.h(1.5),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "Rate This Promoter",
+                                      style: TextStyle(
+                                        color: AppColor.white,
+                                        fontFamily: AppFonts.appFont,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: Responsive.sp(14),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      }
+                    }
+
+                    return Container();
+                  },
+                ),
+
+                SizedBox(height: Responsive.h(2)),
               ],
             ),
           ),
@@ -235,16 +619,16 @@ class PromoterPublicProfile extends StatelessWidget {
         CircleAvatar(
           radius: 35,
           backgroundColor: AppColor.white.withValues(alpha: 0.1),
-          child: promoter.companyLogo != null && promoter.companyLogo!.isNotEmpty
+          child:
+              promoter.companyLogo != null && promoter.companyLogo!.isNotEmpty
               ? ClipOval(
                   child: CachedNetworkImage(
                     imageUrl: promoter.companyLogo!,
                     width: 70,
                     height: 70,
                     fit: BoxFit.cover,
-                    errorWidget: (context, url, error) => Image(
-                      image: AssetImage("assets/images/image.png"),
-                    ),
+                    errorWidget: (context, url, error) =>
+                        Image(image: AssetImage("assets/images/image.png")),
                   ),
                 )
               : Image(image: AssetImage("assets/images/image.png")),
@@ -355,10 +739,12 @@ class PromoterPublicProfile extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-            child: event.thumbnailImageUrl != null &&
+            child:
+                event.thumbnailImageUrl != null &&
                     event.thumbnailImageUrl!.isNotEmpty
                 ? CachedNetworkImage(
                     imageUrl: event.thumbnailImageUrl!,
@@ -377,10 +763,12 @@ class PromoterPublicProfile extends StatelessWidget {
                     child: Icon(Icons.image, color: AppColor.white),
                   ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   event.eventTitle,
@@ -390,10 +778,10 @@ class PromoterPublicProfile extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     fontSize: Responsive.sp(14),
                   ),
-                  maxLines: 2,
+                    maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: Responsive.h(1)),
+                  SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(
@@ -416,7 +804,7 @@ class PromoterPublicProfile extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: Responsive.h(0.5)),
+                  SizedBox(height: 2),
                 Row(
                   children: [
                     Icon(
@@ -440,6 +828,7 @@ class PromoterPublicProfile extends StatelessWidget {
                   ],
                 ),
               ],
+              ),
             ),
           ),
         ],
@@ -493,21 +882,22 @@ class PromoterPublicProfile extends StatelessWidget {
                         color: AppColor.white,
                         fontFamily: AppFonts.appFont,
                       ),
-                      items: [
-                        'Inappropriate Content',
-                        'Harassment',
-                        'Fake Profile',
-                        'Spam',
-                        'Other',
-                      ].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(value),
-                          ),
-                        );
-                      }).toList(),
+                      items:
+                          [
+                            'Inappropriate Content',
+                            'Harassment',
+                            'Fake Profile',
+                            'Spam',
+                            'Other',
+                          ].map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                child: Text(value),
+                              ),
+                            );
+                          }).toList(),
                       onChanged: (String? newValue) {
                         if (newValue != null) {
                           setDialogState(() {
@@ -558,10 +948,7 @@ class PromoterPublicProfile extends StatelessWidget {
                 descriptionController.dispose();
                 Navigator.pop(context);
               },
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: AppColor.white),
-              ),
+              child: Text('Cancel', style: TextStyle(color: AppColor.white)),
             ),
             TextButton(
               onPressed: () async {
@@ -605,7 +992,9 @@ class PromoterPublicProfile extends StatelessWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Error submitting report: ${e.toString()}'),
+                        content: Text(
+                          'Error submitting report: ${e.toString()}',
+                        ),
                         backgroundColor: AppColor.red,
                       ),
                     );
@@ -614,11 +1003,428 @@ class PromoterPublicProfile extends StatelessWidget {
               },
               child: Text(
                 'Submit',
-                style: TextStyle(color: AppColor.red, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColor.red,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _ratePromoterBottomSheet(BuildContext context) {
+    final String promoterUserId = widget.userData.id;
+    final String promoterName = (widget.userData.roleData as PromoterDataModel).companyName ?? 'Promoter';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      backgroundColor: AppColor.black,
+      builder: (context) {
+        return _PromoterRatingBottomSheetContent(
+          promoterUserId: promoterUserId,
+          promoterName: promoterName,
+        );
+      },
+    );
+  }
+}
+
+class _PromoterRatingBottomSheetContent extends StatefulWidget {
+  final String promoterUserId;
+  final String promoterName;
+
+  const _PromoterRatingBottomSheetContent({
+    required this.promoterUserId,
+    required this.promoterName,
+  });
+
+  @override
+  State<_PromoterRatingBottomSheetContent> createState() =>
+      _PromoterRatingBottomSheetContentState();
+}
+
+class _PromoterRatingBottomSheetContentState extends State<_PromoterRatingBottomSheetContent> {
+  int _selectedRating = 0;
+  final TextEditingController _commentController = TextEditingController();
+  bool _isSubmitting = false;
+  bool _hasAlreadyReviewed = false;
+  bool _isCheckingReview = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfAlreadyReviewed();
+  }
+
+  Future<void> _checkIfAlreadyReviewed() async {
+    try {
+      final reviewerId = Utils.getCurrentUid();
+      final alreadyReviewed = await ReviewRepository.hasAlreadyReviewedPromoter(
+        reviewerId: reviewerId,
+        promoterUserId: widget.promoterUserId,
+      );
+
+      if (mounted) {
+        setState(() {
+          _hasAlreadyReviewed = alreadyReviewed;
+          _isCheckingReview = false;
+        });
+
+        if (alreadyReviewed) {
+          Future.delayed(Duration(milliseconds: 500), () {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    "You have already reviewed this user. Each user can only give one review.",
+                    style: GoogleFonts.dmSans(color: AppColor.white),
+                  ),
+                  backgroundColor: AppColor.red,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+              Navigator.pop(context);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isCheckingReview = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitReview() async {
+    if (_hasAlreadyReviewed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "You have already reviewed this user. Each user can only give one review.",
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: AppColor.red,
+        ),
+      );
+      Navigator.pop(context);
+      return;
+    }
+
+    if (_selectedRating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Please select a rating",
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: AppColor.red,
+        ),
+      );
+      return;
+    }
+
+    if (_commentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Please write a review",
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: AppColor.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final currentUser = await UserRepository.fetchCurrentUserOnce();
+      String reviewerName = 'Anonymous';
+      String reviewerRole = 'Unknown';
+
+      if (currentUser.isFighter && currentUser.roleData != null) {
+        final fighterData = currentUser.roleData as FighterDataModel;
+        reviewerName = fighterData.fullName.isNotEmpty 
+            ? fighterData.fullName 
+            : 'Fighter';
+        reviewerRole = 'Fighter';
+      } else if (currentUser.isPromoter && currentUser.roleData != null) {
+        final promoterData = currentUser.roleData as PromoterDataModel;
+        reviewerName = promoterData.companyName ?? 'Promoter';
+        reviewerRole = 'Promoter';
+      }
+
+      await ReviewRepository.addPromoterReview(
+        promoterUserId: widget.promoterUserId,
+        rating: _selectedRating,
+        comment: _commentController.text.trim(),
+        reviewerName: reviewerName,
+        reviewerEmail: currentUser.email,
+        reviewerRole: reviewerRole,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Review submitted successfully!",
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      String errorMessage = "Failed to submit review. Please try again.";
+
+      if (e.toString().contains('already reviewed')) {
+        errorMessage =
+            "You have already reviewed this user. Each user can only give one review.";
+        setState(() {
+          _hasAlreadyReviewed = true;
+        });
+        Navigator.pop(context);
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMessage,
+            style: GoogleFonts.dmSans(color: AppColor.white),
+          ),
+          backgroundColor: AppColor.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: Responsive.w(5),
+        right: Responsive.w(5),
+        top: Responsive.h(1),
+      ),
+      child: _isCheckingReview
+          ? Padding(
+              padding: EdgeInsets.symmetric(vertical: Responsive.h(3)),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColor.red),
+              ),
+            )
+          : _hasAlreadyReviewed
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Rate ${widget.promoterName}",
+                      style: GoogleFonts.dmSans(
+                        color: AppColor.white,
+                        fontSize: Responsive.sp(18),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: SvgPicture.asset("assets/icons/IC_cross.svg"),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(3)),
+                Icon(Icons.info_outline, color: AppColor.red, size: 48),
+                SizedBox(height: Responsive.h(2)),
+                Text(
+                  "Already Reviewed",
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontSize: Responsive.sp(16),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
+                Text(
+                  "You have already reviewed this user. Each user can only give one review.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white.withValues(alpha: 0.7),
+                    fontSize: Responsive.sp(14),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(3)),
+              ],
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Rate ${widget.promoterName}",
+                      style: GoogleFonts.dmSans(
+                        color: AppColor.white,
+                        fontSize: Responsive.sp(18),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: SvgPicture.asset("assets/icons/IC_cross.svg"),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(2)),
+
+                Text(
+                  "Rate this promoter",
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontSize: Responsive.sp(14),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
+                Row(
+                  children: List.generate(5, (index) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedRating = index + 1;
+                        });
+                      },
+                      child: Icon(
+                        Icons.star,
+                        color: index < _selectedRating
+                            ? AppColor.red
+                            : AppColor.white.withValues(alpha: 0.3),
+                        size: Responsive.sp(28),
+                      ),
+                    );
+                  }),
+                ),
+                SizedBox(height: Responsive.h(1)),
+                Text(
+                  _selectedRating > 0
+                      ? "$_selectedRating star${_selectedRating > 1 ? 's' : ''}"
+                      : "Select a rating",
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white.withValues(alpha: 0.7),
+                    fontSize: Responsive.sp(12),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(2)),
+
+                Text(
+                  "Write a review",
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontSize: Responsive.sp(14),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
+                TextFormField(
+                  controller: _commentController,
+                  maxLines: 5,
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontSize: Responsive.sp(12),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: "Share your experience with this promoter...",
+                    hintStyle: GoogleFonts.dmSans(
+                      color: AppColor.white.withValues(alpha: 0.5),
+                      fontSize: Responsive.sp(12),
+                    ),
+                    filled: true,
+                    fillColor: AppColor.white.withValues(alpha: 0.05),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColor.white.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColor.white.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: AppColor.red, width: 2),
+                    ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(3)),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _hasAlreadyReviewed || _isSubmitting
+                        ? null
+                        : _submitReview,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _hasAlreadyReviewed
+                          ? AppColor.white.withValues(alpha: 0.3)
+                          : AppColor.red,
+                      foregroundColor: AppColor.white,
+                      padding: EdgeInsets.symmetric(
+                        vertical: Responsive.h(1.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isSubmitting
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: AppColor.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            "Submit Review",
+                            style: GoogleFonts.dmSans(
+                              color: AppColor.white,
+                              fontSize: Responsive.sp(14),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(2)),
+              ],
       ),
     );
   }

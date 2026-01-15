@@ -82,15 +82,16 @@ class TicketRepository {
       final userId = Utils.getCurrentUid();
 
       // Fetch from centralized supportTickets collection for real-time status updates
+      // Note: Removed orderBy to avoid requiring composite index, sorting in memory instead
       return FirebaseFirestore.instance
           .collection('supportTickets')
           .where('userId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
           .snapshots()
           .map((snapshot) {
             if (snapshot.docs.isEmpty) return [];
 
-            return snapshot.docs.map((doc) {
+            // Map to TicketModel format and sort by createdAt in descending order
+            final tickets = snapshot.docs.map((doc) {
               final data = doc.data();
               // Map to TicketModel format
               return TicketModel(
@@ -108,6 +109,10 @@ class TicketRepository {
                 userId: data['userId'] ?? userId,
               );
             }).toList();
+
+            // Sort by createdAt in descending order (newest first)
+            tickets.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+            return tickets;
           });
     } catch (e) {
       throw Exception("Failed to fetch tickets: $e");

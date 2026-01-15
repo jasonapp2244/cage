@@ -88,5 +88,6 @@ class RoutesName {
   static const String PromoterHome = "Promoter_Home";
   static const String PromoterProfileView = "Promoter_Profile_View";
   static const String CreateEventView = "Create_Event_View";
+  static const String EventDetailView = "Event_Detail_View";
   static const String weightView = 'weight';
 }

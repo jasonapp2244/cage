@@ -11,9 +11,56 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:cage/services/event_service.dart';
+import 'package:cage/repository/event_interest_repository.dart';
+import 'package:cage/services/notification_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 class EventsView extends StatelessWidget {
   const EventsView({super.key});
+
+  /// Validates if a URL is a valid image URL
+  /// Returns false for social media page URLs (Instagram, Facebook, etc.)
+  static bool _isValidImageUrl(String url) {
+    if (url.isEmpty) return false;
+    
+    // Check if URL contains common social media domains (not image URLs)
+    final invalidDomains = [
+      'instagram.com',
+      'facebook.com',
+      'twitter.com',
+      'linkedin.com',
+      'youtube.com',
+    ];
+    
+    final lowerUrl = url.toLowerCase();
+    for (var domain in invalidDomains) {
+      if (lowerUrl.contains(domain) && !lowerUrl.contains('/p/') && !lowerUrl.contains('/photo/')) {
+        return false;
+      }
+    }
+    
+    // Check if URL ends with common image extensions or contains image indicators
+    final imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    final hasImageExtension = imageExtensions.any((ext) => lowerUrl.contains(ext));
+    
+    // Allow URLs that have image extensions or are from known image hosting services
+    final imageHostingServices = [
+      'i.imgur.com',
+      'imgur.com',
+      'postimg.cc',
+      'cloudinary.com',
+      'storage.googleapis.com',
+      'firebasestorage.googleapis.com',
+      'amazonaws.com',
+      'devonlinetestserver.com',
+    ];
+    
+    final isImageHosting = imageHostingServices.any((service) => lowerUrl.contains(service));
+    
+    return hasImageExtension || isImageHosting;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -200,24 +247,8 @@ class EventsView extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  // Interested Button
-                                  Container(
-                                    width: Responsive.w(40),
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(22),
-                                      color: AppColor.red,
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        "Interested",
-                                        style: GoogleFonts.dmSans(
-                                          color: AppColor.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  // Interested Button with Status Check
+                                  _InterestedButton(event: event),
                                 ],
                               ),
                             ],
@@ -455,13 +486,32 @@ class EventsView extends StatelessWidget {
                     SizedBox(height: Responsive.h(0.5)),
 
                     // Host Information
-                    if (event.promoterProfileImage != null)
+                    if (event.promoterProfileImage != null &&
+                        _isValidImageUrl(event.promoterProfileImage!))
                       Row(
                         children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundImage: CachedNetworkImageProvider(
-                              event.promoterProfileImage!,
+                          ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: event.promoterProfileImage!,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => CircleAvatar(
+                                radius: 20,
+                                backgroundColor: AppColor.white.withValues(alpha: 0.1),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColor.red,
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => CircleAvatar(
+                                radius: 20,
+                                backgroundColor: AppColor.white.withValues(alpha: 0.1),
+                                child: Icon(
+                                  Icons.person,
+                                  color: AppColor.white,
+                                ),
+                              ),
                             ),
                           ),
                           SizedBox(width: Responsive.w(2)),
@@ -575,6 +625,217 @@ class EventsView extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Interested Button Widget with Status Check
+class _InterestedButton extends StatefulWidget {
+  final EventModel event;
+
+  const _InterestedButton({required this.event});
+
+  @override
+  State<_InterestedButton> createState() => _InterestedButtonState();
+}
+
+class _InterestedButtonState extends State<_InterestedButton> {
+  bool _hasShownInterest = false;
+  bool _isLoading = false;
+  StreamSubscription? _interestSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInterestStatus();
+    _listenToInterestChanges();
+  }
+
+  @override
+  void dispose() {
+    _interestSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToInterestChanges() {
+    final fighterId = Utils.getCurrentUid();
+    _interestSubscription = EventInterestRepository
+        .getInterestsByFighter(fighterId)
+        .listen((interests) {
+      final hasInterest = interests.any(
+        (interest) => interest.eventId == widget.event.id,
+      );
+      
+      if (mounted && _hasShownInterest != hasInterest) {
+        setState(() {
+          _hasShownInterest = hasInterest;
+        });
+      }
+    });
+  }
+
+  Future<void> _checkInterestStatus() async {
+    try {
+      final fighterId = Utils.getCurrentUid();
+      final hasInterest = await EventInterestRepository.hasFighterShownInterest(
+        widget.event.id,
+        fighterId,
+      );
+      
+      if (mounted) {
+        setState(() {
+          _hasShownInterest = hasInterest;
+        });
+      }
+    } catch (e) {
+      // Error checking, but continue
+    }
+  }
+
+  Future<void> _handleInterested() async {
+    // Prevent multiple taps
+    if (_isLoading || _hasShownInterest) {
+      return;
+    }
+
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Double check before creating
+      final fighterId = Utils.getCurrentUid();
+      final alreadyInterested = await EventInterestRepository.hasFighterShownInterest(
+        widget.event.id,
+        fighterId,
+      );
+
+      if (alreadyInterested) {
+        if (mounted) {
+          setState(() {
+            _hasShownInterest = true;
+            _isLoading = false;
+          });
+          if (mounted) {
+            Utils.flushBarErrorMassage(
+              'You have already shown interest in this event',
+              context,
+            );
+          }
+        }
+        return;
+      }
+
+      // Create interest and get interest ID
+      final interestId = await EventInterestRepository.createEventInterest(widget.event);
+
+      // Update state IMMEDIATELY before doing other async operations
+      if (mounted) {
+        setState(() {
+          _hasShownInterest = true;
+          _isLoading = false;
+        });
+      }
+
+      // Get fighter name for notification
+      final fighterDoc = await FirebaseFirestore.instance
+          .collection('userData')
+          .doc(fighterId)
+          .get();
+      
+      String fighterName = 'A fighter';
+      if (fighterDoc.exists && fighterDoc.data() != null) {
+        final data = fighterDoc.data()!;
+        if (data['fighterData'] != null && data['fighterData'] is Map) {
+          final fighterData = data['fighterData'] as Map<String, dynamic>;
+          fighterName =
+              fighterData['fullName'] ??
+              fighterData['name'] ??
+              fighterData['displayName'] ??
+              'A fighter';
+        }
+      }
+
+      // Send notification to promoter (non-blocking)
+      NotificationService.sendEventInterestNotification(
+        promoterId: widget.event.promoterId,
+        fighterName: fighterName,
+        eventTitle: widget.event.eventTitle,
+        eventId: widget.event.id,
+        interestId: interestId,
+      ).catchError((e) {
+        // Notification failed, but interest was created successfully
+        if (kDebugMode) {
+          print('Notification error: $e');
+        }
+      });
+
+      // Show success message
+      if (mounted) {
+        Utils.flushBarErrorMassage(
+          'Interest shown! The promoter will be notified.',
+          context,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          Utils.flushBarErrorMassage(
+            'Error: ${e.toString()}',
+            context,
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDisabled = _hasShownInterest || _isLoading;
+
+    return AbsorbPointer(
+      absorbing: isDisabled,
+      child: GestureDetector(
+        onTap: _handleInterested,
+        child: Opacity(
+          opacity: isDisabled ? 0.5 : 1.0,
+          child: Container(
+            width: Responsive.w(40),
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              color: _hasShownInterest
+                  ? AppColor.white.withValues(alpha: 0.3)
+                  : AppColor.red,
+            ),
+            child: Center(
+              child: _isLoading
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        color: AppColor.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      _hasShownInterest ? "Already\nInterested" : "Interested",
+                      style: GoogleFonts.dmSans(
+                        color: AppColor.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: _hasShownInterest ? Responsive.sp(8) : null,
+                      ),
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+            ),
+          ),
+        ),
       ),
     );
   }

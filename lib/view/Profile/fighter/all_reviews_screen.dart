@@ -9,11 +9,13 @@ import 'package:cage/utils/routes/utils.dart';
 class AllReviewsScreen extends StatelessWidget {
   final String fighterUserId;
   final String fighterName;
+  final bool isPromoter;
 
   const AllReviewsScreen({
     super.key,
     required this.fighterUserId,
     required this.fighterName,
+    this.isPromoter = false,
   });
 
   // Calculate rating distribution with counts
@@ -107,7 +109,9 @@ class AllReviewsScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: StreamBuilder<List<ReviewModel>>(
-          stream: ReviewRepository.getFighterReviews(fighterUserId),
+          stream: isPromoter 
+              ? ReviewRepository.getPromoterReviews(fighterUserId)
+              : ReviewRepository.getFighterReviews(fighterUserId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(

@@ -5,7 +5,7 @@ import 'package:cage/utils/routes/utils.dart';
 class ReviewRepository {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Check if a reviewer has already reviewed a specific user
+  // Check if a reviewer has already reviewed a specific user (for fighters)
   static Future<bool> hasAlreadyReviewed({
     required String reviewerId,
     required String reviewedUserId,
@@ -19,18 +19,57 @@ class ReviewRepository {
       if (!userDoc.exists) return false;
 
       final userData = userDoc.data()!;
+      final role = userData['role'];
+      
+      if (role == 'Fighter') {
       final fighterData = userData['fighterData'];
-
       if (fighterData == null || fighterData['reviews'] == null) {
+          return false;
+        }
+        final reviewsList = List<dynamic>.from(fighterData['reviews']);
+        return reviewsList.any((review) => review['reviewerId'] == reviewerId);
+      } else if (role == 'Promoter') {
+        final promoterData = userData['promoterData'];
+        if (promoterData == null || promoterData['reviews'] == null) {
+          return false;
+        }
+        final reviewsList = List<dynamic>.from(promoterData['reviews']);
+        return reviewsList.any((review) => review['reviewerId'] == reviewerId);
+      }
+      
+      return false;
+    } catch (e) {
+      print('Error checking if already reviewed: $e');
+      return false;
+    }
+  }
+  
+  // Check if a reviewer has already reviewed a promoter
+  static Future<bool> hasAlreadyReviewedPromoter({
+    required String reviewerId,
+    required String promoterUserId,
+  }) async {
+    try {
+      final userDoc = await _firestore
+          .collection('userData')
+          .doc(promoterUserId)
+          .get();
+
+      if (!userDoc.exists) return false;
+
+      final userData = userDoc.data()!;
+      final promoterData = userData['promoterData'];
+
+      if (promoterData == null || promoterData['reviews'] == null) {
         return false;
       }
 
-      final reviewsList = List<dynamic>.from(fighterData['reviews']);
+      final reviewsList = List<dynamic>.from(promoterData['reviews']);
 
       // Check if reviewerId already exists in the reviews
       return reviewsList.any((review) => review['reviewerId'] == reviewerId);
     } catch (e) {
-      print('Error checking if already reviewed: $e');
+      print('Error checking if already reviewed promoter: $e');
       return false;
     }
   }
@@ -336,6 +375,151 @@ class ReviewRepository {
     } catch (e) {
       print('Error fetching reviews by reviewer: $e');
       return <ReviewModel>[];
+    }
+  }
+
+  // Add a new review to a promoter's profile
+  static Future<void> addPromoterReview({
+    required String promoterUserId,
+    required int rating,
+    required String comment,
+    required String reviewerName,
+    required String reviewerEmail,
+    required String reviewerRole,
+  }) async {
+    try {
+      final reviewerId = Utils.getCurrentUid();
+
+      // Check if the reviewer has already reviewed this promoter
+      final alreadyReviewed = await hasAlreadyReviewedPromoter(
+        reviewerId: reviewerId,
+        promoterUserId: promoterUserId,
+      );
+
+      if (alreadyReviewed) {
+        throw Exception('You have already reviewed this user. Each user can only give one review.');
+      }
+
+      // Generate a unique review ID
+      final reviewId = _firestore.collection('temp').doc().id;
+
+      final review = ReviewModel(
+        id: reviewId,
+        reviewerName: reviewerName,
+        reviewerEmail: reviewerEmail,
+        reviewerId: reviewerId,
+        reviewedUserId: promoterUserId,
+        rating: rating,
+        comment: comment,
+        createdAt: DateTime.now(),
+        reviewerRole: reviewerRole,
+      );
+
+      // Get the promoter's current userData document
+      final userDoc = await _firestore
+          .collection('userData')
+          .doc(promoterUserId)
+          .get();
+
+      if (!userDoc.exists) {
+        throw Exception('Promoter not found');
+      }
+
+      final userData = userDoc.data()!;
+      final role = userData['role'];
+      
+      if (role != 'Promoter') {
+        throw Exception('Reviews can only be added to promoters');
+      }
+
+      // Get existing reviews or create empty array
+      List<dynamic> existingReviews = [];
+      if (userData['promoterData'] != null && userData['promoterData']['reviews'] != null) {
+        existingReviews = List<dynamic>.from(userData['promoterData']['reviews']);
+      }
+
+      // Add the new review to the array
+      existingReviews.add(review.toMap());
+
+      // Update the promoter's userData document with the new review
+      await _firestore.collection('userData').doc(promoterUserId).set({
+        'promoterData': {
+          'reviews': existingReviews,
+        },
+      }, SetOptions(merge: true));
+
+      print('Review added successfully to promoter userData');
+    } catch (e) {
+      print('Error adding promoter review: $e');
+      throw Exception('Failed to add review: $e');
+    }
+  }
+
+  // Get all reviews for a specific promoter
+  static Stream<List<ReviewModel>> getPromoterReviews(String promoterUserId) {
+    return _firestore
+        .collection('userData')
+        .doc(promoterUserId)
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists) return <ReviewModel>[];
+          
+          final userData = snapshot.data()!;
+          final promoterData = userData['promoterData'];
+          
+          if (promoterData == null || promoterData['reviews'] == null) {
+            return <ReviewModel>[];
+          }
+          
+          final reviewsList = List<dynamic>.from(promoterData['reviews']);
+          final reviews = reviewsList.map((reviewData) {
+            return ReviewModel.fromMap(
+              Map<String, dynamic>.from(reviewData),
+              id: reviewData['id'],
+            );
+          }).toList();
+          
+          // Sort by creation date (newest first)
+          reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          
+          return reviews;
+        });
+  }
+
+  // Get the latest review for a promoter
+  static Future<ReviewModel?> getLatestPromoterReview(String promoterUserId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('userData')
+          .doc(promoterUserId)
+          .get();
+
+      if (!snapshot.exists) return null;
+      
+      final userData = snapshot.data()!;
+      final promoterData = userData['promoterData'];
+      
+      if (promoterData == null || promoterData['reviews'] == null) {
+        return null;
+      }
+      
+      final reviewsList = List<dynamic>.from(promoterData['reviews']);
+      if (reviewsList.isEmpty) return null;
+      
+      final reviews = reviewsList.map((reviewData) {
+        return ReviewModel.fromMap(
+          Map<String, dynamic>.from(reviewData),
+          id: reviewData['id'],
+        );
+      }).toList();
+      
+      // Sort by creation date and return the latest
+      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      
+      return reviews.first;
+    } catch (e) {
+      print('Error fetching latest promoter review: $e');
+      return null;
     }
   }
 }

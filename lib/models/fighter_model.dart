@@ -16,6 +16,7 @@ class FighterDataModel {
   final String? uploadProfile;
   final String urlProfile;
   final String? poseImageUrl;
+  final String? profileImageUrl;
   final String? weight;
   final String? location;
   final double? latitude;
@@ -39,6 +40,7 @@ class FighterDataModel {
     this.uploadProfile,
     required this.urlProfile,
     this.poseImageUrl,
+    this.profileImageUrl,
     this.weight,
     this.location,
     this.latitude,
@@ -66,6 +68,7 @@ class FighterDataModel {
       uploadProfile: map['uploadProfile'],
       urlProfile: map['urlProfile'] ?? 'https',
       poseImageUrl: map['poseImageUrl'],
+      profileImageUrl: map['profileImageUrl'],
       weight: map['weight'],
       location: map['selectLocation'] is Map<String, dynamic> 
           ? map['selectLocation']['address'] 

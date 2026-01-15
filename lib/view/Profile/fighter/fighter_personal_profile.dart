@@ -16,6 +16,7 @@ import 'package:cage/repository/home_repository.dart';
 import 'package:cage/repository/review_repository.dart';
 import 'package:cage/repository/report_repository.dart';
 import 'package:cage/view/Profile/fighter/all_reviews_screen.dart';
+import 'package:cage/view/Profile/fighter/profile_image_upload_view.dart';
 import 'package:cage/services/profile_media_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -56,116 +57,117 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
       body: Stack(
         children: [
           SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
                   children: [
-                    Text(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
                           widget.userData != null
                               ? "Fighter Profile"
                               : "Profile",
-                      style: TextStyle(
-                        fontSize: Responsive.textScaleFactor * 24,
-                        color: AppColor.white,
-                        fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    // Show report button only when viewing someone else's profile
-                    if (widget.userData != null)
-                      GestureDetector(
-                        onTap: () => _showReportDialog(context, widget.userData!),
-                        child: Icon(
-                          Icons.flag_outlined,
-                          color: AppColor.red,
-                          size: 24,
+                          style: TextStyle(
+                            fontSize: Responsive.textScaleFactor * 24,
+                            color: AppColor.white,
+                            fontFamily: AppFonts.appFont,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                  ],
-                ),
+                        // Show report button only when viewing someone else's profile
+                        if (widget.userData != null)
+                          GestureDetector(
+                            onTap: () =>
+                                _showReportDialog(context, widget.userData!),
+                            child: Icon(
+                              Icons.flag_outlined,
+                              color: AppColor.red,
+                              size: 24,
+                            ),
+                          ),
+                      ],
+                    ),
 
-                // If userData is provided, use it directly; otherwise fetch current user
+                    // If userData is provided, use it directly; otherwise fetch current user
                     widget.userData != null
                         ? _buildProfileContent(context, widget.userData!, false)
-                    : StreamBuilder<UserModel>(
-                        stream: UserRepository.fetchCurrentUserStream(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircularProgressIndicator(
-                                    color: AppColor.red,
+                        : StreamBuilder<UserModel>(
+                            stream: UserRepository.fetchCurrentUserStream(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      CircularProgressIndicator(
+                                        color: AppColor.red,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        "Loading your profile...",
+                                        style: TextStyle(
+                                          color: AppColor.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    "Loading your profile...",
-                                    style: TextStyle(
-                                      color: AppColor.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
+                                );
+                              }
 
-                          if (snapshot.hasError) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    color: AppColor.red,
-                                    size: 48,
+                              if (snapshot.hasError) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.error_outline,
+                                        color: AppColor.red,
+                                        size: 48,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'Error loading data',
+                                        style: TextStyle(
+                                          color: AppColor.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          // Retry
+                                        },
+                                        child: Text('Retry'),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    'Error loading data',
-                                    style: TextStyle(
-                                      color: AppColor.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      // Retry
-                                    },
-                                    child: Text('Retry'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
+                                );
+                              }
 
-                          if (!snapshot.hasData) {
-                            return Center(
-                              child: Text(
-                                "No data available",
-                                style: TextStyle(color: AppColor.white),
-                              ),
-                            );
-                          }
+                              if (!snapshot.hasData) {
+                                return Center(
+                                  child: Text(
+                                    "No data available",
+                                    style: TextStyle(color: AppColor.white),
+                                  ),
+                                );
+                              }
 
                               return _buildProfileContent(
                                 context,
                                 snapshot.data!,
                                 true,
                               );
-                        },
-                      ),
-              ],
+                            },
+                          ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
           ),
           // Loading overlay
           if (_isUploading)
@@ -240,57 +242,93 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            CircleAvatar(
-              radius: 35,
-              backgroundColor: AppColor.white.withValues(alpha: 0.1),
-              child: Image(
-                image: AssetImage("assets/images/Ellipse 24 (1).png"),
+            GestureDetector(
+              onTap: isOwnProfile ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileImageUploadView(),
+                  ),
+                );
+              } : null,
+              child: CircleAvatar(
+                radius: 35,
+                backgroundColor: AppColor.white.withValues(alpha: 0.1),
+                child: fighter.profileImageUrl != null && fighter.profileImageUrl!.isNotEmpty
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: fighter.profileImageUrl!,
+                          width: 70,
+                          height: 70,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Image(
+                            image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                          ),
+                          errorWidget: (context, url, error) => Image(
+                            image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                          ),
+                        ),
+                      )
+                    : Image(
+                        image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                      ),
               ),
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  fighter.fullName ?? "Fighter Name",
-                  style: TextStyle(
-                    fontSize: Responsive.textScaleFactor * 14,
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Row(
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: Responsive.w(2)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SvgPicture.asset("assets/icons/call.svg"),
-                    SizedBox(width: Responsive.w(1)),
                     Text(
-                      fighter.coachContact ?? "No phone number",
+                      fighter.fullName ?? "Fighter Name",
                       style: TextStyle(
-                        fontSize: Responsive.textScaleFactor * 12,
+                        fontSize: Responsive.textScaleFactor * 14,
                         color: AppColor.white,
                         fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.normal,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    Row(
+                      children: [
+                        SvgPicture.asset("assets/icons/call.svg"),
+                        SizedBox(width: Responsive.w(1)),
+                        Flexible(
+                          child: Text(
+                            fighter.coachContact ?? "No phone number",
+                            style: TextStyle(
+                              fontSize: Responsive.textScaleFactor * 12,
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.normal,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        SvgPicture.asset("assets/icons/mail-02.svg"),
+                        SizedBox(width: Responsive.w(1)),
+                        Flexible(
+                          child: Text(
+                            user.email ?? "No email",
+                            style: TextStyle(
+                              fontSize: Responsive.textScaleFactor * 12,
+                              color: AppColor.white,
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.normal,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    SvgPicture.asset("assets/icons/mail-02.svg"),
-                    SizedBox(width: Responsive.w(1)),
-                    Text(
-                      user.email ?? "No email",
-                      style: TextStyle(
-                        fontSize: Responsive.textScaleFactor * 12,
-                        color: AppColor.white,
-                        fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
             GestureDetector(
               onTap: () {
@@ -656,23 +694,27 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                     fontSize: Responsive.sp(12),
                   ),
                 ),
-                GestureDetector(
-                  onTap: fighter.urlProfile?.isNotEmpty == true
-                      ? () => _openTapologyUrl(fighter.urlProfile!)
+                Flexible(
+                  child: GestureDetector(
+                  onTap: fighter.urlProfile.isNotEmpty == true
+                      ? () => _openTapologyUrl(fighter.urlProfile)
                       : null,
                   child: Text(
-                  fighter.urlProfile ?? "Not set",
-                  style: TextStyle(
-                      color: fighter.urlProfile?.isNotEmpty == true
+                    fighter.urlProfile ?? "Not set",
+                    style: TextStyle(
+                      color: fighter.urlProfile.isNotEmpty == true
                           ? AppColor.red
                           : AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.normal,
-                    fontSize: Responsive.sp(10),
-                      decoration: fighter.urlProfile?.isNotEmpty == true
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.normal,
+                      fontSize: Responsive.sp(10),
+                      decoration: fighter.urlProfile.isNotEmpty == true
                           ? TextDecoration.underline
                           : TextDecoration.none,
                       decorationColor: AppColor.red,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),
@@ -1024,7 +1066,8 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
               print('Fighter ID: ${widget.userData?.id ?? user.id}');
 
               // Hide button if user is viewing their own profile
-              if (widget.userData == null || currentUser.id == widget.userData!.id) {
+              if (widget.userData == null ||
+                  currentUser.id == widget.userData!.id) {
                 print('🚫 HIDING BUTTON: User viewing own profile!');
                 return Container();
               }
@@ -1125,12 +1168,13 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
     try {
       // Ensure URL has a protocol (http:// or https://)
       String formattedUrl = url.trim();
-      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      if (!formattedUrl.startsWith('http://') &&
+          !formattedUrl.startsWith('https://')) {
         formattedUrl = 'https://$formattedUrl';
       }
 
       final Uri uri = Uri.parse(formattedUrl);
-      
+
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
@@ -1149,7 +1193,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
           SnackBar(
             content: Text('Error opening URL: ${e.toString()}'),
             backgroundColor: AppColor.red,
-            ),
+          ),
         );
       }
     }
@@ -1212,7 +1256,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                 target: fighterLocation,
                 zoom: 14.0,
               ),
-                            onMapCreated: (GoogleMapController controller) async {
+              onMapCreated: (GoogleMapController controller) async {
                 // Apply dark map style from assets
                 try {
                   final String mapStyle = await rootBundle.loadString(
@@ -1805,21 +1849,22 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                         color: AppColor.white,
                         fontFamily: AppFonts.appFont,
                       ),
-                      items: [
-                        'Inappropriate Content',
-                        'Harassment',
-                        'Fake Profile',
-                        'Spam',
-                        'Other',
-                      ].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(value),
-                          ),
-                        );
-                      }).toList(),
+                      items:
+                          [
+                            'Inappropriate Content',
+                            'Harassment',
+                            'Fake Profile',
+                            'Spam',
+                            'Other',
+                          ].map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                child: Text(value),
+                              ),
+                            );
+                          }).toList(),
                       onChanged: (String? newValue) {
                         if (newValue != null) {
                           setDialogState(() {
@@ -1870,10 +1915,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                 descriptionController.dispose();
                 Navigator.pop(context);
               },
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: AppColor.white),
-              ),
+              child: Text('Cancel', style: TextStyle(color: AppColor.white)),
             ),
             TextButton(
               onPressed: () async {
@@ -1917,7 +1959,9 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Error submitting report: ${e.toString()}'),
+                        content: Text(
+                          'Error submitting report: ${e.toString()}',
+                        ),
                         backgroundColor: AppColor.red,
                       ),
                     );
@@ -1926,7 +1970,10 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
               },
               child: Text(
                 'Submit',
-                style: TextStyle(color: AppColor.red, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColor.red,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -2112,16 +2159,17 @@ class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
     } catch (e) {
       print('Error submitting review: $e');
       String errorMessage = "Failed to submit review. Please try again.";
-      
+
       // Check if the error is about already reviewed
       if (e.toString().contains('already reviewed')) {
-        errorMessage = "You have already reviewed this user. Each user can only give one review.";
+        errorMessage =
+            "You have already reviewed this user. Each user can only give one review.";
         setState(() {
           _hasAlreadyReviewed = true;
         });
         Navigator.pop(context);
       }
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -2155,201 +2203,199 @@ class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
               ),
             )
           : _hasAlreadyReviewed
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Rate ${widget.fighterName}",
-                          style: GoogleFonts.dmSans(
-                            color: AppColor.white,
-                            fontSize: Responsive.sp(18),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: SvgPicture.asset("assets/icons/IC_cross.svg"),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: Responsive.h(3)),
-                    Icon(
-                      Icons.info_outline,
-                      color: AppColor.red,
-                      size: 48,
-                    ),
-                    SizedBox(height: Responsive.h(2)),
                     Text(
-                      "Already Reviewed",
+                      "Rate ${widget.fighterName}",
                       style: GoogleFonts.dmSans(
                         color: AppColor.white,
-                        fontSize: Responsive.sp(16),
+                        fontSize: Responsive.sp(18),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: Responsive.h(1)),
-                    Text(
-                      "You have already reviewed this user. Each user can only give one review.",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSans(
-                        color: AppColor.white.withValues(alpha: 0.7),
-                        fontSize: Responsive.sp(14),
-                      ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: SvgPicture.asset("assets/icons/IC_cross.svg"),
                     ),
-                    SizedBox(height: Responsive.h(3)),
                   ],
-                )
-              : Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Rate ${widget.fighterName}",
-                style: GoogleFonts.dmSans(
-                  color: AppColor.white,
-                  fontSize: Responsive.sp(18),
-                  fontWeight: FontWeight.bold,
                 ),
-              ),
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: SvgPicture.asset("assets/icons/IC_cross.svg"),
-              ),
-            ],
-          ),
-          SizedBox(height: Responsive.h(2)),
-
-          // Rating Stars Section
-          Text(
-            "Rate this fighter",
-            style: GoogleFonts.dmSans(
-              color: AppColor.white,
-              fontSize: Responsive.sp(14),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: Responsive.h(1)),
-          Row(
-            children: List.generate(5, (index) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedRating = index + 1;
-                  });
-                },
-                child: Icon(
-                  Icons.star,
-                  color: index < _selectedRating
-                      ? AppColor.red
-                      : AppColor.white.withValues(alpha: 0.3),
-                  size: Responsive.sp(28),
+                SizedBox(height: Responsive.h(3)),
+                Icon(Icons.info_outline, color: AppColor.red, size: 48),
+                SizedBox(height: Responsive.h(2)),
+                Text(
+                  "Already Reviewed",
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontSize: Responsive.sp(16),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              );
-            }),
-          ),
-          SizedBox(height: Responsive.h(1)),
-          Text(
-            _selectedRating > 0
-                ? "$_selectedRating star${_selectedRating > 1 ? 's' : ''}"
-                : "Select a rating",
-            style: GoogleFonts.dmSans(
-              color: AppColor.white.withValues(alpha: 0.7),
-              fontSize: Responsive.sp(12),
-            ),
-          ),
-          SizedBox(height: Responsive.h(2)),
-
-          // Comment Section
-          Text(
-            "Write a review",
-            style: GoogleFonts.dmSans(
-              color: AppColor.white,
-              fontSize: Responsive.sp(14),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: Responsive.h(1)),
-          TextFormField(
-            controller: _commentController,
-            maxLines: 5,
-            style: GoogleFonts.dmSans(
-              color: AppColor.white,
-              fontSize: Responsive.sp(12),
-            ),
-            decoration: InputDecoration(
-              hintText: "Share your experience with this fighter...",
-              hintStyle: GoogleFonts.dmSans(
-                color: AppColor.white.withValues(alpha: 0.5),
-                fontSize: Responsive.sp(12),
-              ),
-              filled: true,
-              fillColor: AppColor.white.withValues(alpha: 0.05),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColor.white.withValues(alpha: 0.2),
+                SizedBox(height: Responsive.h(1)),
+                Text(
+                  "You have already reviewed this user. Each user can only give one review.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white.withValues(alpha: 0.7),
+                    fontSize: Responsive.sp(14),
+                  ),
                 ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColor.white.withValues(alpha: 0.2),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColor.red, width: 2),
-              ),
-            ),
-          ),
-          SizedBox(height: Responsive.h(3)),
-
-          // Submit Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-                        onPressed: _hasAlreadyReviewed || _isSubmitting
-                            ? null
-                            : _submitReview,
-              style: ElevatedButton.styleFrom(
-                          backgroundColor: _hasAlreadyReviewed
-                              ? AppColor.white.withValues(alpha: 0.3)
-                              : AppColor.red,
-                foregroundColor: AppColor.white,
-                padding: EdgeInsets.symmetric(vertical: Responsive.h(1.5)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isSubmitting
-                  ? SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: AppColor.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Text(
-                      "Submit Review",
+                SizedBox(height: Responsive.h(3)),
+              ],
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Rate ${widget.fighterName}",
                       style: GoogleFonts.dmSans(
                         color: AppColor.white,
-                        fontSize: Responsive.sp(14),
+                        fontSize: Responsive.sp(18),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: SvgPicture.asset("assets/icons/IC_cross.svg"),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(2)),
+
+                // Rating Stars Section
+                Text(
+                  "Rate this fighter",
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontSize: Responsive.sp(14),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
+                Row(
+                  children: List.generate(5, (index) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedRating = index + 1;
+                        });
+                      },
+                      child: Icon(
+                        Icons.star,
+                        color: index < _selectedRating
+                            ? AppColor.red
+                            : AppColor.white.withValues(alpha: 0.3),
+                        size: Responsive.sp(28),
+                      ),
+                    );
+                  }),
+                ),
+                SizedBox(height: Responsive.h(1)),
+                Text(
+                  _selectedRating > 0
+                      ? "$_selectedRating star${_selectedRating > 1 ? 's' : ''}"
+                      : "Select a rating",
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white.withValues(alpha: 0.7),
+                    fontSize: Responsive.sp(12),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(2)),
+
+                // Comment Section
+                Text(
+                  "Write a review",
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontSize: Responsive.sp(14),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: Responsive.h(1)),
+                TextFormField(
+                  controller: _commentController,
+                  maxLines: 5,
+                  style: GoogleFonts.dmSans(
+                    color: AppColor.white,
+                    fontSize: Responsive.sp(12),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: "Share your experience with this fighter...",
+                    hintStyle: GoogleFonts.dmSans(
+                      color: AppColor.white.withValues(alpha: 0.5),
+                      fontSize: Responsive.sp(12),
+                    ),
+                    filled: true,
+                    fillColor: AppColor.white.withValues(alpha: 0.05),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColor.white.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColor.white.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: AppColor.red, width: 2),
+                    ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(3)),
+
+                // Submit Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _hasAlreadyReviewed || _isSubmitting
+                        ? null
+                        : _submitReview,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _hasAlreadyReviewed
+                          ? AppColor.white.withValues(alpha: 0.3)
+                          : AppColor.red,
+                      foregroundColor: AppColor.white,
+                      padding: EdgeInsets.symmetric(
+                        vertical: Responsive.h(1.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isSubmitting
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: AppColor.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            "Submit Review",
+                            style: GoogleFonts.dmSans(
+                              color: AppColor.white,
+                              fontSize: Responsive.sp(14),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
+                SizedBox(height: Responsive.h(2)),
+              ],
             ),
-          ),
-          SizedBox(height: Responsive.h(2)),
-        ],
-      ),
     );
   }
 }

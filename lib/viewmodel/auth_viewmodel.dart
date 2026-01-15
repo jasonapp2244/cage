@@ -222,6 +222,25 @@ class AuthViewmodel extends ChangeNotifier {
     }
   }
 
+  Future<String?> uploadProfileImage(File imageFile, String uid) async {
+    try {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profileImages')
+          .child('$uid.jpg');
+
+      UploadTask uploadTask = storageRef.putFile(imageFile);
+      TaskSnapshot snapshot = await uploadTask;
+
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading profile image: $e');
+      return null;
+    }
+  }
+
   Future<void> verifyOtpAndSignUp(
     String otp,
     String email,

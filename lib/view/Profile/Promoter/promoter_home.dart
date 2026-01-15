@@ -14,6 +14,11 @@ import 'package:cage/models/event_model.dart';
 import 'package:cage/services/event_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:cage/models/event_interest_model.dart';
+import 'package:cage/repository/event_interest_repository.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PromoterHome extends StatefulWidget {
   final AdvancedDrawerController? drawerController;
@@ -25,6 +30,54 @@ class PromoterHome extends StatefulWidget {
 
 class _PromoterHomeState extends State<PromoterHome> {
   final EventService _eventService = EventService();
+
+  /// Validates if a URL is a valid image URL
+  /// Returns false for social media page URLs (Instagram, Facebook, etc.)
+  bool _isValidImageUrl(String url) {
+    if (url.isEmpty) return false;
+
+    // Check if URL contains common social media domains (not image URLs)
+    final invalidDomains = [
+      'instagram.com',
+      'facebook.com',
+      'twitter.com',
+      'linkedin.com',
+      'youtube.com',
+    ];
+
+    final lowerUrl = url.toLowerCase();
+    for (var domain in invalidDomains) {
+      if (lowerUrl.contains(domain) &&
+          !lowerUrl.contains('/p/') &&
+          !lowerUrl.contains('/photo/')) {
+        return false;
+      }
+    }
+
+    // Check if URL ends with common image extensions or contains image indicators
+    final imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    final hasImageExtension = imageExtensions.any(
+      (ext) => lowerUrl.contains(ext),
+    );
+
+    // Allow URLs that have image extensions or are from known image hosting services
+    final imageHostingServices = [
+      'i.imgur.com',
+      'imgur.com',
+      'postimg.cc',
+      'cloudinary.com',
+      'storage.googleapis.com',
+      'firebasestorage.googleapis.com',
+      'amazonaws.com',
+      'devonlinetestserver.com',
+    ];
+
+    final isImageHosting = imageHostingServices.any(
+      (service) => lowerUrl.contains(service),
+    );
+
+    return hasImageExtension || isImageHosting;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,27 +239,36 @@ class _PromoterHomeState extends State<PromoterHome> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 0.0),
-                            child: Image(
-                              width: Responsive.w(70),
-                              image: const AssetImage(
-                                "assets/icons/Mask group.png",
-                              ),
+                          Text(
+                            companyName,
+                            style: TextStyle(
+                              color: AppColor.white.withValues(alpha: 0.18),
+                              fontFamily: AppFonts.appFont,
+                              fontWeight: FontWeight.normal,
+                              fontSize: Responsive.sp(40),
                             ),
                           ),
-                          RotatedBox(
-                            quarterTurns: 3,
-                            child: Text(
-                              companyName,
-                              style: TextStyle(
-                                color: AppColor.white.withValues(alpha: 0.18),
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.normal,
-                                fontSize: Responsive.sp(40),
-                              ),
-                            ),
-                          ),
+                          // Padding(
+                          //   padding: const EdgeInsets.only(right: 0.0),
+                          //   child: Image(
+                          //     width: Responsive.w(70),
+                          //     image: const AssetImage(
+                          //       "assets/icons/Mask group.png",
+                          //     ),
+                          //   ),
+                          // ),
+                          // RotatedBox(
+                          //   quarterTurns: 4,
+                          //   child: Text(
+                          //     companyName,
+                          //     style: TextStyle(
+                          //       color: AppColor.white.withValues(alpha: 0.18),
+                          //       fontFamily: AppFonts.appFont,
+                          //       fontWeight: FontWeight.normal,
+                          //       fontSize: Responsive.sp(40),
+                          //     ),
+                          //   ),
+                          // ),
                         ],
                       ),
                     );
@@ -216,27 +278,50 @@ class _PromoterHomeState extends State<PromoterHome> {
                 // 🔹 Stats Cards with dynamic promoter data
                 StreamBuilder<UserModel>(
                   stream: UserRepository.fetchCurrentUserStream(),
-                  builder: (context, snapshot) {
-                    String numberOfEvents = "0";
-                    String totalEvents = "0";
-
-                    if (snapshot.hasData &&
-                        snapshot.data != null &&
-                        snapshot.data!.isPromoter) {
-                      final promoterData =
-                          snapshot.data!.roleData as PromoterDataModel;
-                      numberOfEvents = (promoterData.numberOfEvents ?? 0)
-                          .toString();
-                      totalEvents = (promoterData.numberOfEvents ?? 0)
-                          .toString();
+                  builder: (context, userSnapshot) {
+                    if (!userSnapshot.hasData) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildStatCard("Total Events", "0"),
+                          _buildStatCard("Events", "0"),
+                        ],
+                      );
                     }
 
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildStatCard("Events", numberOfEvents),
-                        _buildStatCard("Total Events", totalEvents),
-                      ],
+                    final currentUserId = userSnapshot.data!.id;
+
+                    return StreamBuilder<List<EventModel>>(
+                      stream: _eventService.getEventsByPromoter(currentUserId),
+                      builder: (context, eventsSnapshot) {
+                        String totalEvents = "0";
+                        String activeEvents = "0";
+
+                        if (eventsSnapshot.hasData) {
+                          final events = eventsSnapshot.data ?? [];
+                          totalEvents = events.length.toString();
+
+                          // Count active events (not past, deadline not passed)
+                          final now = DateTime.now();
+                          activeEvents = events
+                              .where((event) {
+                                final isPast = event.eventDate.isBefore(now);
+                                final deadlinePassed = event.deadlineToApply
+                                    .isBefore(now);
+                                return !isPast && !deadlinePassed;
+                              })
+                              .length
+                              .toString();
+                        }
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildStatCard("Total Events", totalEvents),
+                            _buildStatCard("Active Events", activeEvents),
+                          ],
+                        );
+                      },
                     );
                   },
                 ),
@@ -377,7 +462,9 @@ class _PromoterHomeState extends State<PromoterHome> {
                     return SizedBox(
                       height: 300,
                       child: StreamBuilder<List<EventModel>>(
-                        stream: _eventService.getEventsByPromoter(currentUserId),
+                        stream: _eventService.getEventsByPromoter(
+                          currentUserId,
+                        ),
                         builder: (context, eventsSnapshot) {
                           if (eventsSnapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -389,7 +476,9 @@ class _PromoterHomeState extends State<PromoterHome> {
                           }
 
                           if (eventsSnapshot.hasError) {
-                            print('Error loading events for promoter: ${eventsSnapshot.error}');
+                            print(
+                              'Error loading events for promoter: ${eventsSnapshot.error}',
+                            );
                             print('Promoter ID: $currentUserId');
                             return Center(
                               child: Column(
@@ -403,7 +492,9 @@ class _PromoterHomeState extends State<PromoterHome> {
                                   Text(
                                     '${eventsSnapshot.error}',
                                     style: TextStyle(
-                                      color: AppColor.white.withValues(alpha: 0.7),
+                                      color: AppColor.white.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       fontSize: Responsive.sp(10),
                                     ),
                                     textAlign: TextAlign.center,
@@ -414,10 +505,14 @@ class _PromoterHomeState extends State<PromoterHome> {
                           }
 
                           final events = eventsSnapshot.data ?? [];
-                          print('Loaded ${events.length} events for promoter: $currentUserId');
+                          print(
+                            'Loaded ${events.length} events for promoter: $currentUserId',
+                          );
 
                           if (events.isEmpty) {
-                            print('No events found for promoter: $currentUserId');
+                            print(
+                              'No events found for promoter: $currentUserId',
+                            );
                             return Center(
                               child: Text(
                                 'No events yet',
@@ -433,44 +528,64 @@ class _PromoterHomeState extends State<PromoterHome> {
                             itemBuilder: (context, index) {
                               final event = events[index];
                               return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2.0,
+                                ),
                                 child: Container(
                                   width: Responsive.w(80),
                                   height: Responsive.h(100),
                                   decoration: BoxDecoration(
                                     border: BoxBorder.all(
-                                      color: AppColor.white.withValues(alpha: 0.1),
+                                      color: AppColor.white.withValues(
+                                        alpha: 0.1,
+                                      ),
                                     ),
                                     borderRadius: BorderRadius.circular(18),
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
                                           child: event.thumbnailImageUrl != null
                                               ? ClipRRect(
-                                                  borderRadius: BorderRadius.circular(12),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                   child: CachedNetworkImage(
-                                                    imageUrl: event.thumbnailImageUrl!,
+                                                    imageUrl: event
+                                                        .thumbnailImageUrl!,
                                                     width: double.infinity,
                                                     height: double.infinity,
                                                     fit: BoxFit.cover,
-                                                    errorWidget: (context, url, error) => Container(
-                                                      color: AppColor.white.withValues(alpha: 0.1),
-                                                      child: Icon(
-                                                        Icons.image,
-                                                        color: AppColor.white.withValues(alpha: 0.5),
-                                                      ),
-                                                    ),
+                                                    errorWidget:
+                                                        (context, url, error) =>
+                                                            Container(
+                                                              color: AppColor
+                                                                  .white
+                                                                  .withValues(
+                                                                    alpha: 0.1,
+                                                                  ),
+                                                              child: Icon(
+                                                                Icons.image,
+                                                                color: AppColor
+                                                                    .white
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.5,
+                                                                    ),
+                                                              ),
+                                                            ),
                                                   ),
                                                 )
                                               : Container(
-                                                  color: AppColor.white.withValues(alpha: 0.1),
+                                                  color: AppColor.white
+                                                      .withValues(alpha: 0.1),
                                                   child: Icon(
                                                     Icons.image,
-                                                    color: AppColor.white.withValues(alpha: 0.5),
+                                                    color: AppColor.white
+                                                        .withValues(alpha: 0.5),
                                                   ),
                                                 ),
                                         ),
@@ -481,32 +596,44 @@ class _PromoterHomeState extends State<PromoterHome> {
                                             color: AppColor.white,
                                             fontFamily: AppFonts.appFont,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: Responsive.textScaleFactor * 14,
+                                            fontSize:
+                                                Responsive.textScaleFactor * 14,
                                           ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         SizedBox(height: Responsive.h(1)),
                                         GestureDetector(
-                                          onTap: () => _showEventDetailsBottomSheet(
-                                            context,
-                                            event,
-                                          ),
+                                          onTap: () =>
+                                              _showEventDetailsBottomSheet(
+                                                context,
+                                                event,
+                                              ),
                                           child: Container(
                                             width: double.infinity,
                                             decoration: BoxDecoration(
-                                              borderRadius: BorderRadiusDirectional.circular(22),
-                                              color: AppColor.white.withValues(alpha: 0.1),
+                                              borderRadius:
+                                                  BorderRadiusDirectional.circular(
+                                                    22,
+                                                  ),
+                                              color: AppColor.white.withValues(
+                                                alpha: 0.1,
+                                              ),
                                             ),
                                             child: Center(
                                               child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
+                                                padding: const EdgeInsets.all(
+                                                  8.0,
+                                                ),
                                                 child: Text(
                                                   "View Details",
                                                   style: GoogleFonts.dmSans(
                                                     color: AppColor.white,
                                                     fontWeight: FontWeight.w700,
-                                                    fontSize: Responsive.textScaleFactor * 12,
+                                                    fontSize:
+                                                        Responsive
+                                                            .textScaleFactor *
+                                                        12,
                                                   ),
                                                 ),
                                               ),
@@ -522,6 +649,332 @@ class _PromoterHomeState extends State<PromoterHome> {
                           );
                         },
                       ),
+                    );
+                  },
+                ),
+                SizedBox(height: Responsive.h(2)),
+
+                // 🔹 Requested Section (Fighters interested in events) - Only show when requests are available
+                StreamBuilder<UserModel>(
+                  stream: UserRepository.fetchCurrentUserStream(),
+                  builder: (context, userSnapshot) {
+                    if (!userSnapshot.hasData) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final currentUserId = userSnapshot.data!.id;
+
+                    return StreamBuilder<List<EventInterestModel>>(
+                      stream:
+                          EventInterestRepository.getPendingInterestsForPromoter(
+                            currentUserId,
+                          ),
+                      builder: (context, interestsSnapshot) {
+                        // Don't show anything while loading or if there's an error
+                        if (interestsSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox.shrink();
+                        }
+
+                        if (interestsSnapshot.hasError) {
+                          if (kDebugMode) {
+                            print(
+                              'Error loading requests: ${interestsSnapshot.error}',
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        }
+
+                        final interests = interestsSnapshot.data ?? [];
+
+                        // Only show the section if there are requests
+                        if (interests.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        // Show the section when requests are available
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Requested",
+                                  style: TextStyle(
+                                    color: AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: Responsive.textScaleFactor * 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: Responsive.h(2)),
+                            SizedBox(
+                              height: 150,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: interests.length,
+                                padding: EdgeInsets.symmetric(horizontal: 0),
+                                itemBuilder: (context, index) {
+                                  final interest = interests[index];
+                                  return GestureDetector(
+                                    onTap: () {
+                                      _showFighterDetailsBottomSheet(
+                                        context,
+                                        interest,
+                                      );
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4.0,
+                                      ),
+                                      child: Container(
+                                        width: Responsive.w(70),
+                                        decoration: BoxDecoration(
+                                          border: BoxBorder.all(
+                                            color: AppColor.white.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  if (interest.fighterProfileImage !=
+                                                          null &&
+                                                      _isValidImageUrl(
+                                                        interest
+                                                            .fighterProfileImage!,
+                                                      ))
+                                                    ClipOval(
+                                                      child: CachedNetworkImage(
+                                                        imageUrl: interest
+                                                            .fighterProfileImage!,
+                                                        width: 40,
+                                                        height: 40,
+                                                        fit: BoxFit.cover,
+                                                        placeholder:
+                                                            (
+                                                              context,
+                                                              url,
+                                                            ) => CircleAvatar(
+                                                              radius: 20,
+                                                              backgroundColor:
+                                                                  AppColor.white
+                                                                      .withValues(
+                                                                        alpha:
+                                                                            0.1,
+                                                                      ),
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2,
+                                                                    color:
+                                                                        AppColor
+                                                                            .red,
+                                                                  ),
+                                                            ),
+                                                        errorWidget:
+                                                            (
+                                                              context,
+                                                              url,
+                                                              error,
+                                                            ) => CircleAvatar(
+                                                              radius: 20,
+                                                              backgroundColor:
+                                                                  AppColor.white
+                                                                      .withValues(
+                                                                        alpha:
+                                                                            0.1,
+                                                                      ),
+                                                              child: Icon(
+                                                                Icons.person,
+                                                                color: AppColor
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                      ),
+                                                    )
+                                                  else
+                                                    CircleAvatar(
+                                                      radius: 20,
+                                                      backgroundColor: AppColor
+                                                          .white
+                                                          .withValues(
+                                                            alpha: 0.1,
+                                                          ),
+                                                      child: Icon(
+                                                        Icons.person,
+                                                        color: AppColor.white,
+                                                      ),
+                                                    ),
+                                                  SizedBox(
+                                                    width: Responsive.w(2),
+                                                  ),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          interest.fighterName,
+                                                          style: TextStyle(
+                                                            color:
+                                                                AppColor.white,
+                                                            fontFamily: AppFonts
+                                                                .appFont,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize:
+                                                                Responsive.sp(
+                                                                  12,
+                                                                ),
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                        Text(
+                                                          'Interested in',
+                                                          style: TextStyle(
+                                                            color: AppColor
+                                                                .white
+                                                                .withValues(
+                                                                  alpha: 0.7,
+                                                                ),
+                                                            fontFamily: AppFonts
+                                                                .appFont,
+                                                            fontSize:
+                                                                Responsive.sp(
+                                                                  9,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(height: Responsive.h(1)),
+                                              Text(
+                                                interest.eventTitle,
+                                                style: TextStyle(
+                                                  color: AppColor.white,
+                                                  fontFamily: AppFonts.appFont,
+                                                  fontSize: Responsive.sp(10),
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              SizedBox(height: Responsive.h(1)),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      await EventInterestRepository.updateInterestStatus(
+                                                        interest.id,
+                                                        'accepted',
+                                                      );
+                                                      if (context.mounted) {
+                                                        Utils.flushBarErrorMassage(
+                                                          'Request accepted',
+                                                          context,
+                                                        );
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal: 12,
+                                                            vertical: 6,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.green,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      child: Text(
+                                                        'Accept',
+                                                        style: TextStyle(
+                                                          color: AppColor.white,
+                                                          fontSize:
+                                                              Responsive.sp(9),
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      await EventInterestRepository.updateInterestStatus(
+                                                        interest.id,
+                                                        'rejected',
+                                                      );
+                                                      if (context.mounted) {
+                                                        Utils.flushBarErrorMassage(
+                                                          'Request rejected',
+                                                          context,
+                                                        );
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal: 12,
+                                                            vertical: 6,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      child: Text(
+                                                        'Reject',
+                                                        style: TextStyle(
+                                                          color: AppColor.white,
+                                                          fontSize:
+                                                              Responsive.sp(9),
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                 ),
@@ -569,126 +1022,122 @@ class _PromoterHomeState extends State<PromoterHome> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2.0),
                         child: Container(
-                            width: Responsive.w(50),
-                            height: Responsive.h(50),
-                            decoration: BoxDecoration(
-                              border: BoxBorder.all(
-                                color: AppColor.white.withValues(alpha: 0.1),
-                              ),
-                              borderRadius: BorderRadius.circular(18),
+                          width: Responsive.w(50),
+                          height: Responsive.h(50),
+                          decoration: BoxDecoration(
+                            border: BoxBorder.all(
+                              color: AppColor.white.withValues(alpha: 0.1),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      CircleAvatar(
-                                        radius: Responsive.sp(34),
-                                        backgroundImage: AssetImage(
-                                          "assets/images/Frame 1000002190.png",
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            "4.7",
-                                            style: TextStyle(
-                                              color: AppColor.white,
-                                              fontFamily: AppFonts.appFont,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize:
-                                                  Responsive.textScaleFactor *
-                                                  14,
-                                            ),
-                                          ),
-                                          SizedBox(width: Responsive.w(1)),
-                                          SvgPicture.asset(
-                                            "assets/icons/Vector (3).svg",
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: Responsive.h(2)),
-                                  Text(
-                                    "Corey Herwitz",
-                                    style: TextStyle(
-                                      color: AppColor.white,
-                                      fontFamily: AppFonts.appFont,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: Responsive.textScaleFactor * 14,
-                                    ),
-                                  ),
-                                  SizedBox(height: Responsive.h(1)),
-                                  Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/location-05 (1).svg",
-                                      ),
-                                      SizedBox(width: Responsive.w(1)),
-                                      Text(
-                                        "San Francisco, CA",
-                                        style: TextStyle(
-                                          color: AppColor.white,
-                                          fontFamily: AppFonts.appFont,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize:
-                                              Responsive.textScaleFactor * 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: Responsive.h(1)),
-                                  GestureDetector(
-                                    onTap: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => FighterPublicProfile(),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: Responsive.sp(34),
+                                      backgroundImage: AssetImage(
+                                        "assets/images/Frame 1000002190.png",
                                       ),
                                     ),
-                                    child: Container(
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        borderRadius:
-                                            BorderRadiusDirectional.circular(
-                                              22,
-                                            ),
-                                        color: AppColor.white.withValues(
-                                          alpha: 0.1,
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "4.7",
+                                          style: TextStyle(
+                                            color: AppColor.white,
+                                            fontFamily: AppFonts.appFont,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize:
+                                                Responsive.textScaleFactor * 14,
+                                          ),
                                         ),
+                                        SizedBox(width: Responsive.w(1)),
+                                        SvgPicture.asset(
+                                          "assets/icons/Vector (3).svg",
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: Responsive.h(2)),
+                                Text(
+                                  "Corey Herwitz",
+                                  style: TextStyle(
+                                    color: AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Responsive.textScaleFactor * 14,
+                                  ),
+                                ),
+                                SizedBox(height: Responsive.h(1)),
+                                Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      "assets/icons/location-05 (1).svg",
+                                    ),
+                                    SizedBox(width: Responsive.w(1)),
+                                    Text(
+                                      "San Francisco, CA",
+                                      style: TextStyle(
+                                        color: AppColor.white,
+                                        fontFamily: AppFonts.appFont,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize:
+                                            Responsive.textScaleFactor * 14,
                                       ),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            "View Profile",
-                                            style: GoogleFonts.dmSans(
-                                              color: AppColor.white,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize:
-                                                  Responsive.textScaleFactor *
-                                                  12,
-                                            ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: Responsive.h(1)),
+                                GestureDetector(
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => FighterPublicProfile(),
+                                    ),
+                                  ),
+                                  child: Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadiusDirectional.circular(22),
+                                      color: AppColor.white.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "View Profile",
+                                          style: GoogleFonts.dmSans(
+                                            color: AppColor.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize:
+                                                Responsive.textScaleFactor * 12,
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          
+                          ),
                         ),
                       );
                     },
                   ),
                 ),
+
+                SizedBox(height: Responsive.h(2)),
               ],
             ),
           ),
@@ -738,58 +1187,92 @@ class _PromoterHomeState extends State<PromoterHome> {
       ),
     );
   }
-}
 
-void _showEventDetailsBottomSheet(BuildContext context, EventModel event) {
-  showModalBottomSheet(
-    context: context,
-    barrierColor: AppColor.white.withValues(alpha: 0.2),
-    isScrollControlled: true,
-    backgroundColor: AppColor.black,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-    ),
-    builder: (context) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.5,
-      minChildSize: 0.5,
-      maxChildSize: 1,
-      builder: (context, scrollController) {
-        return SingleChildScrollView(
-          controller: scrollController,
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: Responsive.w(5),
-              right: Responsive.w(5),
-              top: Responsive.h(3),
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: Responsive.h(1)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "$label: ",
+            style: GoogleFonts.dmSans(
+              color: AppColor.white,
+              fontSize: Responsive.sp(9),
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    "Fight Details",
-                    style: GoogleFonts.dmSans(
-                      color: AppColor.white,
-                      fontSize: Responsive.sp(18),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.h(2)),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.dmSans(
+              fontWeight: FontWeight.bold,
+              color: AppColor.white,
+              fontSize: Responsive.sp(9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                  // Event Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: event.thumbnailImageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: event.thumbnailImageUrl!,
-                            width: double.infinity,
-                            height: Responsive.h(25),
-                            fit: BoxFit.cover,
-                            errorWidget: (context, url, error) => Container(
+  void _showEventDetailsBottomSheet(BuildContext context, EventModel event) {
+    showModalBottomSheet(
+      context: context,
+      barrierColor: AppColor.white.withValues(alpha: 0.2),
+      isScrollControlled: true,
+      backgroundColor: AppColor.black,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.5,
+        minChildSize: 0.5,
+        maxChildSize: 1,
+        builder: (context, scrollController) {
+          return SingleChildScrollView(
+            controller: scrollController,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: Responsive.w(5),
+                right: Responsive.w(5),
+                top: Responsive.h(3),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      "Fight Details",
+                      style: GoogleFonts.dmSans(
+                        color: AppColor.white,
+                        fontSize: Responsive.sp(18),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: Responsive.h(2)),
+
+                    // Event Image
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: event.thumbnailImageUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: event.thumbnailImageUrl!,
+                              width: double.infinity,
+                              height: Responsive.h(25),
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) => Container(
+                                height: Responsive.h(25),
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                child: Icon(
+                                  Icons.image,
+                                  color: AppColor.white.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            )
+                          : Container(
                               height: Responsive.h(25),
                               color: AppColor.white.withValues(alpha: 0.1),
                               child: Icon(
@@ -797,127 +1280,462 @@ void _showEventDetailsBottomSheet(BuildContext context, EventModel event) {
                                 color: AppColor.white.withValues(alpha: 0.5),
                               ),
                             ),
-                          )
-                        : Container(
-                            height: Responsive.h(25),
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            child: Icon(
-                              Icons.image,
-                              color: AppColor.white.withValues(alpha: 0.5),
+                    ),
+                    SizedBox(height: Responsive.h(2)),
+
+                    // Event Title
+                    Text(
+                      event.eventTitle,
+                      style: GoogleFonts.dmSans(
+                        color: AppColor.white,
+                        fontSize: Responsive.sp(16),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: Responsive.h(1)),
+
+                    // Event Description
+                    Text(
+                      event.description,
+                      style: GoogleFonts.dmSans(
+                        color: AppColor.white.withValues(alpha: 0.8),
+                        fontSize: Responsive.sp(12),
+                      ),
+                    ),
+                    SizedBox(height: Responsive.h(2)),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: AppColor.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: Responsive.h(0.5)),
+
+                    // Additional Info Section
+                    _buildDetailRow(
+                      "Date",
+                      DateFormat('MMMM d, yyyy').format(event.eventDate),
+                    ),
+                    _buildDetailRow("Time", event.eventTime),
+                    _buildDetailRow("Location", event.location),
+
+                    SizedBox(height: Responsive.h(0.5)),
+                    SvgPicture.asset("assets/images/Frame 1000002180.svg"),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColor.red),
+                        borderRadius: BorderRadius.circular(22),
+                        color: AppColor.black,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Text(
+                            "Open Map",
+                            style: GoogleFonts.dmSans(
+                              color: AppColor.white,
+                              fontSize: Responsive.sp(10),
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-
-                  // Event Title
-                  Text(
-                    event.eventTitle,
-                    style: GoogleFonts.dmSans(
-                      color: AppColor.white,
-                      fontSize: Responsive.sp(16),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.h(1)),
-
-                  // Event Description
-                  Text(
-                    event.description,
-                    style: GoogleFonts.dmSans(
-                      color: AppColor.white.withValues(alpha: 0.8),
-                      fontSize: Responsive.sp(12),
-                    ),
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          color: AppColor.white.withValues(alpha: 0.2),
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: Responsive.h(0.5)),
-
-                  // Additional Info Section
-                  _buildDetailRow("Date", DateFormat('MMMM d, yyyy').format(event.eventDate)),
-                  _buildDetailRow("Time", event.eventTime),
-                  _buildDetailRow("Location", event.location),
-
-                  SizedBox(height: Responsive.h(0.5)),
-                  SvgPicture.asset("assets/images/Frame 1000002180.svg"),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColor.red),
-                      borderRadius: BorderRadius.circular(22),
-                      color: AppColor.black,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
+                    _buildDetailRow("Event Type", event.eventType),
+                    _buildDetailRow("Weight Class", event.weightClass),
+                    _buildDetailRow("Required Record", event.requiredRecord),
+                    _buildDetailRow("Age Limit", event.ageLimit),
+                    _buildDetailRow(
+                      "Fighting Style Preferred",
+                      event.fightingStylePreferred,
+                    ),
+                    _buildDetailRow(
+                      "Deadline to Apply",
+                      DateFormat('MMMM d, yyyy').format(event.deadlineToApply),
+                    ),
+                    // Action Button
+                    AuthButton(
+                      buttontext: "Edit",
+                      onPress: () {
+                        Navigator.pop(context);
+                      },
+                      loading: false,
+                    ),
+                    SizedBox(height: Responsive.h(2)),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // Fetch fighter details from Firestore
+  Future<Map<String, dynamic>?> _fetchFighterDetails(String fighterId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('userData')
+          .doc(fighterId)
+          .get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      return doc.data();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching fighter details: $e');
+      }
+      rethrow;
+    }
+  }
+
+  // Show fighter details bottom sheet
+  void _showFighterDetailsBottomSheet(
+    BuildContext context,
+    EventInterestModel interest,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      barrierColor: AppColor.white.withValues(alpha: 0.2),
+      isScrollControlled: true,
+      backgroundColor: AppColor.black,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) {
+          return FutureBuilder<Map<String, dynamic>?>(
+            future: _fetchFighterDetails(interest.fighterId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(color: AppColor.red),
+                );
+              }
+
+              if (snapshot.hasError || !snapshot.hasData) {
+                return SingleChildScrollView(
+                  controller: scrollController,
+                  child: Padding(
+                    padding: EdgeInsets.all(Responsive.w(5)),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Error loading fighter details',
+                          style: TextStyle(color: AppColor.white),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          snapshot.error?.toString() ?? 'Unknown error',
+                          style: TextStyle(
+                            color: AppColor.white.withValues(alpha: 0.7),
+                            fontSize: Responsive.sp(10),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              final fighterData = snapshot.data!;
+              final fighterInfo =
+                  fighterData['fighterData'] as Map<String, dynamic>?;
+              final email = fighterData['email'] ?? '';
+
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: Responsive.w(5),
+                    right: Responsive.w(5),
+                    top: Responsive.h(3),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title
+                      Text(
+                        "Fighter Details",
+                        style: GoogleFonts.dmSans(
+                          color: AppColor.white,
+                          fontSize: Responsive.sp(18),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: Responsive.h(2)),
+
+                      // Fighter Profile Image and Name
+                      Center(
+                        child: Column(
+                          children: [
+                            if (interest.fighterProfileImage != null &&
+                                _isValidImageUrl(interest.fighterProfileImage!))
+                              ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: interest.fighterProfileImage!,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: AppColor.white.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColor.red,
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      CircleAvatar(
+                                        radius: 50,
+                                        backgroundColor: AppColor.white
+                                            .withValues(alpha: 0.1),
+                                        child: Icon(
+                                          Icons.person,
+                                          color: AppColor.white,
+                                          size: 50,
+                                        ),
+                                      ),
+                                ),
+                              )
+                            else
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundColor: AppColor.white.withValues(
+                                  alpha: 0.1,
+                                ),
+                                child: Icon(
+                                  Icons.person,
+                                  color: AppColor.white,
+                                  size: 50,
+                                ),
+                              ),
+                            SizedBox(height: Responsive.h(1)),
+                            Text(
+                              interest.fighterName,
+                              style: GoogleFonts.dmSans(
+                                color: AppColor.white,
+                                fontSize: Responsive.sp(20),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (email.isNotEmpty)
+                              Text(
+                                email,
+                                style: GoogleFonts.dmSans(
+                                  color: AppColor.white.withValues(alpha: 0.7),
+                                  fontSize: Responsive.sp(12),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: Responsive.h(2)),
+
+                      // Event Information
+                      Text(
+                        "Interested In Event:",
+                        style: GoogleFonts.dmSans(
+                          color: AppColor.white,
+                          fontSize: Responsive.sp(14),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: Responsive.h(1)),
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColor.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: Text(
-                          "Open Map",
+                          interest.eventTitle,
                           style: GoogleFonts.dmSans(
                             color: AppColor.white,
-                            fontSize: Responsive.sp(10),
+                            fontSize: Responsive.sp(14),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: Responsive.h(2)),
+
+                      Divider(color: AppColor.white.withValues(alpha: 0.2)),
+                      SizedBox(height: Responsive.h(1)),
+
+                      // Fighter Information
+                      if (fighterInfo != null) ...[
+                        Text(
+                          "Fighter Information",
+                          style: GoogleFonts.dmSans(
+                            color: AppColor.white,
+                            fontSize: Responsive.sp(16),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        SizedBox(height: Responsive.h(1)),
+
+                        if (fighterInfo['fullName'] != null)
+                          _buildDetailRow(
+                            "Full Name",
+                            fighterInfo['fullName'] ?? 'N/A',
+                          ),
+                        if (fighterInfo['age'] != null)
+                          _buildDetailRow("Age", fighterInfo['age'].toString()),
+                        if (fighterInfo['height'] != null)
+                          _buildDetailRow(
+                            "Height",
+                            fighterInfo['height'] ?? 'N/A',
+                          ),
+                        if (fighterInfo['weight'] != null)
+                          _buildDetailRow(
+                            "Weight",
+                            fighterInfo['weight']?.toString() ?? 'N/A',
+                          ),
+                        if (fighterInfo['fightingStyle'] != null)
+                          _buildDetailRow(
+                            "Fighting Style",
+                            fighterInfo['fightingStyle'] ?? 'N/A',
+                          ),
+                        if (fighterInfo['fightWin'] != null ||
+                            fighterInfo['fightsLose'] != null)
+                          _buildDetailRow(
+                            "Record",
+                            "${fighterInfo['fightWin'] ?? 0}W - ${fighterInfo['fightsLose'] ?? 0}L",
+                          ),
+                        if (fighterInfo['fightsKnockout'] != null)
+                          _buildDetailRow(
+                            "KO/TKO",
+                            fighterInfo['fightsKnockout'].toString(),
+                          ),
+                        if (fighterInfo['coachName'] != null)
+                          _buildDetailRow(
+                            "Coach",
+                            fighterInfo['coachName'] ?? 'N/A',
+                          ),
+                        if (fighterInfo['coachContact'] != null)
+                          _buildDetailRow(
+                            "Coach Contact",
+                            fighterInfo['coachContact'] ?? 'N/A',
+                          ),
+                        if (fighterInfo['lastExam'] != null)
+                          _buildDetailRow(
+                            "Last Medical Exam",
+                            fighterInfo['lastExam'] ?? 'N/A',
+                          ),
+                        if (fighterInfo['lastBlood'] != null)
+                          _buildDetailRow(
+                            "Last Blood Test",
+                            fighterInfo['lastBlood'].toString(),
+                          ),
+                      ] else
+                        Text(
+                          "Fighter information not available",
+                          style: GoogleFonts.dmSans(
+                            color: AppColor.white.withValues(alpha: 0.7),
+                            fontSize: Responsive.sp(12),
+                          ),
+                        ),
+
+                      SizedBox(height: Responsive.h(2)),
+
+                      // Action Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                await EventInterestRepository.updateInterestStatus(
+                                  interest.id,
+                                  'accepted',
+                                );
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  Utils.flushBarErrorMassage(
+                                    'Request accepted',
+                                    context,
+                                  );
+                                }
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Accept Request',
+                                    style: GoogleFonts.dmSans(
+                                      color: AppColor.white,
+                                      fontSize: Responsive.sp(14),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: Responsive.w(2)),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                await EventInterestRepository.updateInterestStatus(
+                                  interest.id,
+                                  'rejected',
+                                );
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  Utils.flushBarErrorMassage(
+                                    'Request rejected',
+                                    context,
+                                  );
+                                }
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Reject Request',
+                                    style: GoogleFonts.dmSans(
+                                      color: AppColor.white,
+                                      fontSize: Responsive.sp(14),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                      SizedBox(height: Responsive.h(2)),
+                    ],
                   ),
-                  _buildDetailRow("Event Type", event.eventType),
-                  _buildDetailRow("Weight Class", event.weightClass),
-                  _buildDetailRow("Required Record", event.requiredRecord),
-                  _buildDetailRow("Age Limit", event.ageLimit),
-                  _buildDetailRow("Fighting Style Preferred", event.fightingStylePreferred),
-                  _buildDetailRow("Deadline to Apply", DateFormat('MMMM d, yyyy').format(event.deadlineToApply)),
-                  // Action Button
-                  AuthButton(
-                    buttontext: "Edit",
-                    onPress: () {
-                      // _ratePromoterBottomSheet(context);
-                      Navigator.pop(context);
-
-                      // Utils.flushBarErrorMassage("Rate Promoter", context);
-                    },
-                    loading: false,
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    ),
-  );
-}
-
-Widget _buildDetailRow(String label, String value) {
-  return Padding(
-    padding: EdgeInsets.symmetric(vertical: Responsive.h(1)),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          "$label: ",
-          style: GoogleFonts.dmSans(
-            color: AppColor.white,
-            fontSize: Responsive.sp(9),
-          ),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.dmSans(
-            fontWeight: FontWeight.bold,
-            color: AppColor.white,
-            fontSize: Responsive.sp(9),
-          ),
-        ),
-      ],
-    ),
-  );
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 }

@@ -8,6 +8,7 @@ class PromoterDataModel {
   final String? prompterName;
   final String? location;
   final int? numberOfEvents;
+  final String? profileImageUrl;
 
   PromoterDataModel({
     this.companyAbout,
@@ -19,6 +20,7 @@ class PromoterDataModel {
     this.prompterName,
     this.location,
     this.numberOfEvents,
+    this.profileImageUrl,
   });
 
   factory PromoterDataModel.fromMap(Map<String, dynamic> map) {
@@ -32,6 +34,7 @@ class PromoterDataModel {
       prompterName: map['prompterName'],
       location: map['location'],
       numberOfEvents: map['numberOfEvents'],
+      profileImageUrl: map['profileImageUrl'],
     );
   }
 
@@ -46,6 +49,7 @@ class PromoterDataModel {
       'prompterName': prompterName,
       'location': location,
       'numberOfEvents': numberOfEvents,
+      'profileImageUrl': profileImageUrl,
     };
   }
 }

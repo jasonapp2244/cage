@@ -67,7 +67,7 @@ class EventDetailView extends StatelessWidget {
               // Event Image
               if (event.thumbnailImageUrl != null &&
                   event.thumbnailImageUrl!.isNotEmpty)
-                Container(
+                SizedBox(
                   width: double.infinity,
                   height: Responsive.h(30),
                   child: CachedNetworkImage(

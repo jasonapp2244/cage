@@ -12,6 +12,7 @@ import 'package:cage/provider/ticket_provider.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/services/block_status_monitor.dart';
 import 'package:cage/services/notification_service.dart';
+import 'package:cage/services/payment_service.dart';
 import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
@@ -33,6 +34,10 @@ void main() async {
     // Initialize local notifications
     await NotificationService.initialize();
     print("Notifications initialized successfully");
+    
+    // Initialize Stripe with publishable key
+    await PaymentService.initializeStripe('pk_test_51SQG7nBw0JTYxvz9IsBUIj0TC8k3m7MDUuOnr8zgRKJXmWAvmRvvNTE1hp2cRJsS1tTYjMF1nSQvOyW92Nrcsq7400wy3sLcI1pub');
+    print("Stripe initialized successfully");
   } catch (e) {
     print("Firebase initialization error: $e");
     // Continue with app even if Firebase fails to initialize

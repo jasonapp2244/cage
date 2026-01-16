@@ -11,11 +11,13 @@ import 'package:cage/repository/home_repository.dart';
 import 'package:cage/models/user_model.dart';
 import 'package:cage/models/promoter_model.dart';
 import 'package:cage/models/event_model.dart';
+import 'package:cage/models/fighter_model.dart';
 import 'package:cage/services/event_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:cage/models/event_interest_model.dart';
 import 'package:cage/repository/event_interest_repository.dart';
+import 'package:cage/repository/subscription_repository.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -239,13 +241,16 @@ class _PromoterHomeState extends State<PromoterHome> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            companyName,
-                            style: TextStyle(
-                              color: AppColor.white.withValues(alpha: 0.18),
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.normal,
-                              fontSize: Responsive.sp(40),
+                          Expanded(
+                            child: Text(
+                              companyName,
+                              style: TextStyle(
+                                color: AppColor.white.withValues(alpha: 0.18),
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.normal,
+                                fontSize: Responsive.sp(40),
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           // Padding(
@@ -444,7 +449,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                 ),
                 SizedBox(height: Responsive.h(2)),
 
-                // 🔹 Recent Events - Fetch from Firestore
+                // 🔹 Recent Events - Fetch all active events from all promoters (including mine)
                 StreamBuilder<UserModel>(
                   stream: UserRepository.fetchCurrentUserStream(),
                   builder: (context, userSnapshot) {
@@ -462,9 +467,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                     return SizedBox(
                       height: 300,
                       child: StreamBuilder<List<EventModel>>(
-                        stream: _eventService.getEventsByPromoter(
-                          currentUserId,
-                        ),
+                        stream: _eventService.getActiveEvents(),
                         builder: (context, eventsSnapshot) {
                           if (eventsSnapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -477,9 +480,8 @@ class _PromoterHomeState extends State<PromoterHome> {
 
                           if (eventsSnapshot.hasError) {
                             print(
-                              'Error loading events for promoter: ${eventsSnapshot.error}',
+                              'Error loading events: ${eventsSnapshot.error}',
                             );
-                            print('Promoter ID: $currentUserId');
                             return Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -504,15 +506,27 @@ class _PromoterHomeState extends State<PromoterHome> {
                             );
                           }
 
-                          final events = eventsSnapshot.data ?? [];
+                          final allEvents = eventsSnapshot.data ?? [];
+                          
+                          // Sort events: user's own events first, then others
+                          final sortedEvents = List<EventModel>.from(allEvents);
+                          sortedEvents.sort((a, b) {
+                            final aIsMine = a.promoterId == currentUserId;
+                            final bIsMine = b.promoterId == currentUserId;
+                            
+                            // If one is mine and the other isn't, mine comes first
+                            if (aIsMine && !bIsMine) return -1;
+                            if (!aIsMine && bIsMine) return 1;
+                            
+                            // If both are mine or both are not mine, sort by date (soonest first)
+                            return a.eventDate.compareTo(b.eventDate);
+                          });
+                          
                           print(
-                            'Loaded ${events.length} events for promoter: $currentUserId',
+                            'Loaded ${sortedEvents.length} events from all promoters (including ${sortedEvents.where((e) => e.promoterId == currentUserId).length} of mine)',
                           );
 
-                          if (events.isEmpty) {
-                            print(
-                              'No events found for promoter: $currentUserId',
-                            );
+                          if (sortedEvents.isEmpty) {
                             return Center(
                               child: Text(
                                 'No events yet',
@@ -523,10 +537,11 @@ class _PromoterHomeState extends State<PromoterHome> {
 
                           return ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: events.length,
+                            itemCount: sortedEvents.length,
                             padding: EdgeInsets.symmetric(horizontal: 0),
                             itemBuilder: (context, index) {
-                              final event = events[index];
+                              final event = sortedEvents[index];
+                              final isMyEvent = event.promoterId == currentUserId;
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 2.0,
@@ -536,9 +551,12 @@ class _PromoterHomeState extends State<PromoterHome> {
                                   height: Responsive.h(100),
                                   decoration: BoxDecoration(
                                     border: BoxBorder.all(
-                                      color: AppColor.white.withValues(
-                                        alpha: 0.1,
-                                      ),
+                                      color: isMyEvent
+                                          ? AppColor.red.withValues(alpha: 0.8)
+                                          : AppColor.white.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                      width: isMyEvent ? 2 : 1,
                                     ),
                                     borderRadius: BorderRadius.circular(18),
                                   ),
@@ -590,6 +608,27 @@ class _PromoterHomeState extends State<PromoterHome> {
                                                 ),
                                         ),
                                         SizedBox(height: Responsive.h(1)),
+                                        if (isMyEvent)
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColor.red,
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              "My Event",
+                                              style: TextStyle(
+                                                color: AppColor.white,
+                                                fontFamily: AppFonts.appFont,
+                                                fontSize: Responsive.sp(8),
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        if (isMyEvent) SizedBox(height: Responsive.h(0.5)),
                                         Text(
                                           event.eventTitle,
                                           style: TextStyle(
@@ -646,6 +685,289 @@ class _PromoterHomeState extends State<PromoterHome> {
                                 ),
                               );
                             },
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: Responsive.h(2)),
+
+                // 🔹 Subscribed Fighters Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Subscribed Fighters",
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.normal,
+                        fontSize: Responsive.textScaleFactor * 14,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Responsive.h(1)),
+                
+                // Subscribed Fighters List
+                StreamBuilder<List<UserModel>>(
+                  stream: SubscriptionRepository.getSubscribedFighters(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return SizedBox(
+                        height: 250,
+                        child: Center(
+                          child: CircularProgressIndicator(color: AppColor.red),
+                        ),
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      if (kDebugMode) {
+                        print('Error loading subscribed fighters: ${snapshot.error}');
+                      }
+                      return SizedBox(
+                        height: 100,
+                        child: Center(
+                          child: Text(
+                            'Error loading fighters',
+                            style: TextStyle(
+                              color: AppColor.white.withValues(alpha: 0.7),
+                              fontSize: Responsive.sp(12),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final fighters = snapshot.data ?? [];
+
+                    if (fighters.isEmpty) {
+                      return SizedBox(
+                        height: 100,
+                        child: Center(
+                          child: Text(
+                            'No subscribed fighters available',
+                            style: TextStyle(
+                              color: AppColor.white.withValues(alpha: 0.7),
+                              fontSize: Responsive.sp(12),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 250,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: fighters.length,
+                        padding: EdgeInsets.symmetric(horizontal: 0),
+                        itemBuilder: (context, index) {
+                          final fighter = fighters[index];
+                          final fighterData = fighter.roleData as FighterDataModel;
+                          
+                          // Calculate average rating
+                          final reviews = fighterData.reviews;
+                          final averageRating = SubscriptionRepository.calculateAverageRating(reviews);
+                          
+                          // Get profile image
+                          final profileImageUrl = fighterData.profileImageUrl ?? 
+                                                (fighterData.urlProfile.isNotEmpty && fighterData.urlProfile != 'https' 
+                                                  ? fighterData.urlProfile 
+                                                  : null) ??
+                                                fighterData.uploadProfile;
+                          
+                          // Get location
+                          String location = "Location not set";
+                          if (fighterData.location != null && fighterData.location!.isNotEmpty) {
+                            location = fighterData.location!;
+                            // Extract city and state if it's a full address
+                            final parts = location.split(',');
+                            if (parts.length >= 2) {
+                              location = "${parts[parts.length - 2].trim()}, ${parts[parts.length - 1].trim()}";
+                            }
+                          }
+                          
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: Container(
+                              width: Responsive.w(45),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: AppColor.white.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Profile Image with Rating
+                                  Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(18),
+                                        ),
+                                        child: profileImageUrl != null && 
+                                               profileImageUrl.isNotEmpty &&
+                                               profileImageUrl != 'https'
+                                            ? CachedNetworkImage(
+                                                imageUrl: profileImageUrl,
+                                                width: double.infinity,
+                                                height: Responsive.h(18),
+                                                fit: BoxFit.cover,
+                                                placeholder: (context, url) => Container(
+                                                  height: Responsive.h(18),
+                                                  color: AppColor.white.withValues(alpha: 0.1),
+                                                  child: Center(
+                                                    child: CircularProgressIndicator(
+                                                      color: AppColor.red,
+                                                      strokeWidth: 2,
+                                                    ),
+                                                  ),
+                                                ),
+                                                errorWidget: (context, url, error) => Container(
+                                                  height: Responsive.h(18),
+                                                  color: AppColor.white.withValues(alpha: 0.1),
+                                                  child: Icon(
+                                                    Icons.person,
+                                                    color: AppColor.white.withValues(alpha: 0.5),
+                                                    size: 40,
+                                                  ),
+                                                ),
+                                              )
+                                            : Container(
+                                                height: Responsive.h(18),
+                                                color: AppColor.white.withValues(alpha: 0.1),
+                                                child: Icon(
+                                                  Icons.person,
+                                                  color: AppColor.white.withValues(alpha: 0.5),
+                                                  size: 40,
+                                                ),
+                                              ),
+                                      ),
+                                      // Rating Badge
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColor.black.withValues(alpha: 0.7),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.star,
+                                                color: AppColor.red,
+                                                size: 14,
+                                              ),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                averageRating > 0 
+                                                    ? averageRating.toStringAsFixed(1)
+                                                    : '0.0',
+                                                style: TextStyle(
+                                                  color: AppColor.white,
+                                                  fontFamily: AppFonts.appFont,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: Responsive.sp(12),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  
+                                  // Fighter Name and Location
+                                  Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          fighterData.fullName,
+                                          style: TextStyle(
+                                            color: AppColor.white,
+                                            fontFamily: AppFonts.appFont,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: Responsive.sp(14),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.location_on,
+                                              color: AppColor.white.withValues(alpha: 0.7),
+                                              size: 14,
+                                            ),
+                                            SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                location,
+                                                style: TextStyle(
+                                                  color: AppColor.white.withValues(alpha: 0.7),
+                                                  fontFamily: AppFonts.appFont,
+                                                  fontSize: Responsive.sp(10),
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 8),
+                                        
+                                        // View Profile Button
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => FighterPublicProfile(
+                                                  userData: fighter,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            width: double.infinity,
+                                            padding: EdgeInsets.symmetric(vertical: 10),
+                                            decoration: BoxDecoration(
+                                              color: AppColor.white.withValues(alpha: 0.2),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "View Profile",
+                                                style: TextStyle(
+                                                  color: AppColor.white,
+                                                  fontFamily: AppFonts.appFont,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: Responsive.sp(12),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         },
                       ),

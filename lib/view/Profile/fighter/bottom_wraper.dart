@@ -8,6 +8,7 @@ import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
+import 'package:cage/view/Profile/fighter/subscription_plans_view.dart';
 import 'package:cage/view/notification_view.dart';
 import 'package:cage/view/settings_view.dart';
 import 'package:cage/view/contact_us_view.dart';
@@ -46,10 +47,10 @@ class _MainWrapperState extends State<MainWrapper> {
   // Drawer Navigation Pages (Settings/Support Flow)
   final List<Widget> _drawerPages = [
     Homeview(), // Home (same as bottom nav)
-    Container(),
+    SubscriptionPlansView(), // Subscription Plans
     SupportView(), // Support
     SettingsView(), // Settings
-    TermConditionView(),
+    TermConditionView(), // Terms & Conditions
     PrivacyPolicyView(), // Privacy Policy
     ContactUsView(), // Contact Us
   ];

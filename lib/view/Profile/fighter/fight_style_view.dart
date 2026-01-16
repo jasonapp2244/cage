@@ -1,10 +1,12 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/services/fighting_styles_service.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,7 +20,40 @@ class FightStyleView extends StatefulWidget {
 }
 
 class _FightStyleViewState extends State<FightStyleView> {
-  var selectedFightStyle = 'Option 1';
+  final FightingStylesService _fightingStylesService = FightingStylesService();
+  List<String> _fightingStyles = [];
+  String? _selectedFightStyle;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFightingStyles();
+  }
+
+  Future<void> _loadFightingStyles() async {
+    try {
+      final styles = await _fightingStylesService.getAllFightingStyles();
+      if (kDebugMode) {
+        print('Loaded ${styles.length} fighting styles from Firestore');
+      }
+      setState(() {
+        _fightingStyles = styles;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading fighting styles: $e');
+      }
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load fighting styles. Please try again.';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthViewmodel>(context);
@@ -64,85 +99,122 @@ class _FightStyleViewState extends State<FightStyleView> {
                   ),
                   SizedBox(height: Responsive.h(2)),
 
-                  DropdownButtonFormField<String>(
-                    style: TextStyle(color: AppColor.white),
-                    dropdownColor: AppColor.white.withValues(alpha: 
-                      0.1,
-                    ), // background of dropdown menu
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
+                  if (_isLoading)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColor.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
-                        borderSide: BorderSide(color: AppColor.red),
+                        border: Border.all(color: AppColor.red),
                       ),
-                      errorBorder: OutlineInputBorder(
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColor.red),
+                        ),
+                      ),
+                    )
+                  else if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
-                        borderSide: BorderSide(color: AppColor.red),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: AppColor.red),
+                      child: Column(
+                        children: [
+                          Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.red, fontSize: 14),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: _loadFightingStyles,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColor.red,
+                            ),
+                            child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (_fightingStyles.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColor.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        border: Border.all(color: AppColor.red),
                       ),
-                      filled: true,
-                      fillColor: AppColor.white.withValues(alpha: 0.08),
-
-                      hintText: "Select",
-                      hintStyle: GoogleFonts.dmSans(
-                        color: Colors.grey,
-                        fontSize: 15,
+                      child: const Text(
+                        'No fighting styles available. Please contact admin.',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
+                    )
+                  else
+                    DropdownButtonFormField<String>(
+                      value: _selectedFightStyle,
+                      style: TextStyle(color: AppColor.white),
+                      dropdownColor: AppColor.white.withValues(alpha: 0.1),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(Responsive.w(12)),
+                          borderSide: BorderSide(color: AppColor.red),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(Responsive.w(12)),
+                          borderSide: BorderSide(color: AppColor.red),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: AppColor.red),
+                          borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        ),
+                        filled: true,
+                        fillColor: AppColor.white.withValues(alpha: 0.08),
+                        hintText: "Select",
+                        hintStyle: GoogleFonts.dmSans(
+                          color: Colors.grey,
+                          fontSize: 15,
+                        ),
+                      ),
+                      iconEnabledColor: AppColor.white,
+                      items: _fightingStyles.map((String style) {
+                        return DropdownMenuItem<String>(
+                          value: style,
+                          child: Text(style),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedFightStyle = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select an option';
+                        }
+                        return null;
+                      },
                     ),
-                    iconEnabledColor: AppColor.white, // arrow color
-                    items: const [
-                      DropdownMenuItem(value: "Boxing", child: Text("Boxing")),
-                      DropdownMenuItem(
-                        value: "Muay Thai",
-                        child: Text("Muay Thai"),
-                      ),
-                      DropdownMenuItem(
-                        value: "Kickboxing",
-                        child: Text("Kickboxing"),
-                      ),
-                      DropdownMenuItem(value: "Karate", child: Text("Karate")),
-                      DropdownMenuItem(
-                        value: "Taekwondo",
-                        child: Text("Taekwondo"),
-                      ),
-                      DropdownMenuItem(value: "Savate", child: Text("Savate")),
-                      DropdownMenuItem(
-                        value: "Kung Fu",
-                        child: Text("Kung Fu"),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        selectedFightStyle = value!;
-                      });
-
-                      // handle value change here
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select an option';
-                      }
-                      return null;
-                    },
-                  ),
                   const SizedBox(height: 30),
 
                   Button(
                     text: "Next",
+                    enabled: _selectedFightStyle != null && !_isLoading,
                     onTap: () {
-                      var uid = Utils.getCurrentUid();
-                      authProvider.addUserFieldByRole(
-                        uid: uid,
-                        fieldName: 'fightsStyle',
-                        value: selectedFightStyle.toString(),
-                      );
+                      if (_selectedFightStyle != null) {
+                        var uid = Utils.getCurrentUid();
+                        authProvider.addUserFieldByRole(
+                          uid: uid,
+                          fieldName: 'fightingStyle',
+                          value: _selectedFightStyle!,
+                        );
 
-                      Navigator.pushNamed(
-                        context,
-                        RoutesName.lastBloodTest_view,
-                      );
+                        Navigator.pushNamed(
+                          context,
+                          RoutesName.lastBloodTest_view,
+                        );
+                      }
                     },
                   ),
                 ],

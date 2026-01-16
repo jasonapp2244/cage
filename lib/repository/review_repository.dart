@@ -522,4 +522,36 @@ class ReviewRepository {
       return null;
     }
   }
+
+  // Get average rating for a promoter
+  static Future<double> getAveragePromoterRating(String promoterUserId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('userData')
+          .doc(promoterUserId)
+          .get();
+
+      if (!snapshot.exists) return 0.0;
+      
+      final userData = snapshot.data()!;
+      final promoterData = userData['promoterData'];
+      
+      if (promoterData == null || promoterData['reviews'] == null) {
+        return 0.0;
+      }
+      
+      final reviewsList = List<dynamic>.from(promoterData['reviews']);
+      if (reviewsList.isEmpty) return 0.0;
+
+      double totalRating = 0;
+      for (var reviewData in reviewsList) {
+        totalRating += (reviewData['rating'] ?? 0).toDouble();
+      }
+
+      return totalRating / reviewsList.length;
+    } catch (e) {
+      print('Error calculating average promoter rating: $e');
+      return 0.0;
+    }
+  }
 }

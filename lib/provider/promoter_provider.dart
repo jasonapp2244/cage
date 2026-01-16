@@ -1,16 +1,28 @@
 import 'package:cage/models/promoter_model.dart';
 import 'package:cage/models/user_model.dart';
+import 'package:cage/repository/review_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+enum SortOption {
+  distance,
+  rating,
+  emailAZ,
+  emailZA,
+  newToOld,
+  oldToNew,
+}
 
 class PromoterProvider with ChangeNotifier {
   List<UserModel> _promoters = [];
   bool _isLoading = false;
   String? _error;
+  SortOption? _currentSort;
 
   List<UserModel> get promoters => _promoters;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  SortOption? get currentSort => _currentSort;
 
   // Fetch all promoters from Firestore
   Future<void> fetchPromoters() async {
@@ -91,17 +103,19 @@ class PromoterProvider with ChangeNotifier {
     }
   }
 
-  // Search promoters by name
+  // Search promoters by company name and promoter name only
   List<UserModel> searchPromoters(String query) {
     if (query.isEmpty) return _promoters;
+
+    final queryLower = query.toLowerCase().trim();
 
     return _promoters.where((promoter) {
       if (promoter.roleData is PromoterDataModel) {
         final promoterData = promoter.roleData as PromoterDataModel;
-        final companyName = promoterData.companyName ?? '';
-        final promoterName = promoterData.prompterName ?? '';
-        return companyName.toLowerCase().contains(query.toLowerCase()) ||
-            promoterName.toLowerCase().contains(query.toLowerCase());
+        final companyName = (promoterData.companyName ?? '').toLowerCase();
+        final promoterName = (promoterData.prompterName ?? '').toLowerCase();
+        return companyName.contains(queryLower) ||
+            promoterName.contains(queryLower);
       }
       return false;
     }).toList();
@@ -125,5 +139,87 @@ class PromoterProvider with ChangeNotifier {
   // Refresh data
   Future<void> refresh() async {
     await fetchPromoters();
+  }
+
+
+
+
+  // Sort and filter promoters (synchronous version)
+  List<UserModel> getFilteredAndSortedPromoters({
+    String searchQuery = '',
+    SortOption? sortOption,
+  }) {
+    List<UserModel> filtered = searchQuery.isEmpty
+        ? List.from(_promoters)
+        : searchPromoters(searchQuery);
+
+    // Apply sorting
+    if (sortOption != null) {
+      _currentSort = sortOption;
+      filtered = _sortPromoters(filtered, sortOption);
+    }
+
+    return filtered;
+  }
+
+  // Sort promoters based on option
+  List<UserModel> _sortPromoters(List<UserModel> promoters, SortOption sortOption) {
+    final sorted = List<UserModel>.from(promoters);
+
+    switch (sortOption) {
+      case SortOption.emailAZ:
+        sorted.sort((a, b) {
+          final emailA = (a.roleData as PromoterDataModel?)?.contactEmail ?? '';
+          final emailB = (b.roleData as PromoterDataModel?)?.contactEmail ?? '';
+          return emailA.toLowerCase().compareTo(emailB.toLowerCase());
+        });
+        break;
+
+      case SortOption.emailZA:
+        sorted.sort((a, b) {
+          final emailA = (a.roleData as PromoterDataModel?)?.contactEmail ?? '';
+          final emailB = (b.roleData as PromoterDataModel?)?.contactEmail ?? '';
+          return emailB.toLowerCase().compareTo(emailA.toLowerCase());
+        });
+        break;
+
+      case SortOption.newToOld:
+        sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+
+      case SortOption.oldToNew:
+        sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        break;
+
+      case SortOption.rating:
+        // This will need async handling, so we'll sort by a placeholder for now
+        // In the UI, we'll need to handle this differently
+        break;
+
+      case SortOption.distance:
+        // This will need async handling for location
+        break;
+    }
+
+    return sorted;
+  }
+
+  // Sort by rating (async version)
+  Future<List<UserModel>> sortByRating(List<UserModel> promoters) async {
+    final ratings = <String, double>{};
+    
+    for (final promoter in promoters) {
+      final rating = await ReviewRepository.getAveragePromoterRating(promoter.id);
+      ratings[promoter.id] = rating;
+    }
+
+    final sorted = List<UserModel>.from(promoters);
+    sorted.sort((a, b) {
+      final ratingA = ratings[a.id] ?? 0.0;
+      final ratingB = ratings[b.id] ?? 0.0;
+      return ratingB.compareTo(ratingA); // Descending (highest first)
+    });
+
+    return sorted;
   }
 }

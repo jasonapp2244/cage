@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:pay/pay.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -61,8 +62,35 @@ class PaymentService {
       );
 
       if (result.isNotEmpty) {
-        // Extract payment token from result
-        final paymentToken = result['paymentToken'] ?? result['token'];
+        // Apple Pay returns payment token directly or in paymentMethodData
+        String? paymentToken;
+        
+        if (result.containsKey('paymentMethodData')) {
+          final paymentMethodData = result['paymentMethodData'] as Map<String, dynamic>?;
+          if (paymentMethodData != null && paymentMethodData.containsKey('tokenizationData')) {
+            final tokenizationData = paymentMethodData['tokenizationData'] as Map<String, dynamic>?;
+            if (tokenizationData != null && tokenizationData.containsKey('token')) {
+              final tokenString = tokenizationData['token'] as String;
+              // Parse the token JSON to extract payment method ID
+              try {
+                final tokenJson = json.decode(tokenString) as Map<String, dynamic>;
+                paymentToken = tokenJson['id'] as String?;
+              } catch (e) {
+                // If parsing fails, use the token string directly
+                paymentToken = tokenString;
+              }
+            }
+          }
+        }
+        
+        // Fallback to direct token keys
+        paymentToken ??= result['paymentToken'] as String?;
+        paymentToken ??= result['token'] as String?;
+        
+        if (paymentToken == null || paymentToken.isEmpty) {
+          throw Exception('Failed to extract payment token from Apple Pay result');
+        }
+        
         return {
           'success': true,
           'paymentToken': paymentToken,
@@ -100,7 +128,9 @@ class PaymentService {
       ];
 
       // Configure payment configuration
-      final paymentConfiguration = PaymentConfiguration.fromJsonString('''
+      // Note: String interpolation for amount and currency
+      final amountString = amount.toStringAsFixed(2);
+      final paymentConfigurationJson = '''
       {
         "provider": "google_pay",
         "data": {
@@ -125,17 +155,18 @@ class PaymentService {
             }
           ],
           "merchantInfo": {
-            "merchantId": "YOUR_MERCHANT_ID",
             "merchantName": "Cage Connect"
           },
           "transactionInfo": {
             "totalPriceStatus": "FINAL",
-            "totalPrice": "$amount",
-            "currencyCode": "$currency"
+            "totalPrice": "${amountString}",
+            "currencyCode": "${currency}"
           }
         }
       }
-      ''');
+      ''';
+      
+      final paymentConfiguration = PaymentConfiguration.fromJsonString(paymentConfigurationJson);
 
       // Create Pay instance
       final payClient = Pay({
@@ -155,8 +186,36 @@ class PaymentService {
       );
 
       if (result.isNotEmpty) {
-        // Extract payment token from result
-        final paymentToken = result['paymentMethodToken'] ?? result['token'];
+        // Google Pay returns paymentMethodData with tokenizationData
+        // The token is a JSON string that needs to be parsed
+        String? paymentToken;
+        
+        if (result.containsKey('paymentMethodData')) {
+          final paymentMethodData = result['paymentMethodData'] as Map<String, dynamic>?;
+          if (paymentMethodData != null && paymentMethodData.containsKey('tokenizationData')) {
+            final tokenizationData = paymentMethodData['tokenizationData'] as Map<String, dynamic>?;
+            if (tokenizationData != null && tokenizationData.containsKey('token')) {
+              final tokenString = tokenizationData['token'] as String;
+              // Parse the token JSON to extract payment method ID
+              try {
+                final tokenJson = json.decode(tokenString) as Map<String, dynamic>;
+                paymentToken = tokenJson['id'] as String?;
+              } catch (e) {
+                // If parsing fails, use the token string directly
+                paymentToken = tokenString;
+              }
+            }
+          }
+        }
+        
+        // Fallback to direct token keys
+        paymentToken ??= result['paymentMethodToken'] as String?;
+        paymentToken ??= result['token'] as String?;
+        
+        if (paymentToken == null || paymentToken.isEmpty) {
+          throw Exception('Failed to extract payment token from Google Pay result');
+        }
+        
         return {
           'success': true,
           'paymentToken': paymentToken,

@@ -3,6 +3,7 @@ import 'package:cage/fonts/fonts.dart';
 import 'package:cage/models/event_model.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/services/event_service.dart';
+import 'package:cage/services/fighting_styles_service.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/widgets/button.dart';
@@ -25,6 +26,7 @@ class CreateEventView extends StatefulWidget {
 class _CreateEventViewState extends State<CreateEventView> {
   final _formKey = GlobalKey<FormState>();
   final EventService _eventService = EventService();
+  final FightingStylesService _fightingStylesService = FightingStylesService();
 
   // Controllers
   final TextEditingController _eventTitleController = TextEditingController();
@@ -37,8 +39,6 @@ class _CreateEventViewState extends State<CreateEventView> {
   final TextEditingController _requiredRecordController =
       TextEditingController();
   final TextEditingController _ageLimitController = TextEditingController();
-  final TextEditingController _fightingStyleController =
-      TextEditingController();
   final TextEditingController _deadlineController = TextEditingController();
 
   // Focus Nodes
@@ -51,7 +51,6 @@ class _CreateEventViewState extends State<CreateEventView> {
   final FocusNode _weightClassFocus = FocusNode();
   final FocusNode _requiredRecordFocus = FocusNode();
   final FocusNode _ageLimitFocus = FocusNode();
-  final FocusNode _fightingStyleFocus = FocusNode();
   final FocusNode _deadlineFocus = FocusNode();
   final FocusNode _buttonFocus = FocusNode();
 
@@ -65,6 +64,9 @@ class _CreateEventViewState extends State<CreateEventView> {
   String? _errorMessage;
   String? _promoterName;
   String? _promoterProfileImage;
+  List<String> _fightingStyles = [];
+  String? _selectedFightingStyle;
+  bool _isLoadingFightingStyles = true;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -72,6 +74,21 @@ class _CreateEventViewState extends State<CreateEventView> {
   void initState() {
     super.initState();
     _loadPromoterData();
+    _loadFightingStyles();
+  }
+
+  Future<void> _loadFightingStyles() async {
+    try {
+      final styles = await _fightingStylesService.getAllFightingStyles();
+      setState(() {
+        _fightingStyles = styles;
+        _isLoadingFightingStyles = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingFightingStyles = false;
+      });
+    }
   }
 
   @override
@@ -85,7 +102,6 @@ class _CreateEventViewState extends State<CreateEventView> {
     _weightClassController.dispose();
     _requiredRecordController.dispose();
     _ageLimitController.dispose();
-    _fightingStyleController.dispose();
     _deadlineController.dispose();
 
     _eventTitleFocus.dispose();
@@ -97,7 +113,6 @@ class _CreateEventViewState extends State<CreateEventView> {
     _weightClassFocus.dispose();
     _requiredRecordFocus.dispose();
     _ageLimitFocus.dispose();
-    _fightingStyleFocus.dispose();
     _deadlineFocus.dispose();
     _buttonFocus.dispose();
     super.dispose();
@@ -342,7 +357,7 @@ class _CreateEventViewState extends State<CreateEventView> {
         weightClass: _weightClassController.text.trim(),
         requiredRecord: _requiredRecordController.text.trim(),
         ageLimit: _ageLimitController.text.trim(),
-        fightingStylePreferred: _fightingStyleController.text.trim(),
+        fightingStylePreferred: _selectedFightingStyle ?? '',
         deadlineToApply: _selectedDeadline!,
         createdAt: DateTime.now(),
       );
@@ -584,17 +599,100 @@ class _CreateEventViewState extends State<CreateEventView> {
                     text: 'Age Limit (e.g., 18-35)',
                     controller: _ageLimitController,
                     focusNode: _ageLimitFocus,
-                    nextfocusNode: _fightingStyleFocus,
+                    nextfocusNode: _deadlineFocus,
                   ),
                   SizedBox(height: Responsive.h(2)),
 
                   // Fighting Style Preferred
-                  EditProfileTextfeild(
-                    text:
-                        'Fighting Style Preferred (e.g., MMA / BJJ / Muay Thai)',
-                    controller: _fightingStyleController,
-                    focusNode: _fightingStyleFocus,
-                    nextfocusNode: _deadlineFocus,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, bottom: 8),
+                        child: Text(
+                          'Fighting Style Preferred',
+                          style: TextStyle(
+                            fontFamily: AppFonts.appFont,
+                            color: AppColor.white.withValues(alpha: 0.7),
+                            fontSize: Responsive.sp(14),
+                          ),
+                        ),
+                      ),
+                      _isLoadingFightingStyles
+                          ? Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColor.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(28),
+                                border: Border.all(
+                                  color: AppColor.white.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColor.red),
+                                ),
+                              ),
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: AppColor.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(28),
+                                border: Border.all(
+                                  color: _selectedFightingStyle != null
+                                      ? AppColor.red
+                                      : AppColor.white.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: DropdownButtonFormField<String>(
+                                value: _selectedFightingStyle,
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Select fighting style (e.g., MMA / BJJ / Muay Thai)',
+                                  hintStyle: TextStyle(
+                                    fontFamily: AppFonts.appFont,
+                                    color: AppColor.white.withValues(alpha: 0.5),
+                                    fontSize: Responsive.sp(14),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                ),
+                                dropdownColor: AppColor.black,
+                                style: TextStyle(
+                                  fontFamily: AppFonts.appFont,
+                                  color: AppColor.white,
+                                  fontSize: Responsive.sp(14),
+                                ),
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: AppColor.white.withValues(alpha: 0.7),
+                                ),
+                                items: _fightingStyles.map((String style) {
+                                  return DropdownMenuItem<String>(
+                                    value: style,
+                                    child: Text(style),
+                                  );
+                                }).toList(),
+                                onChanged: (String? value) {
+                                  setState(() {
+                                    _selectedFightingStyle = value;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please select a fighting style';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                    ],
                   ),
                   SizedBox(height: Responsive.h(2)),
 

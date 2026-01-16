@@ -45,6 +45,10 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD6fce90tdhc2Vms4O-8JqwvF7feJrYE3I" />
+        <!-- Google Pay configuration -->
+        <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

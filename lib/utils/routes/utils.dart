@@ -128,21 +128,41 @@ class Utils {
       try {
         date = DateTime.parse(dateString);
       } catch (_) {
-        // Try various slash-separated date formats
-        final formats = [
-          'dd/MM/yyyy', // "22/08/2025" - double digit day and month
-          'd/M/yyyy', // "14/1/2026" - single digit day and month
-          'dd/M/yyyy', // "14/1/2026" - double digit day, single digit month
-          'd/MM/yyyy', // "4/01/2026" - single digit day, double digit month
-        ];
-
-        for (final format in formats) {
+        // Try parsing as slash-separated date format manually
+        // Handle formats like "14/1/2026", "22/08/2025", etc.
+        if (dateString.contains('/')) {
           try {
-            final inputFormat = DateFormat(format);
-            date = inputFormat.parse(dateString);
-            break;
+            final parts = dateString.split('/');
+            if (parts.length == 3) {
+              final day = int.parse(parts[0].trim());
+              final month = int.parse(parts[1].trim());
+              final year = int.parse(parts[2].trim());
+              date = DateTime(year, month, day);
+            }
           } catch (_) {
-            // Continue to next format
+            // Manual parsing failed, try DateFormat as fallback
+          }
+        }
+
+        // If manual parsing didn't work, try DateFormat patterns as fallback
+        if (date == null) {
+          final formats = [
+            'dd/MM/yyyy', // "22/08/2025" - double digit day and month
+            'd/MM/yyyy', // "4/01/2026" - single digit day, double digit month
+            'dd/M/yyyy', // "14/1/2026" - double digit day, single digit month
+            'd/M/yyyy', // "4/1/2026" - single digit day and month
+            'MM/dd/yyyy', // US format fallback
+            'M/d/yyyy', // US format fallback
+          ];
+
+          for (final format in formats) {
+            try {
+              final inputFormat = DateFormat(format);
+              date = inputFormat.parse(dateString);
+              break;
+            } catch (_) {
+              // Continue to next format
+            }
           }
         }
       }

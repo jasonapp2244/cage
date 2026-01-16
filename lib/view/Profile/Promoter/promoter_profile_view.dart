@@ -1019,7 +1019,7 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
         CircleAvatar(
           radius: 35,
           backgroundColor: AppColor.white.withValues(alpha: 0.1),
-          child: Image(image: AssetImage("assets/images/image.png")),
+          child: Image(image: AssetImage("assets/images/Ellipse 24 (1).png")),
         ),
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -1108,29 +1108,16 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
                       height: 70,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Image(
-                        image: AssetImage("assets/images/image.png"),
+                        image: AssetImage("assets/images/Ellipse 24 (1).png"),
                       ),
                       errorWidget: (context, url, error) => Image(
-                        image: AssetImage("assets/images/image.png"),
+                        image: AssetImage("assets/images/Ellipse 24 (1).png"),
                       ),
                     ),
                   )
-                : promoter.companyLogo != null && promoter.companyLogo!.isNotEmpty
-                    ? ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: promoter.companyLogo!,
-                          width: 70,
-                          height: 70,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Image(
-                            image: AssetImage("assets/images/image.png"),
-                          ),
-                          errorWidget: (context, url, error) => Image(
-                            image: AssetImage("assets/images/image.png"),
-                          ),
-                        ),
-                      )
-                    : Image(image: AssetImage("assets/images/image.png")),
+                : Image(
+                    image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                  ),
           ),
         ),
         Column(

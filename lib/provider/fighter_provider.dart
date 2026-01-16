@@ -99,7 +99,7 @@ class FighterProvider with ChangeNotifier {
     }
   }
 
-  // Search fighters by name
+  // Search fighters by full name only
   List<UserModel> searchFighters(String query) {
     if (query.isEmpty) return _fighters;
 

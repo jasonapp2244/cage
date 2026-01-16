@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/promoter_provider.dart';
+import 'package:cage/repository/review_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/view/Profile/Promoter/promoter_public_profile.dart';
@@ -282,14 +284,19 @@ class _ExploerPromoterState extends State<ExploerPromoter> {
                                     radius: 35,
                                     backgroundColor:
                                         AppColor.white.withValues(alpha: 0.1),
-                                    child: promoter.companyLogo != null &&
-                                            promoter.companyLogo!.isNotEmpty
+                                    child: promoter.profileImageUrl != null &&
+                                            promoter.profileImageUrl!.isNotEmpty
                                         ? ClipOval(
                                             child: CachedNetworkImage(
-                                              imageUrl: promoter.companyLogo!,
+                                              imageUrl: promoter.profileImageUrl!,
                                               width: 70,
                                               height: 70,
                                               fit: BoxFit.cover,
+                                              placeholder: (context, url) => Image(
+                                                image: AssetImage(
+                                                  "assets/images/Ellipse 24 (1).png",
+                                                ),
+                                              ),
                                               errorWidget:
                                                   (context, url, error) =>
                                                       Image(
@@ -306,20 +313,31 @@ class _ExploerPromoterState extends State<ExploerPromoter> {
                                           ),
                                   ),
                                   const SizedBox(width: 8),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "4.7",
-                                        style: GoogleFonts.dmSans(
-                                          color: AppColor.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      SizedBox(width: Responsive.w(2)),
-                                      SvgPicture.asset(
-                                        "assets/icons/Vector (3).svg",
-                                      ),
-                                    ],
+                                  FutureBuilder<double>(
+                                    future: ReviewRepository.getAveragePromoterRating(user.id),
+                                    builder: (context, ratingSnapshot) {
+                                      double averageRating = 0.0;
+                                      
+                                      if (ratingSnapshot.hasData) {
+                                        averageRating = ratingSnapshot.data!;
+                                      }
+                                      
+                                      return Row(
+                                        children: [
+                                          Text(
+                                            averageRating.toStringAsFixed(1),
+                                            style: GoogleFonts.dmSans(
+                                              color: AppColor.white,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          SizedBox(width: Responsive.w(2)),
+                                          SvgPicture.asset(
+                                            "assets/icons/Vector (3).svg",
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   ),
                                 ],
                               ),

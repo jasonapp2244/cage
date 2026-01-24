@@ -10,8 +10,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+/// Web client ID (serverClientId) — required for Android. From google-services.json.
+const String _kGoogleSignInWebClientId =
+    '230307676453-qm93u1vdbheo46hhsaog1e93b3iaonjj.apps.googleusercontent.com';
+/// iOS client ID — used for initialize() on iOS. From GoogleService-Info.plist.
+const String _kGoogleSignInIosClientId =
+    '230307676453-qgp9eimk4djgbmatq1bimjeh57rj79eg.apps.googleusercontent.com';
 
 class AuthViewmodel extends ChangeNotifier {
+  static bool _googleSignInInitialized = false;
+
+  static Future<void> _ensureGoogleSignInInitialized() async {
+    if (_googleSignInInitialized) return;
+    await GoogleSignIn.instance.initialize(
+      serverClientId: _kGoogleSignInWebClientId,
+      clientId: Platform.isIOS ? _kGoogleSignInIosClientId : null,
+    );
+    _googleSignInInitialized = true;
+  }
+
   final _myRepo = AuthRepository();
   bool _isloading = false;
   bool get loading => _isloading;
@@ -703,6 +722,211 @@ class AuthViewmodel extends ChangeNotifier {
     }
   }
 
+  /// Google Sign-In. If user's email is not registered (no userData or no role),
+  /// navigate to role selector → profile setup (nameview / CompanyNameView).
+  /// Uses google_sign_in 7.2.0 (GoogleSignIn.instance, initialize, authenticate).
+  Future<void> performGoogleSignIn(BuildContext context) async {
+    if (Firebase.apps.isEmpty) {
+      Utils.flushBarErrorMassage(
+        "Firebase is not initialized. Please restart the app.",
+        context,
+      );
+      return;
+    }
+    setloaoding(true);
+    try {
+      await _ensureGoogleSignInInitialized();
+      if (!context.mounted) return;
+
+      if (!GoogleSignIn.instance.supportsAuthenticate()) {
+        setloaoding(false);
+        if (context.mounted) {
+          Utils.flushBarErrorMassage(
+            'Google Sign-In is not supported on this device.',
+            context,
+          );
+        }
+        return;
+      }
+
+      final GoogleSignInAccount googleUser =
+          await GoogleSignIn.instance.authenticate();
+      if (!context.mounted) return;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      if (!context.mounted) return;
+      final String? idToken = googleAuth.idToken;
+      if (idToken == null || idToken.isEmpty) {
+        setloaoding(false);
+        if (context.mounted) {
+          Utils.flushBarErrorMassage(
+            'Google sign-in failed: no ID token received.',
+            context,
+          );
+        }
+        return;
+      }
+      final credential = GoogleAuthProvider.credential(
+        idToken: idToken,
+        accessToken: null,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      if (!context.mounted) return;
+      final user = FirebaseAuth.instance.currentUser;
+      final email = user?.email ?? '';
+      final uid = user?.uid ?? Utils.getCurrentUid();
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('userData')
+          .doc(uid)
+          .get();
+      if (!context.mounted) return;
+
+      if (userDoc.exists) {
+        final userData = userDoc.data();
+        final role = userData?['role'];
+
+        final isBlocked = userData?['isBlocked'] ?? false;
+        if (isBlocked) {
+          final blockType = userData?['blockType'] as String?;
+          final blockUntil = userData?['blockUntil'];
+          final blockReason = userData?['blockReason'] as String?;
+          bool shouldBlock = true;
+          String blockMessage = 'Your account has been blocked.';
+
+          if (blockType == 'temporary' && blockUntil != null) {
+            DateTime? blockUntilDate;
+            if (blockUntil is Timestamp) {
+              blockUntilDate = blockUntil.toDate();
+            } else if (blockUntil is DateTime) {
+              blockUntilDate = blockUntil;
+            }
+            if (blockUntilDate != null) {
+              if (DateTime.now().isAfter(blockUntilDate)) {
+                shouldBlock = false;
+                await FirebaseFirestore.instance
+                    .collection('userData')
+                    .doc(uid)
+                    .update({
+                  'isBlocked': false,
+                  'blockType': null,
+                  'blockUntil': null,
+                  'blockReason': null,
+                  'status': 'Active',
+                });
+                if (!context.mounted) return;
+              } else {
+                final d = blockUntilDate;
+                blockMessage =
+                    'Your account has been temporarily blocked until ${d.day}/${d.month}/${d.year}.';
+                if (blockReason != null && blockReason.isNotEmpty) {
+                  blockMessage += '\nReason: $blockReason';
+                }
+              }
+            } else if (blockReason != null && blockReason.isNotEmpty) {
+              blockMessage += '\nReason: $blockReason';
+            }
+          } else if (blockReason != null && blockReason.isNotEmpty) {
+            blockMessage += '\nReason: $blockReason';
+          }
+
+          if (shouldBlock) {
+            await FirebaseAuth.instance.signOut();
+            await GoogleSignIn.instance.signOut();
+            setloaoding(false);
+            if (context.mounted) {
+              Utils.flushBarErrorMassage(blockMessage, context);
+            }
+            return;
+          }
+        }
+
+        setloaoding(false);
+        if (role == 'Fighter') {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            RoutesName.home,
+            (route) => false,
+          );
+        } else if (role == 'Promoter') {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            RoutesName.PromotorBottomNavBar,
+            (route) => false,
+          );
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            RoutesName.roleView,
+            (route) => false,
+          );
+        }
+        return;
+      }
+
+      // Not registered: create userData and go to role selector → profile setup
+      await FirebaseFirestore.instance.collection('userData').doc(uid).set({
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+        'role': null,
+        'fighterData': null,
+        'promoterData': null,
+      });
+      if (!context.mounted) return;
+      setloaoding(false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        RoutesName.roleView,
+        (route) => false,
+      );
+    } on GoogleSignInException catch (e) {
+      setloaoding(false);
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return; // User cancelled — no error message
+      }
+      if (!context.mounted) return;
+      Utils.flushBarErrorMassage(
+        'Google sign-in failed: ${e.description ?? 'Unknown error'}',
+        context,
+      );
+    } on FirebaseAuthException catch (e) {
+      setloaoding(false);
+      if (!context.mounted) return;
+      String code = e.code;
+      if (code.startsWith('firebase_auth/')) {
+        code = code.replaceFirst('firebase_auth/', '');
+      }
+      String msg;
+      switch (code) {
+        case 'account-exists-with-different-credential':
+          msg =
+              'An account already exists with the same email. Try signing in with email/password.';
+          break;
+        case 'invalid-credential':
+          msg = 'Google sign-in failed. Please try again.';
+          break;
+        case 'operation-not-allowed':
+          msg = 'Google sign-in is not enabled. Please contact support.';
+          break;
+        case 'user-disabled':
+          msg = 'This account has been disabled.';
+          break;
+        default:
+          msg = 'Google sign-in failed: ${e.message ?? 'Unknown error'}';
+      }
+      Utils.flushBarErrorMassage(msg, context);
+    } catch (e) {
+      setloaoding(false);
+      if (context.mounted) {
+        Utils.flushBarErrorMassage(
+          e.toString().contains('network')
+              ? 'Network error. Check your connection.'
+              : 'Google sign-in failed. Please try again.',
+          context,
+        );
+      }
+    }
+  }
+
   String? _userRole;
 
   Future<void> loadUserRole() async {
@@ -756,6 +980,7 @@ class AuthViewmodel extends ChangeNotifier {
 
     try {
       await FirebaseAuth.instance.signOut();
+      await GoogleSignIn.instance.signOut();
 
       await Utils.clearAll(); // Clear stored user id
       await Utils.clearLoginCredentials(); // Clear saved login credentials

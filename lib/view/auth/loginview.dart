@@ -273,11 +273,14 @@ class _LoginviewState extends State<Loginview> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    SocialButton(
-                      iconPath: 'assets/icons/google.svg',
-                      ontap: () {},
+                    AbsorbPointer(
+                      absorbing: authViewmodel.loading,
+                      child: SocialButton(
+                        iconPath: 'assets/icons/google.svg',
+                        ontap: () =>
+                            authViewmodel.performGoogleSignIn(context),
+                      ),
                     ),
-                    // _buildSocialButton("assets/icons/google.svg"),
                     _buildSocialButton("assets/icons/facebook.svg"),
                     _buildSocialButton("assets/icons/apple.svg"),
                   ],

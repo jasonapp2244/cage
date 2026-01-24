@@ -58,7 +58,7 @@ class _FightWinViewState extends State<FightWinView> {
                   ),
                 ),
                 SizedBox(height: Responsive.h(2)),
-                const Text(
+                Text(
                   'How many fights have you won?',
                   style: TextStyle(
                     color: AppColor.white,

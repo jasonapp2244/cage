@@ -57,7 +57,7 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
                 ),
               ),
               SizedBox(height: Responsive.h(2)),
-                const Text(
+                Text(
                   'How many fights have you Knockout?',
                   style: TextStyle(
                     color: AppColor.white,

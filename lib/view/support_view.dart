@@ -3,6 +3,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/Profile/fighter/createnew_ticticket_view.dart';
+import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/models/ticket_model.dart';
 import 'package:cage/provider/ticket_provider.dart';
@@ -40,7 +41,18 @@ class _SupportViewState extends State<SupportView> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      // Try to find MainWrapper state (for drawer navigation)
+                      final state = context.findAncestorStateOfType<MainWrapperState>();
+                      if (state != null) {
+                        state.resetToHome();
+                        return;
+                      }
+                      // Fallback to normal navigation
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      }
+                    },
                     child: SvgPicture.asset(
                       "assets/icons/arrow-left-01.svg",
                       color: AppColor.red,

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/models/event_model.dart';
 import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/fighter_model.dart';
 import 'package:cage/models/user_model.dart';
 import 'package:cage/models/profile_media_model.dart';
 import 'package:cage/models/review_model.dart';
@@ -16,6 +17,7 @@ import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/Profile/Promoter/edit_promoter_profile.dart';
 import 'package:cage/view/Profile/fighter/all_reviews_screen.dart';
 import 'package:cage/view/Profile/fighter/profile_image_upload_view.dart';
+import 'package:cage/view/Profile/fighter/full_screen_media_viewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -59,13 +61,6 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
                   children: [
                     Row(
                       children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: SvgPicture.asset(
-                            "assets/icons/arrow-left-01.svg",
-                            color: AppColor.red,
-                          ),
-                        ),
                         Text(
                           "Profile",
                           style: TextStyle(
@@ -427,7 +422,7 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
                                           ),
                                           SizedBox(height: 8),
                                           Text(
-                                            "No reviews yet",
+                                            "Be among the first to support this fighter",
                                             style: TextStyle(
                                               color: AppColor.white.withValues(
                                                 alpha: 0.7,
@@ -462,24 +457,83 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
                                       children: [
                                         Row(
                                           children: [
-                                            CircleAvatar(
-                                              radius: 16,
-                                              backgroundColor: AppColor.red,
-                                              child: Text(
-                                                latestReview
-                                                        .reviewerName
-                                                        .isNotEmpty
-                                                    ? latestReview
-                                                          .reviewerName[0]
-                                                          .toUpperCase()
-                                                    : 'U',
-                                                style: TextStyle(
-                                                  color: AppColor.white,
-                                                  fontFamily: AppFonts.appFont,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: Responsive.sp(12),
-                                                ),
-                                              ),
+                                            StreamBuilder<UserModel?>(
+                                              stream:
+                                                  UserRepository.fetchUserByIdStream(
+                                                    latestReview.reviewerId,
+                                                  ),
+                                              builder: (context, userSnapshot) {
+                                                String? profileImageUrl;
+
+                                                if (userSnapshot.hasData &&
+                                                    userSnapshot.data != null) {
+                                                  final user =
+                                                      userSnapshot.data!;
+                                                  if (user.isFighter &&
+                                                      user.roleData
+                                                          is FighterDataModel) {
+                                                    final fighter =
+                                                        user.roleData
+                                                            as FighterDataModel;
+                                                    profileImageUrl =
+                                                        fighter.profileImageUrl;
+                                                  } else if (user.isPromoter &&
+                                                      user.roleData
+                                                          is PromoterDataModel) {
+                                                    final promoter =
+                                                        user.roleData
+                                                            as PromoterDataModel;
+                                                    profileImageUrl = promoter
+                                                        .profileImageUrl;
+                                                  }
+                                                }
+
+                                                if (profileImageUrl != null &&
+                                                    profileImageUrl
+                                                        .isNotEmpty) {
+                                                  return CircleAvatar(
+                                                    radius: 16,
+                                                    backgroundColor:
+                                                        AppColor.red,
+                                                    backgroundImage:
+                                                        CachedNetworkImageProvider(
+                                                          profileImageUrl,
+                                                        ),
+                                                    onBackgroundImageError:
+                                                        (
+                                                          exception,
+                                                          stackTrace,
+                                                        ) {
+                                                          // Handle error silently
+                                                        },
+                                                  );
+                                                }
+
+                                                // Fallback to initial if no profile picture
+                                                return CircleAvatar(
+                                                  radius: 16,
+                                                  backgroundColor: AppColor.red,
+                                                  child: Text(
+                                                    latestReview
+                                                            .reviewerName
+                                                            .isNotEmpty
+                                                        ? latestReview
+                                                              .reviewerName[0]
+                                                              .toUpperCase()
+                                                        : 'U',
+                                                    style: TextStyle(
+                                                      color: AppColor.white,
+                                                      fontFamily:
+                                                          AppFonts.appFont,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: Responsive.sp(
+                                                        12,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
                                             ),
                                             SizedBox(width: Responsive.w(2)),
                                             Expanded(
@@ -1092,15 +1146,15 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ProfileImageUploadView(),
-              ),
+              MaterialPageRoute(builder: (context) => ProfileImageUploadView()),
             );
           },
           child: CircleAvatar(
             radius: 35,
             backgroundColor: AppColor.white.withValues(alpha: 0.1),
-            child: promoter.profileImageUrl != null && promoter.profileImageUrl!.isNotEmpty
+            child:
+                promoter.profileImageUrl != null &&
+                    promoter.profileImageUrl!.isNotEmpty
                 ? ClipOval(
                     child: CachedNetworkImage(
                       imageUrl: promoter.profileImageUrl!,
@@ -1115,9 +1169,7 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
                       ),
                     ),
                   )
-                : Image(
-                    image: AssetImage("assets/images/Ellipse 24 (1).png"),
-                  ),
+                : Image(image: AssetImage("assets/images/Ellipse 24 (1).png")),
           ),
         ),
         Column(
@@ -1435,7 +1487,10 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
             ),
             // Event Details Section
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 3.0,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1594,11 +1649,29 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
           ),
           itemCount: photos.length,
           itemBuilder: (context, index) {
-            return _buildMediaItem(
-              context,
-              photos[index],
-              isOwnProfile,
-              userId,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenMediaViewer(
+                      mediaList: photos,
+                      initialIndex: index,
+                      isOwnProfile: isOwnProfile,
+                      userId: userId,
+                      onDelete: isOwnProfile
+                          ? (media) => _deleteMedia(context, userId, media)
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              child: _buildMediaItem(
+                context,
+                photos[index],
+                isOwnProfile,
+                userId,
+              ),
             );
           },
         );
@@ -1661,11 +1734,29 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
           ),
           itemCount: videos.length,
           itemBuilder: (context, index) {
-            return _buildMediaItem(
-              context,
-              videos[index],
-              isOwnProfile,
-              userId,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenMediaViewer(
+                      mediaList: videos,
+                      initialIndex: index,
+                      isOwnProfile: isOwnProfile,
+                      userId: userId,
+                      onDelete: isOwnProfile
+                          ? (media) => _deleteMedia(context, userId, media)
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              child: _buildMediaItem(
+                context,
+                videos[index],
+                isOwnProfile,
+                userId,
+              ),
             );
           },
         );
@@ -1679,12 +1770,21 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
     bool isOwnProfile,
     String userId,
   ) {
+    // Check if URL is a video file
+    final isVideoUrl =
+        media.url.toLowerCase().endsWith('.mp4') ||
+        media.url.toLowerCase().endsWith('.mov') ||
+        media.url.toLowerCase().endsWith('.avi') ||
+        media.url.toLowerCase().endsWith('.mkv') ||
+        media.url.toLowerCase().endsWith('.webm') ||
+        media.type == 'video';
+
     return Stack(
       fit: StackFit.expand,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: media.type == 'photo'
+          child: media.type == 'photo' && !isVideoUrl
               ? CachedNetworkImage(
                   imageUrl: media.url,
                   fit: BoxFit.cover,
@@ -1705,21 +1805,15 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
               : Stack(
                   fit: StackFit.expand,
                   children: [
-                    CachedNetworkImage(
-                      imageUrl: media.url,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: AppColor.black,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColor.red,
-                            strokeWidth: 2,
-                          ),
+                    // For videos, show a placeholder instead of trying to load the video URL as an image
+                    Container(
+                      color: AppColor.black,
+                      child: Center(
+                        child: Icon(
+                          Icons.videocam,
+                          color: AppColor.white.withValues(alpha: 0.5),
+                          size: 48,
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColor.black,
-                        child: Icon(Icons.error_outline, color: AppColor.red),
                       ),
                     ),
                     Center(

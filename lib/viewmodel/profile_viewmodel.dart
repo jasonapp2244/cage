@@ -15,6 +15,7 @@ class ProfileViewModel extends ChangeNotifier {
   late TextEditingController weightController;
   late TextEditingController coachController;
   late TextEditingController tapologyController;
+  late TextEditingController locationController;
 
   // Focus nodes for form fields
   late FocusNode nameFocusNode;
@@ -26,6 +27,7 @@ class ProfileViewModel extends ChangeNotifier {
   late FocusNode weightFocusNode;
   late FocusNode coachFocusNode;
   late FocusNode tapologyFocusNode;
+  late FocusNode locationFocusNode;
   late FocusNode buttonFocusNode;
 
   // Loading state
@@ -51,6 +53,7 @@ class ProfileViewModel extends ChangeNotifier {
     weightController = TextEditingController();
     coachController = TextEditingController();
     tapologyController = TextEditingController();
+    locationController = TextEditingController();
 
     // Initialize focus nodes
     nameFocusNode = FocusNode();
@@ -62,6 +65,7 @@ class ProfileViewModel extends ChangeNotifier {
     weightFocusNode = FocusNode();
     coachFocusNode = FocusNode();
     tapologyFocusNode = FocusNode();
+    locationFocusNode = FocusNode();
     buttonFocusNode = FocusNode();
   }
 
@@ -75,6 +79,7 @@ class ProfileViewModel extends ChangeNotifier {
     weightController.text = fighterData.weight ?? '';
     coachController.text = fighterData.coachName ?? '';
     tapologyController.text = fighterData.urlProfile ?? '';
+    locationController.text = fighterData.location ?? '';
 
     notifyListeners();
   }
@@ -129,6 +134,11 @@ class ProfileViewModel extends ChangeNotifier {
           uid: uid,
           fieldName: 'urlProfile',
           value: tapologyController.text.trim(),
+        ),
+        authProvider.addUserFieldByRole(
+          uid: uid,
+          fieldName: 'selectLocation',
+          value: locationController.text.trim(),
         ),
       ]);
 
@@ -208,6 +218,7 @@ class ProfileViewModel extends ChangeNotifier {
     weightController.dispose();
     coachController.dispose();
     tapologyController.dispose();
+    locationController.dispose();
 
     // Dispose focus nodes
     nameFocusNode.dispose();
@@ -219,6 +230,7 @@ class ProfileViewModel extends ChangeNotifier {
     weightFocusNode.dispose();
     coachFocusNode.dispose();
     tapologyFocusNode.dispose();
+    locationFocusNode.dispose();
     buttonFocusNode.dispose();
 
     super.dispose();

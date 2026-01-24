@@ -159,8 +159,8 @@ class PaymentService {
           },
           "transactionInfo": {
             "totalPriceStatus": "FINAL",
-            "totalPrice": "${amountString}",
-            "currencyCode": "${currency}"
+            "totalPrice": "$amountString",
+            "currencyCode": "$currency"
           }
         }
       }

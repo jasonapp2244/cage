@@ -217,9 +217,9 @@ class _CreateEventViewState extends State<CreateEventView> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: AppColor.red,
+              primary: AppColor.constRed,
               onPrimary: Colors.white,
-              surface: AppColor.black,
+              surface: AppColor.constBlack,
               onSurface: Colors.white,
             ),
           ),
@@ -246,9 +246,9 @@ class _CreateEventViewState extends State<CreateEventView> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: AppColor.red,
+              primary: AppColor.constRed,
               onPrimary: Colors.white,
-              surface: AppColor.black,
+              surface: AppColor.constBlack,
               onSurface: Colors.white,
             ),
           ),
@@ -273,9 +273,9 @@ class _CreateEventViewState extends State<CreateEventView> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: AppColor.red,
+              primary: AppColor.constRed,
               onPrimary: Colors.white,
-              surface: AppColor.black,
+              surface: AppColor.constBlack,
               onSurface: Colors.white,
             ),
           ),
@@ -631,7 +631,7 @@ class _CreateEventViewState extends State<CreateEventView> {
                               child: const Center(
                                 child: CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColor.red),
+                                      AppColor.constRed),
                                 ),
                               ),
                             )
@@ -646,7 +646,7 @@ class _CreateEventViewState extends State<CreateEventView> {
                                 ),
                               ),
                               child: DropdownButtonFormField<String>(
-                                value: _selectedFightingStyle,
+                                initialValue: _selectedFightingStyle,
                                 decoration: InputDecoration(
                                   hintText:
                                       'Select fighting style (e.g., MMA / BJJ / Muay Thai)',

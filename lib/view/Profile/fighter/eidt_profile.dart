@@ -115,6 +115,12 @@ class _EidtProfileContent extends StatelessWidget {
                       text: 'Tapology URL',
                       controller: profileProvider.tapologyController,
                       focusNode: profileProvider.tapologyFocusNode,
+                      nextfocusNode: profileProvider.locationFocusNode,
+                    ),
+                    EditProfileTextfeild(
+                      text: 'Location',
+                      controller: profileProvider.locationController,
+                      focusNode: profileProvider.locationFocusNode,
                       nextfocusNode: profileProvider.buttonFocusNode,
                     ),
                     Button(

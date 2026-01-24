@@ -128,7 +128,7 @@ class RoleSelectionScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Select your role',
                 style: TextStyle(
                   fontFamily: AppFonts.appFont,
@@ -138,7 +138,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Choose your role to continue and personalize your experience.',
                 style: TextStyle(
                   fontFamily: AppFonts.appFont,

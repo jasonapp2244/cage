@@ -2,6 +2,7 @@ import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cage/view/notifications_settings_view.dart';
@@ -64,7 +65,18 @@ class SettingsView extends StatelessWidget {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      // Try to find MainWrapper state (for drawer navigation)
+                      final state = context.findAncestorStateOfType<MainWrapperState>();
+                      if (state != null) {
+                        state.resetToHome();
+                        return;
+                      }
+                      // Fallback to normal navigation
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -209,7 +221,7 @@ class SettingsView extends StatelessWidget {
               icon,
               width: 24,
               height: 24,
-              colorFilter: const ColorFilter.mode(
+              colorFilter: ColorFilter.mode(
                 AppColor.white,
                 BlendMode.srcIn,
               ),

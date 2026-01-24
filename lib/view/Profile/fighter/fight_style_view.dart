@@ -107,7 +107,7 @@ class _FightStyleViewState extends State<FightStyleView> {
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
                         border: Border.all(color: AppColor.red),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(AppColor.red),
                         ),
@@ -153,7 +153,7 @@ class _FightStyleViewState extends State<FightStyleView> {
                     )
                   else
                     DropdownButtonFormField<String>(
-                      value: _selectedFightStyle,
+                      initialValue: _selectedFightStyle,
                       style: TextStyle(color: AppColor.white),
                       dropdownColor: AppColor.white.withValues(alpha: 0.1),
                       decoration: InputDecoration(

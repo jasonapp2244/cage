@@ -139,6 +139,85 @@ class UserRepository {
       );
     }
   }
+
+  // Fetch user by ID (for getting reviewer profile pictures)
+  static Future<UserModel?> fetchUserById(String userId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('userData')
+          .doc(userId)
+          .get();
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      final data = doc.data()!;
+
+      dynamic roleData;
+      if (_isValidRoleData(data['fighterData'])) {
+        roleData = FighterDataModel.fromMap(
+          Map<String, dynamic>.from(data['fighterData']),
+        );
+      } else if (_isValidRoleData(data['promoterData'])) {
+        roleData = PromoterDataModel.fromMap(
+          Map<String, dynamic>.from(data['promoterData']),
+        );
+      } else {
+        roleData = null;
+      }
+
+      return UserModel(
+        id: doc.id,
+        email: data['email'] ?? '',
+        createdAt: DateTime.now(),
+        roleData: roleData,
+      );
+    } catch (e) {
+      print('Error fetching user by ID: $e');
+      return null;
+    }
+  }
+
+  // Fetch user by ID as a stream (for real-time updates)
+  static Stream<UserModel?> fetchUserByIdStream(String userId) {
+    return FirebaseFirestore.instance
+        .collection('userData')
+        .doc(userId)
+        .snapshots()
+        .map((doc) {
+          if (!doc.exists) {
+            return null;
+          }
+
+          final data = doc.data()!;
+
+          dynamic roleData;
+          try {
+            if (_isValidRoleData(data['fighterData'])) {
+              roleData = FighterDataModel.fromMap(
+                Map<String, dynamic>.from(data['fighterData']),
+              );
+            } else if (_isValidRoleData(data['promoterData'])) {
+              roleData = PromoterDataModel.fromMap(
+                Map<String, dynamic>.from(data['promoterData']),
+              );
+            } else {
+              roleData = null;
+            }
+          } catch (e) {
+            print('Error parsing role data: $e');
+            roleData = null;
+          }
+
+          return UserModel(
+            id: doc.id,
+            email: data['email'] ?? '',
+            createdAt: DateTime.now(),
+            roleData: roleData,
+          );
+        });
+  }
 }
 
 bool _isValidRoleData(Map<String, dynamic>? map) {

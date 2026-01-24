@@ -51,5 +51,21 @@
 	<string>This app needs access to your location to show your current position on the map and help you select locations.</string>
 	<key>GMSApiKey</key>
 	<string>AIzaSyDwuHlPVOwjb9LRGPMHwloiZJ0DiEPesMk</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mailto</string>
+		<string>tel</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.230307676453-qgp9eimk4djgbmatq1bimjeh57rj79eg</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

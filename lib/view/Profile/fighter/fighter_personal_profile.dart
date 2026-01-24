@@ -17,6 +17,7 @@ import 'package:cage/repository/review_repository.dart';
 import 'package:cage/repository/report_repository.dart';
 import 'package:cage/view/Profile/fighter/all_reviews_screen.dart';
 import 'package:cage/view/Profile/fighter/profile_image_upload_view.dart';
+import 'package:cage/view/Profile/fighter/full_screen_media_viewer.dart';
 import 'package:cage/services/profile_media_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -41,8 +42,10 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
     Responsive.init(context);
 
     // Check if current user is viewing their own profile
-    final isOwnProfile = widget.userData == null;
-    final profileUserId = widget.userData?.id ?? UserRepository.getCurrentUid();
+    final currentUserId = UserRepository.getCurrentUid();
+    final profileUserId = widget.userData?.id ?? currentUserId;
+    final isOwnProfile =
+        widget.userData == null || widget.userData?.id == currentUserId;
 
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -65,16 +68,42 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          widget.userData != null
-                              ? "Fighter Profile"
-                              : "Profile",
-                          style: TextStyle(
-                            fontSize: Responsive.textScaleFactor * 24,
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            // Show back arrow only when viewing someone else's profile
+                            if (widget.userData != null)
+                              GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    right: Responsive.w(3),
+                                  ),
+                                  child: SvgPicture.asset(
+                                    "assets/icons/arrow-left-01.svg",
+                                    color: AppColor.red,
+                                  ),
+                                ),
+                              ),
+                            Text(
+                              widget.userData != null
+                                  ? (widget.userData!.roleData
+                                            is FighterDataModel
+                                        ? ((widget.userData!.roleData
+                                                      as FighterDataModel)
+                                                  .fullName
+                                                  .isNotEmpty
+                                              ? "${(widget.userData!.roleData as FighterDataModel).fullName} Profile"
+                                              : "Fighter Profile")
+                                        : "Fighter Profile")
+                                  : "Profile",
+                              style: TextStyle(
+                                fontSize: Responsive.textScaleFactor * 24,
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                         // Show report button only when viewing someone else's profile
                         if (widget.userData != null)
@@ -92,7 +121,11 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
 
                     // If userData is provided, use it directly; otherwise fetch current user
                     widget.userData != null
-                        ? _buildProfileContent(context, widget.userData!, false)
+                        ? _buildProfileContent(
+                            context,
+                            widget.userData!,
+                            isOwnProfile,
+                          )
                         : StreamBuilder<UserModel>(
                             stream: UserRepository.fetchCurrentUserStream(),
                             builder: (context, snapshot) {
@@ -243,18 +276,22 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             GestureDetector(
-              onTap: isOwnProfile ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileImageUploadView(),
-                  ),
-                );
-              } : null,
+              onTap: isOwnProfile
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileImageUploadView(),
+                        ),
+                      );
+                    }
+                  : null,
               child: CircleAvatar(
                 radius: 35,
                 backgroundColor: AppColor.white.withValues(alpha: 0.1),
-                child: fighter.profileImageUrl != null && fighter.profileImageUrl!.isNotEmpty
+                child:
+                    fighter.profileImageUrl != null &&
+                        fighter.profileImageUrl!.isNotEmpty
                     ? ClipOval(
                         child: CachedNetworkImage(
                           imageUrl: fighter.profileImageUrl!,
@@ -262,10 +299,14 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                           height: 70,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Image(
-                            image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                            image: AssetImage(
+                              "assets/images/Ellipse 24 (1).png",
+                            ),
                           ),
                           errorWidget: (context, url, error) => Image(
-                            image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                            image: AssetImage(
+                              "assets/images/Ellipse 24 (1).png",
+                            ),
                           ),
                         ),
                       )
@@ -290,57 +331,102 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Row(
-                      children: [
-                        SvgPicture.asset("assets/icons/call.svg"),
-                        SizedBox(width: Responsive.w(1)),
-                        Flexible(
-                          child: Text(
-                            fighter.coachContact ?? "No phone number",
-                            style: TextStyle(
-                              fontSize: Responsive.textScaleFactor * 12,
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.normal,
+                    GestureDetector(
+                      onTap: () {
+                        final phone = fighter.coachContact;
+                        if (phone.isNotEmpty && phone != "No phone number") {
+                          _launchPhone(context, phone);
+                        }
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset("assets/icons/call.svg"),
+                          SizedBox(width: Responsive.w(1)),
+                          Flexible(
+                            child: Builder(
+                              builder: (context) {
+                                final phone = fighter.coachContact;
+                                final canCall =
+                                    phone.isNotEmpty &&
+                                    phone != "No phone number";
+                                return Text(
+                                  phone.isEmpty ? "No phone number" : phone,
+                                  style: TextStyle(
+                                    fontSize: Responsive.textScaleFactor * 12,
+                                    color: canCall
+                                        ? AppColor.red
+                                        : AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontWeight: FontWeight.normal,
+                                    decoration: canCall
+                                        ? TextDecoration.underline
+                                        : TextDecoration.none,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              },
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Row(
-                      children: [
-                        SvgPicture.asset("assets/icons/mail-02.svg"),
-                        SizedBox(width: Responsive.w(1)),
-                        Flexible(
-                          child: Text(
-                            user.email ?? "No email",
-                            style: TextStyle(
-                              fontSize: Responsive.textScaleFactor * 12,
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.normal,
+                    GestureDetector(
+                      onTap: () {
+                        final email = user.email;
+                        if (email.isNotEmpty && email != "No email") {
+                          _launchEmail(context, email);
+                        }
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset("assets/icons/mail-02.svg"),
+                          SizedBox(width: Responsive.w(1)),
+                          Flexible(
+                            child: Builder(
+                              builder: (context) {
+                                final email = user.email;
+                                final canEmail =
+                                    email.isNotEmpty && email != "No email";
+                                return Text(
+                                  email.isEmpty ? "No email" : email,
+                                  style: TextStyle(
+                                    fontSize: Responsive.textScaleFactor * 12,
+                                    color: canEmail
+                                        ? AppColor.red
+                                        : AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontWeight: FontWeight.normal,
+                                    decoration: canEmail
+                                        ? TextDecoration.underline
+                                        : TextDecoration.none,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              },
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => EidtProfile(fighterData: fighter),
-                  ),
-                );
-              },
-              child: SvgPicture.asset("assets/icons/edits.svg"),
-            ),
+            // Only show edit button if viewing own profile
+            if (isOwnProfile)
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EidtProfile(fighterData: fighter),
+                    ),
+                  );
+                },
+                child: SvgPicture.asset("assets/icons/edits.svg"),
+              ),
           ],
         ),
         SizedBox(height: Responsive.h(1)),
@@ -472,7 +558,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
             ),
           ],
         ),
-
+        SizedBox(height: Responsive.h(1)),
         Row(
           children: [
             Expanded(
@@ -517,6 +603,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                 ),
               ),
             ),
+            SizedBox(width: Responsive.w(2)),
             Expanded(
               child: Container(
                 // width: Responsive.w(30),
@@ -546,7 +633,9 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                         ),
                       ),
                       Text(
-                        fighter.fightsStyle.toString(),
+                        fighter.fightingStyle ??
+                            fighter.fightsStyle ??
+                            "Not set",
                         style: TextStyle(
                           color: AppColor.white,
                           fontFamily: AppFonts.appFont,
@@ -696,22 +785,22 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                 ),
                 Flexible(
                   child: GestureDetector(
-                  onTap: fighter.urlProfile.isNotEmpty == true
-                      ? () => _openTapologyUrl(fighter.urlProfile)
-                      : null,
-                  child: Text(
-                    fighter.urlProfile ?? "Not set",
-                    style: TextStyle(
-                      color: fighter.urlProfile.isNotEmpty == true
-                          ? AppColor.red
-                          : AppColor.white,
-                      fontFamily: AppFonts.appFont,
-                      fontWeight: FontWeight.normal,
-                      fontSize: Responsive.sp(10),
-                      decoration: fighter.urlProfile.isNotEmpty == true
-                          ? TextDecoration.underline
-                          : TextDecoration.none,
-                      decorationColor: AppColor.red,
+                    onTap: fighter.urlProfile.isNotEmpty == true
+                        ? () => _openTapologyUrl(fighter.urlProfile)
+                        : null,
+                    child: Text(
+                      fighter.urlProfile ?? "Not set",
+                      style: TextStyle(
+                        color: fighter.urlProfile.isNotEmpty == true
+                            ? AppColor.red
+                            : AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.normal,
+                        fontSize: Responsive.sp(10),
+                        decoration: fighter.urlProfile.isNotEmpty == true
+                            ? TextDecoration.underline
+                            : TextDecoration.none,
+                        decorationColor: AppColor.red,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -930,7 +1019,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        "No reviews yet",
+                        "Be among the first to support this fighter",
                         style: TextStyle(
                           color: AppColor.white.withValues(alpha: 0.7),
                           fontFamily: AppFonts.appFont,
@@ -960,20 +1049,61 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: AppColor.red,
-                          child: Text(
-                            latestReview.reviewerName.isNotEmpty
-                                ? latestReview.reviewerName[0].toUpperCase()
-                                : 'U',
-                            style: TextStyle(
-                              color: AppColor.white,
-                              fontFamily: AppFonts.appFont,
-                              fontWeight: FontWeight.bold,
-                              fontSize: Responsive.sp(12),
-                            ),
+                        StreamBuilder<UserModel?>(
+                          stream: UserRepository.fetchUserByIdStream(
+                            latestReview.reviewerId,
                           ),
+                          builder: (context, userSnapshot) {
+                            String? profileImageUrl;
+
+                            if (userSnapshot.hasData &&
+                                userSnapshot.data != null) {
+                              final user = userSnapshot.data!;
+                              if (user.isFighter &&
+                                  user.roleData is FighterDataModel) {
+                                final fighter =
+                                    user.roleData as FighterDataModel;
+                                profileImageUrl = fighter.profileImageUrl;
+                              } else if (user.isPromoter &&
+                                  user.roleData is PromoterDataModel) {
+                                final promoter =
+                                    user.roleData as PromoterDataModel;
+                                profileImageUrl = promoter.profileImageUrl;
+                              }
+                            }
+
+                            if (profileImageUrl != null &&
+                                profileImageUrl.isNotEmpty) {
+                              return CircleAvatar(
+                                radius: 16,
+                                backgroundColor: AppColor.red,
+                                backgroundImage: CachedNetworkImageProvider(
+                                  profileImageUrl,
+                                ),
+                                onBackgroundImageError:
+                                    (exception, stackTrace) {
+                                      // Handle error silently
+                                    },
+                              );
+                            }
+
+                            // Fallback to initial if no profile picture
+                            return CircleAvatar(
+                              radius: 16,
+                              backgroundColor: AppColor.red,
+                              child: Text(
+                                latestReview.reviewerName.isNotEmpty
+                                    ? latestReview.reviewerName[0].toUpperCase()
+                                    : 'U',
+                                style: TextStyle(
+                                  color: AppColor.white,
+                                  fontFamily: AppFonts.appFont,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: Responsive.sp(12),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                         SizedBox(width: Responsive.w(2)),
                         Expanded(
@@ -1081,43 +1211,62 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
               // Show button only if current user is a promoter
               if (currentUser.isPromoter) {
                 print('✅ SHOWING BUTTON: User is a Promoter!');
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SizedBox(height: Responsive.h(2)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                final fighterUserId = widget.userData?.id ?? user.id;
+                // Check if user has already reviewed this fighter
+                return FutureBuilder<bool>(
+                  future: ReviewRepository.hasAlreadyReviewed(
+                    reviewerId: currentUser.id,
+                    reviewedUserId: fighterUserId,
+                  ),
+                  builder: (context, reviewSnapshot) {
+                    // Hide button if already reviewed
+                    if (reviewSnapshot.hasData && reviewSnapshot.data == true) {
+                      print(
+                        '🚫 HIDING BUTTON: User already reviewed this fighter!',
+                      );
+                      return Container();
+                    }
+
+                    // Show button if not reviewed yet or still checking
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        SizedBox(
-                          width: 200,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              _ratePromoterBottomSheet(context);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColor.red,
-                              foregroundColor: AppColor.white,
-                              padding: EdgeInsets.symmetric(
-                                vertical: Responsive.h(1.5),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                        SizedBox(height: Responsive.h(2)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: 200,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _ratePromoterBottomSheet(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColor.red,
+                                  foregroundColor: AppColor.white,
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: Responsive.h(1.5),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  "Rate This Fighter",
+                                  style: TextStyle(
+                                    color: AppColor.white,
+                                    fontFamily: AppFonts.appFont,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Responsive.sp(14),
+                                  ),
+                                ),
                               ),
                             ),
-                            child: Text(
-                              "Rate This Fighter",
-                              style: TextStyle(
-                                color: AppColor.white,
-                                fontFamily: AppFonts.appFont,
-                                fontWeight: FontWeight.bold,
-                                fontSize: Responsive.sp(14),
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
                       ],
-                    ),
-                  ],
+                    );
+                  },
                 );
               }
             }
@@ -1131,35 +1280,8 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
         ),
 
         SizedBox(height: Responsive.h(2)),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            "Photos",
-            style: TextStyle(
-              color: AppColor.white,
-              fontFamily: AppFonts.appFont,
-              fontWeight: FontWeight.bold,
-              fontSize: Responsive.sp(16),
-            ),
-          ),
-        ),
-        SizedBox(height: Responsive.h(1)),
-        _buildPhotosGrid(context, user.id, isOwnProfile),
-        SizedBox(height: Responsive.h(2)),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            "Videos",
-            style: TextStyle(
-              color: AppColor.white,
-              fontFamily: AppFonts.appFont,
-              fontWeight: FontWeight.bold,
-              fontSize: Responsive.sp(16),
-            ),
-          ),
-        ),
-        SizedBox(height: Responsive.h(1)),
-        _buildVideosGrid(context, user.id, isOwnProfile),
+        _buildPhotosSection(context, user.id, isOwnProfile),
+        _buildVideosSection(context, user.id, isOwnProfile),
       ],
     );
   }
@@ -1193,6 +1315,66 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
           SnackBar(
             content: Text('Error opening URL: ${e.toString()}'),
             backgroundColor: AppColor.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchEmail(BuildContext context, String email) async {
+    final Uri emailUri = Uri.parse('mailto:${Uri.encodeComponent(email)}');
+    try {
+      // LaunchMode.externalApplication required for mailto on Android 11+.
+      final launched = await launchUrl(
+        emailUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open email app. Is one installed?'),
+            backgroundColor: AppColor.red,
+          ),
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Email launcher error: $e\n$st');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not launch email: ${e.toString()}'),
+            backgroundColor: AppColor.red,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchPhone(BuildContext context, String phoneNumber) async {
+    final cleanedNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final Uri phoneUri = Uri.parse('tel:$cleanedNumber');
+    try {
+      final launched = await launchUrl(
+        phoneUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open phone dialer'),
+            backgroundColor: AppColor.red,
+          ),
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Phone launcher error: $e\n$st');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not launch phone: ${e.toString()}'),
+            backgroundColor: AppColor.red,
+            duration: Duration(seconds: 4),
           ),
         );
       }
@@ -1351,6 +1533,82 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
     );
   }
 
+  Widget _buildPhotosSection(
+    BuildContext context,
+    String userId,
+    bool isOwnProfile,
+  ) {
+    return StreamBuilder<List<ProfileMediaModel>>(
+      stream: ProfileMediaService.getPhotosStream(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox.shrink();
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox.shrink();
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Photos",
+                style: TextStyle(
+                  color: AppColor.white,
+                  fontFamily: AppFonts.appFont,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(16),
+                ),
+              ),
+            ),
+            SizedBox(height: Responsive.h(1)),
+            _buildPhotosGrid(context, userId, isOwnProfile),
+            SizedBox(height: Responsive.h(2)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildVideosSection(
+    BuildContext context,
+    String userId,
+    bool isOwnProfile,
+  ) {
+    return StreamBuilder<List<ProfileMediaModel>>(
+      stream: ProfileMediaService.getVideosStream(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox.shrink();
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox.shrink();
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Videos",
+                style: TextStyle(
+                  color: AppColor.white,
+                  fontFamily: AppFonts.appFont,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(16),
+                ),
+              ),
+            ),
+            SizedBox(height: Responsive.h(1)),
+            _buildVideosGrid(context, userId, isOwnProfile),
+            SizedBox(height: Responsive.h(2)),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildPhotosGrid(
     BuildContext context,
     String userId,
@@ -1376,22 +1634,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Container(
-            height: Responsive.h(20),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColor.white.withValues(alpha: 0.1),
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Center(
-              child: Text(
-                "No photos yet",
-                style: TextStyle(color: AppColor.white.withValues(alpha: 0.5)),
-              ),
-            ),
-          );
+          return SizedBox.shrink();
         }
 
         final photos = snapshot.data!;
@@ -1406,11 +1649,29 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
           ),
           itemCount: photos.length,
           itemBuilder: (context, index) {
-            return _buildMediaItem(
-              context,
-              photos[index],
-              isOwnProfile,
-              userId,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenMediaViewer(
+                      mediaList: photos,
+                      initialIndex: index,
+                      isOwnProfile: isOwnProfile,
+                      userId: userId,
+                      onDelete: isOwnProfile
+                          ? (media) => _deleteMedia(context, userId, media)
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              child: _buildMediaItem(
+                context,
+                photos[index],
+                isOwnProfile,
+                userId,
+              ),
             );
           },
         );
@@ -1443,22 +1704,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Container(
-            height: Responsive.h(20),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColor.white.withValues(alpha: 0.1),
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Center(
-              child: Text(
-                "No videos yet",
-                style: TextStyle(color: AppColor.white.withValues(alpha: 0.5)),
-              ),
-            ),
-          );
+          return SizedBox.shrink();
         }
 
         final videos = snapshot.data!;
@@ -1473,11 +1719,29 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
           ),
           itemCount: videos.length,
           itemBuilder: (context, index) {
-            return _buildMediaItem(
-              context,
-              videos[index],
-              isOwnProfile,
-              userId,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenMediaViewer(
+                      mediaList: videos,
+                      initialIndex: index,
+                      isOwnProfile: isOwnProfile,
+                      userId: userId,
+                      onDelete: isOwnProfile
+                          ? (media) => _deleteMedia(context, userId, media)
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              child: _buildMediaItem(
+                context,
+                videos[index],
+                isOwnProfile,
+                userId,
+              ),
             );
           },
         );
@@ -1491,12 +1755,21 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
     bool isOwnProfile,
     String userId,
   ) {
+    // Check if URL is a video file
+    final isVideoUrl =
+        media.url.toLowerCase().endsWith('.mp4') ||
+        media.url.toLowerCase().endsWith('.mov') ||
+        media.url.toLowerCase().endsWith('.avi') ||
+        media.url.toLowerCase().endsWith('.mkv') ||
+        media.url.toLowerCase().endsWith('.webm') ||
+        media.type == 'video';
+
     return Stack(
       fit: StackFit.expand,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: media.type == 'photo'
+          child: media.type == 'photo' && !isVideoUrl
               ? CachedNetworkImage(
                   imageUrl: media.url,
                   fit: BoxFit.cover,
@@ -1517,21 +1790,15 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
               : Stack(
                   fit: StackFit.expand,
                   children: [
-                    CachedNetworkImage(
-                      imageUrl: media.url,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: AppColor.black,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColor.red,
-                            strokeWidth: 2,
-                          ),
+                    // For videos, show a placeholder instead of trying to load the video URL as an image
+                    Container(
+                      color: AppColor.black,
+                      child: Center(
+                        child: Icon(
+                          Icons.videocam,
+                          color: AppColor.white.withValues(alpha: 0.5),
+                          size: 48,
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColor.black,
-                        child: Icon(Icons.error_outline, color: AppColor.red),
                       ),
                     ),
                     Center(
@@ -2146,16 +2413,19 @@ class _RatingBottomSheetContentState extends State<_RatingBottomSheetContent> {
       print('Review submitted successfully!');
       print('============================');
 
-      // Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Review submitted successfully!",
-            style: GoogleFonts.dmSans(color: AppColor.white),
+      // Close dialog automatically after successful submission
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Review submitted successfully!",
+              style: GoogleFonts.dmSans(color: AppColor.white),
+            ),
+            backgroundColor: Colors.green,
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
+        );
+      }
     } catch (e) {
       print('Error submitting review: $e');
       String errorMessage = "Failed to submit review. Please try again.";

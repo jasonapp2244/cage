@@ -1,7 +1,9 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/res/components/app_theme.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -34,7 +36,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
     try {
       // Get user role
       String? role = await Utils.getSavedRole('role');
-      
+
       // If role not in local storage, get from Firestore
       if (role == null) {
         final userId = Utils.getCurrentUid();
@@ -42,7 +44,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             .collection('userData')
             .doc(userId)
             .get();
-        
+
         if (userDoc.exists && userDoc.data() != null) {
           role = userDoc.data()!['role'] as String?;
           if (role != null) {
@@ -53,7 +55,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
 
       // Default to Fighter if role is not found
       final userRole = role ?? 'Fighter';
-      
+
       final doc = await _firestore
           .collection('appSettings')
           .doc('privacyPolicy')
@@ -62,7 +64,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       if (doc.exists && doc.data() != null) {
         final data = doc.data()!;
         final roleKey = userRole.toLowerCase();
-        
+
         // Try to get role-specific content
         if (data.containsKey('${roleKey}Content')) {
           setState(() {
@@ -105,24 +107,49 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      // Try to find MainWrapper state (for drawer navigation)
+                      final state = context
+                          .findAncestorStateOfType<MainWrapperState>();
+                      if (state != null) {
+                        state.resetToHome();
+                        return;
+                      }
+                      // Fallback to normal navigation
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      }
+                    },
                     child: SvgPicture.asset(
                       "assets/icons/arrow-left-01.svg",
                       color: AppColor.red,
                     ),
                   ),
-                  Text(
-                    "Privacy Policy",
-                    style: TextStyle(
-                      fontSize: Responsive.textScaleFactor * 24,
-                      color: AppColor.white,
-                      fontFamily: AppFonts.appFont,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  StreamBuilder(
+                    stream: AppTheme.themeStream,
+                    builder: (context, themeSnapshot) {
+                      final theme = themeSnapshot.hasData
+                          ? themeSnapshot.data!
+                          : AppTheme.theme;
+                      return Text(
+                        "Privacy Policy",
+                        style: AppTheme.headingStyle(
+                          fontSize:
+                              Responsive.textScaleFactor *
+                              theme.headingFontSize,
+                          color: theme.headingTextColor,
+                          bold: theme.headingBold,
+                        ).copyWith(fontFamily: AppFonts.appFont),
+                        textAlign: theme.headingAlign,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -130,42 +157,46 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             // Content
             Expanded(
               child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColor.red,
-                      ),
+                  ? Center(
+                      child: CircularProgressIndicator(color: AppColor.red),
                     )
                   : _errorMessage != null
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: AppColor.red,
-                                size: 48,
-                              ),
-                              SizedBox(height: Responsive.h(2)),
-                              Text(
-                                _errorMessage!,
-                                style: TextStyle(
-                                  fontSize: Responsive.textScaleFactor * 14,
-                                  color: AppColor.white,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: Responsive.h(3)),
-                              ElevatedButton(
-                                onPressed: _loadPrivacyPolicy,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColor.red,
-                                ),
-                                child: const Text('Retry'),
-                              ),
-                            ],
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: AppColor.red,
+                            size: 48,
                           ),
-                        )
-                      : SingleChildScrollView(
+                          SizedBox(height: Responsive.h(2)),
+                          Text(
+                            _errorMessage!,
+                            style: TextStyle(
+                              fontSize: Responsive.textScaleFactor * 14,
+                              color: AppColor.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: Responsive.h(3)),
+                          ElevatedButton(
+                            onPressed: _loadPrivacyPolicy,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColor.red,
+                            ),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : StreamBuilder(
+                      stream: AppTheme.themeStream,
+                      builder: (context, themeSnapshot) {
+                        final theme = themeSnapshot.hasData
+                            ? themeSnapshot.data!
+                            : AppTheme.theme;
+                        return SingleChildScrollView(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8.0,
@@ -175,14 +206,18 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
                               _content.isEmpty
                                   ? 'No privacy policy available yet.'
                                   : _content,
-                              style: TextStyle(
-                                fontSize: Responsive.textScaleFactor * 12,
-                                color: AppColor.white,
-                                height: 1.5,
-                              ),
+                              style: AppTheme.textStyle(
+                                fontSize:
+                                    Responsive.textScaleFactor * theme.fontSize,
+                                color: theme.textColor,
+                                bold: theme.boldText,
+                              ).copyWith(height: 1.5),
+                              textAlign: theme.textAlign,
                             ),
                           ),
-                        ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

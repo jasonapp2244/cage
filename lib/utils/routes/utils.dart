@@ -9,11 +9,10 @@ import 'package:intl/intl.dart';
 
 class Utils {
   static void tosatMassage(String massage) {
+    // Note: Fluttertoast has issues serializing Color objects through platform channels
+    // Using default colors to avoid serialization errors
     Fluttertoast.showToast(
       toastLength: Toast.LENGTH_LONG,
-      backgroundColor: AppColor.red,
-      textColor: AppColor.white,
-      webBgColor: AppColor.red,
       msg: massage,
     );
   }

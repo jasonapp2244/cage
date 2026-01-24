@@ -56,7 +56,7 @@ class _FightLoseViewState extends State<FightLoseView> {
                 ),
               ),
               SizedBox(height: Responsive.h(2)),
-                const Text(
+                Text(
                   'How many fights have you lost?',
                   style: TextStyle(
                     color: AppColor.white,

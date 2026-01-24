@@ -56,7 +56,7 @@ class _HightViewState extends State<HightView> {
                 ),
               ),
               SizedBox(height: Responsive.h(2)),
-              const Text(
+              Text(
                 'What\'s your height?',
                 style: TextStyle(
                   color: AppColor.white,

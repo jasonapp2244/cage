@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cage/models/promoter_model.dart';
-import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/promoter_provider.dart';
 import 'package:cage/repository/review_repository.dart';
 import 'package:cage/res/components/app_color.dart';

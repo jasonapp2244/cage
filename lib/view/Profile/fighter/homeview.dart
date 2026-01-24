@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/models/fighter_model.dart';
+import 'package:cage/models/promoter_model.dart';
 import 'package:cage/models/user_model.dart';
 import 'package:cage/models/event_model.dart';
 import 'package:cage/provider/darwer_provider.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 
 class Homeview extends StatefulWidget {
@@ -227,6 +229,8 @@ class _HomeviewState extends State<Homeview> {
                     ],
                   ),
                 ),
+
+                SizedBox(height: Responsive.h(1)),
                 // 🔹 Wins / Losses / Knockouts with dynamic data
                 StreamBuilder<UserModel>(
                   stream: UserRepository.fetchCurrentUserStream(),
@@ -309,108 +313,8 @@ class _HomeviewState extends State<Homeview> {
                     );
                   },
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Recent Fights",
-                      style: TextStyle(
-                        color: AppColor.white,
-                        fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.normal,
-                        fontSize: Responsive.sp(10),
-                      ),
-                    ),
-
-                    // SizedBox(width: Responsive.w(5)),
-                    Row(
-                      children: [
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.sp(10),
-                          ),
-                        ),
-                        SizedBox(width: Responsive.w(2)),
-                        SvgPicture.asset("assets/icons/Vector (2).svg"),
-                      ],
-                    ),
-                  ],
-                ),
-
-                SizedBox(
-                  height: 200,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 10,
-                    padding: EdgeInsets.symmetric(horizontal: 0),
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                        child: SizedBox(
-                          child: Container(
-                            width: Responsive.w(50),
-                            height: Responsive.h(100),
-
-                            decoration: BoxDecoration(
-                              border: BoxBorder.all(
-                                color: AppColor.white.withValues(alpha: 0.1),
-                                // width: Responsive.w(0),
-                              ),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  Image(
-                                    image: AssetImage(
-                                      "assets/images/Frame 1000002190.png",
-                                    ),
-                                  ),
-                                  SizedBox(height: Responsive.h(1)),
-
-                                  Text(
-                                    "Jake “The Beast” Miller - 🏆 Win (KO)",
-                                    style: TextStyle(
-                                      color: AppColor.white,
-                                      fontFamily: AppFonts.appFont,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: Responsive.sp(10),
-                                    ),
-                                  ),
-                                  SizedBox(height: Responsive.h(1)),
-
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "View All",
-                                        style: TextStyle(
-                                          color: AppColor.white,
-                                          fontFamily: AppFonts.appFont,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: Responsive.sp(10),
-                                        ),
-                                      ),
-                                      SizedBox(width: Responsive.w(2)),
-                                      SvgPicture.asset(
-                                        "assets/icons/Vector (2).svg",
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
                 SizedBox(height: Responsive.h(2)),
+                
                 
                 // Active Events Section
                 Row(
@@ -701,174 +605,353 @@ class _HomeviewState extends State<Homeview> {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) {
-          return SingleChildScrollView(
-            controller: scrollController,
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                left: Responsive.w(5),
-                right: Responsive.w(5),
-                top: Responsive.h(3),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    "Event Details",
-                    style: GoogleFonts.dmSans(
-                      color: AppColor.white,
-                      fontSize: Responsive.sp(18),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.h(2)),
+          return FutureBuilder<UserModel?>(
+            future: UserRepository.fetchUserById(event.promoterId),
+            builder: (context, promoterSnapshot) {
+              PromoterDataModel? promoterData;
+              if (promoterSnapshot.hasData &&
+                  promoterSnapshot.data != null &&
+                  promoterSnapshot.data!.isPromoter) {
+                promoterData = promoterSnapshot.data!.roleData as PromoterDataModel;
+              }
 
-                  // Event Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: event.thumbnailImageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: event.thumbnailImageUrl!,
-                            width: double.infinity,
-                            height: Responsive.h(25),
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              height: Responsive.h(25),
-                              color: AppColor.white.withValues(alpha: 0.1),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColor.red,
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: Responsive.w(5),
+                    right: Responsive.w(5),
+                    top: Responsive.h(3),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title
+                      Text(
+                        "Event Details",
+                        style: GoogleFonts.dmSans(
+                          color: AppColor.white,
+                          fontSize: Responsive.sp(18),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: Responsive.h(2)),
+
+                      // Event Image
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: event.thumbnailImageUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: event.thumbnailImageUrl!,
+                                width: double.infinity,
+                                height: Responsive.h(25),
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  height: Responsive.h(25),
+                                  color: AppColor.white.withValues(alpha: 0.1),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: AppColor.red,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  height: Responsive.h(25),
+                                  color: AppColor.white.withValues(alpha: 0.1),
+                                  child: Icon(
+                                    Icons.image,
+                                    color: AppColor.white.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                height: Responsive.h(25),
+                                color: AppColor.white.withValues(alpha: 0.1),
+                                child: Icon(
+                                  Icons.image,
+                                  color: AppColor.white.withValues(alpha: 0.5),
+                                ),
+                              ),
+                      ),
+                      SizedBox(height: Responsive.h(2)),
+
+                      // Event Title
+                      Text(
+                        event.eventTitle,
+                        style: GoogleFonts.dmSans(
+                          color: AppColor.white,
+                          fontSize: Responsive.sp(16),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: Responsive.h(1)),
+
+                      // Event Description
+                      Text(
+                        event.description,
+                        style: GoogleFonts.dmSans(
+                          color: AppColor.white.withValues(alpha: 0.8),
+                          fontSize: Responsive.sp(12),
+                        ),
+                      ),
+                      SizedBox(height: Responsive.h(2)),
+
+                      Divider(
+                        color: AppColor.white.withValues(alpha: 0.2),
+                      ),
+                      SizedBox(height: Responsive.h(1)),
+
+                      // Host Information
+                      if (event.promoterProfileImage != null)
+                        Row(
+                          children: [
+                            ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: event.promoterProfileImage!,
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: AppColor.white.withValues(alpha: 0.1),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColor.red,
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: AppColor.white.withValues(alpha: 0.1),
+                                  child: Icon(
+                                    Icons.person,
+                                    color: AppColor.white,
+                                  ),
                                 ),
                               ),
                             ),
-                            errorWidget: (context, url, error) => Container(
-                              height: Responsive.h(25),
-                              color: AppColor.white.withValues(alpha: 0.1),
-                              child: Icon(
-                                Icons.image,
-                                color: AppColor.white.withValues(alpha: 0.5),
-                              ),
+                            SizedBox(width: Responsive.w(2)),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  event.promoterName,
+                                  style: GoogleFonts.dmSans(
+                                    color: AppColor.white,
+                                    fontSize: Responsive.sp(12),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  "Hosted By",
+                                  style: GoogleFonts.dmSans(
+                                    color: AppColor.white.withValues(alpha: 0.7),
+                                    fontSize: Responsive.sp(10),
+                                  ),
+                                ),
+                              ],
                             ),
-                          )
-                        : Container(
-                            height: Responsive.h(25),
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            child: Icon(
-                              Icons.image,
-                              color: AppColor.white.withValues(alpha: 0.5),
-                            ),
-                          ),
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-
-                  // Event Title
-                  Text(
-                    event.eventTitle,
-                    style: GoogleFonts.dmSans(
-                      color: AppColor.white,
-                      fontSize: Responsive.sp(16),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: Responsive.h(1)),
-
-                  // Event Description
-                  Text(
-                    event.description,
-                    style: GoogleFonts.dmSans(
-                      color: AppColor.white.withValues(alpha: 0.8),
-                      fontSize: Responsive.sp(12),
-                    ),
-                  ),
-                  SizedBox(height: Responsive.h(2)),
-
-                  Divider(
-                    color: AppColor.white.withValues(alpha: 0.2),
-                  ),
-                  SizedBox(height: Responsive.h(1)),
-
-                  // Host Information
-                  if (event.promoterProfileImage != null)
-                    Row(
-                      children: [
-                        ClipOval(
-                          child: CachedNetworkImage(
-                            imageUrl: event.promoterProfileImage!,
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => CircleAvatar(
-                              radius: 20,
-                              backgroundColor: AppColor.white.withValues(alpha: 0.1),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColor.red,
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => CircleAvatar(
-                              radius: 20,
-                              backgroundColor: AppColor.white.withValues(alpha: 0.1),
-                              child: Icon(
-                                Icons.person,
-                                color: AppColor.white,
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
-                        SizedBox(width: Responsive.w(2)),
+                      SizedBox(height: Responsive.h(1)),
+
+                      // Contact Details Section
+                      if (promoterData != null &&
+                          (promoterData.contactEmail != null ||
+                              promoterData.contactNumber != null))
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              event.promoterName,
+                              "Contact Details",
                               style: GoogleFonts.dmSans(
                                 color: AppColor.white,
-                                fontSize: Responsive.sp(12),
+                                fontSize: Responsive.sp(14),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(
-                              "Hosted By",
-                              style: GoogleFonts.dmSans(
-                                color: AppColor.white.withValues(alpha: 0.7),
-                                fontSize: Responsive.sp(10),
+                            SizedBox(height: Responsive.h(1)),
+                            
+                            // Contact Email
+                            if (promoterData.contactEmail != null &&
+                                promoterData.contactEmail!.isNotEmpty)
+                              GestureDetector(
+                                onTap: () => _launchEmail(context, promoterData!.contactEmail!),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: Responsive.w(3),
+                                    vertical: Responsive.h(1),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColor.white.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: AppColor.white.withValues(alpha: 0.2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.email_outlined,
+                                        color: AppColor.red,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: Responsive.w(2)),
+                                      Expanded(
+                                        child: Text(
+                                          promoterData.contactEmail!,
+                                          style: GoogleFonts.dmSans(
+                                            color: AppColor.white,
+                                            fontSize: Responsive.sp(12),
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: AppColor.white.withValues(alpha: 0.5),
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
+                            
+                            SizedBox(height: Responsive.h(1)),
+                            
+                            // Contact Number
+                            if (promoterData.contactNumber != null &&
+                                promoterData.contactNumber!.isNotEmpty)
+                              GestureDetector(
+                                onTap: () => _launchPhone(context, promoterData!.contactNumber!),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: Responsive.w(3),
+                                    vertical: Responsive.h(1),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColor.white.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: AppColor.white.withValues(alpha: 0.2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.phone_outlined,
+                                        color: AppColor.red,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: Responsive.w(2)),
+                                      Expanded(
+                                        child: Text(
+                                          promoterData.contactNumber!,
+                                          style: GoogleFonts.dmSans(
+                                            color: AppColor.white,
+                                            fontSize: Responsive.sp(12),
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: AppColor.white.withValues(alpha: 0.5),
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            
+                            SizedBox(height: Responsive.h(2)),
+                            Divider(
+                              color: AppColor.white.withValues(alpha: 0.2),
                             ),
+                            SizedBox(height: Responsive.h(1)),
                           ],
                         ),
-                      ],
-                    ),
-                  SizedBox(height: Responsive.h(1)),
 
-                  // Event Details
-                  _buildDetailRow("Event Date", DateFormat('MMMM dd, yyyy').format(event.eventDate)),
-                  _buildDetailRow("Event Time", event.eventTime),
-                  _buildDetailRow("Location", event.location),
-                  _buildDetailRow("Event Type", event.eventType),
-                  _buildDetailRow("Weight Class", event.weightClass),
-                  _buildDetailRow("Required Record", event.requiredRecord),
-                  _buildDetailRow("Age Limit", event.ageLimit),
-                  _buildDetailRow("Fighting Style Preferred", event.fightingStylePreferred),
-                  _buildDetailRow(
-                    "Deadline to Apply",
-                    DateFormat('MMMM dd, yyyy').format(event.deadlineToApply),
+                      // Event Details
+                      _buildDetailRow("Event Date", DateFormat('MMMM dd, yyyy').format(event.eventDate)),
+                      _buildDetailRow("Event Time", event.eventTime),
+                      _buildDetailRow("Location", event.location),
+                      _buildDetailRow("Event Type", event.eventType),
+                      _buildDetailRow("Weight Class", event.weightClass),
+                      _buildDetailRow("Required Record", event.requiredRecord),
+                      _buildDetailRow("Age Limit", event.ageLimit),
+                      _buildDetailRow("Fighting Style Preferred", event.fightingStylePreferred),
+                      _buildDetailRow(
+                        "Deadline to Apply",
+                        DateFormat('MMMM dd, yyyy').format(event.deadlineToApply),
+                      ),
+                      
+                      SizedBox(height: Responsive.h(2)),
+                      
+                      // Send Request Button
+                      _SendRequestButton(event: event),
+                      
+                      SizedBox(height: Responsive.h(2)),
+                    ],
                   ),
-                  
-                  SizedBox(height: Responsive.h(2)),
-                  
-                  // Send Request Button
-                  _SendRequestButton(event: event),
-                  
-                  SizedBox(height: Responsive.h(2)),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
     );
+  }
+
+  Future<void> _launchEmail(BuildContext context, String email) async {
+    final Uri emailUri =
+        Uri.parse('mailto:${Uri.encodeComponent(email)}');
+
+    try {
+      final launched = await launchUrl(
+        emailUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Could not open email app. Is one installed?',
+          context,
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Email launcher error: $e\n$st');
+      if (context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Could not launch email: ${e.toString()}',
+          context,
+        );
+      }
+    }
+  }
+
+  Future<void> _launchPhone(BuildContext context, String phoneNumber) async {
+    final cleanedNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final Uri phoneUri = Uri.parse('tel:$cleanedNumber');
+
+    try {
+      final launched = await launchUrl(
+        phoneUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Could not open phone dialer',
+          context,
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Phone launcher error: $e\n$st');
+      if (context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Error: ${e.toString()}',
+          context,
+        );
+      }
+    }
   }
 
   Widget _buildDetailRow(String label, String value) {

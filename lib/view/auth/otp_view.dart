@@ -21,7 +21,7 @@ class OtpScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     "Enter 4 Digit Code",
                     style: TextStyle(
                       fontFamily: AppFonts.appFont,
@@ -31,7 +31,7 @@ class OtpScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     "Enter the 4 digit code that you received on your email",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: AppColor.white),
@@ -97,11 +97,11 @@ class OtpForm extends StatelessWidget {
                     filled: true,
                     fillColor: AppColor.white.withValues(alpha: 0.2),
                     hintText: "0",
-                    hintStyle: const TextStyle(color: AppColor.white),
+                    hintStyle: const TextStyle(color: AppColor.constWhite),
                     border: authOutlineInputBorder,
                     enabledBorder: authOutlineInputBorder,
                     focusedBorder: authOutlineInputBorder.copyWith(
-                      borderSide: const BorderSide(color: AppColor.red),
+                      borderSide: const BorderSide(color: AppColor.constRed),
                     ),
                   ),
                 ),
@@ -128,11 +128,11 @@ class OtpForm extends StatelessWidget {
                     filled: true,
                     fillColor: AppColor.white.withValues(alpha: 0.2),
                     hintText: "0",
-                    hintStyle: const TextStyle(color: AppColor.white),
+                    hintStyle: const TextStyle(color: AppColor.constWhite),
                     border: authOutlineInputBorder,
                     enabledBorder: authOutlineInputBorder,
                     focusedBorder: authOutlineInputBorder.copyWith(
-                      borderSide: const BorderSide(color: AppColor.red),
+                      borderSide: const BorderSide(color: AppColor.constRed),
                     ),
                   ),
                 ),
@@ -159,11 +159,11 @@ class OtpForm extends StatelessWidget {
                     filled: true,
                     fillColor: AppColor.white.withValues(alpha: 0.2),
                     hintText: "0",
-                    hintStyle: const TextStyle(color: AppColor.white),
+                    hintStyle: const TextStyle(color: AppColor.constWhite),
                     border: authOutlineInputBorder,
                     enabledBorder: authOutlineInputBorder,
                     focusedBorder: authOutlineInputBorder.copyWith(
-                      borderSide: const BorderSide(color: AppColor.red),
+                      borderSide: const BorderSide(color: AppColor.constRed),
                     ),
                   ),
                 ),
@@ -190,11 +190,11 @@ class OtpForm extends StatelessWidget {
                     filled: true,
                     fillColor: AppColor.white.withValues(alpha: 0.2),
                     hintText: "0",
-                    hintStyle: const TextStyle(color: AppColor.white),
+                    hintStyle: const TextStyle(color: AppColor.constWhite),
                     border: authOutlineInputBorder,
                     enabledBorder: authOutlineInputBorder,
                     focusedBorder: authOutlineInputBorder.copyWith(
-                      borderSide: const BorderSide(color: AppColor.red),
+                      borderSide: const BorderSide(color: AppColor.constRed),
                     ),
                   ),
                 ),

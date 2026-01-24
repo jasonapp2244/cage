@@ -4,19 +4,23 @@ import 'package:cage/models/promoter_model.dart';
 import 'package:cage/models/fighter_model.dart';
 import 'package:cage/models/user_model.dart';
 import 'package:cage/models/review_model.dart';
+import 'package:cage/models/profile_media_model.dart';
 import 'package:cage/repository/report_repository.dart';
 import 'package:cage/repository/review_repository.dart';
 import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/services/event_service.dart';
+import 'package:cage/services/profile_media_service.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/Profile/fighter/all_reviews_screen.dart';
+import 'package:cage/view/Profile/fighter/full_screen_media_viewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PromoterPublicProfile extends StatefulWidget {
   final UserModel userData;
@@ -28,7 +32,6 @@ class PromoterPublicProfile extends StatefulWidget {
 }
 
 class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
-
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
@@ -72,7 +75,10 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                         ),
                         SizedBox(width: Responsive.w(2)),
                         Text(
-                          "Promoter Profile",
+                          promoter.companyName != null &&
+                                  promoter.companyName!.isNotEmpty
+                              ? "${promoter.companyName} Profile"
+                              : "Promoter Profile",
                           style: TextStyle(
                             fontSize: Responsive.textScaleFactor * 24,
                             color: AppColor.white,
@@ -135,98 +141,7 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                 SizedBox(height: Responsive.h(2)),
 
                 // Active Events Section
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Active Events",
-                    style: TextStyle(
-                      color: AppColor.white,
-                      fontFamily: AppFonts.appFont,
-                      fontWeight: FontWeight.bold,
-                      fontSize: Responsive.sp(16),
-                    ),
-                  ),
-                ),
-                SizedBox(height: Responsive.h(1)),
-
-                // Active Events List
-                StreamBuilder<List<EventModel>>(
-                  stream: eventService.getActiveEventsByPromoter(widget.userData.id),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Container(
-                        height: Responsive.h(20),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Center(
-                          child: CircularProgressIndicator(color: AppColor.red),
-                        ),
-                      );
-                    }
-
-                    if (snapshot.hasError) {
-                      return Container(
-                        height: Responsive.h(20),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Error loading events',
-                            style: TextStyle(
-                              color: AppColor.white.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Container(
-                        height: Responsive.h(20),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColor.white.withValues(alpha: 0.1),
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Center(
-                          child: Text(
-                            "No active events",
-                            style: TextStyle(
-                              color: AppColor.white.withValues(alpha: 0.5),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    final events = snapshot.data!;
-                    return SizedBox(
-                      height: Responsive.h(30),
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: events.length,
-                        itemBuilder: (context, index) {
-                          final event = events[index];
-                          return _buildEventCard(context, event);
-                        },
-                      ),
-                    );
-                  },
-                ),
-
-                SizedBox(height: Responsive.h(2)),
+                _buildActiveEventsSection(context, eventService),
 
                 // Past Events Section
                 Align(
@@ -245,7 +160,9 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
 
                 // Past Events List
                 StreamBuilder<List<EventModel>>(
-                  stream: eventService.getPastEventsByPromoter(widget.userData.id),
+                  stream: eventService.getPastEventsByPromoter(
+                    widget.userData.id,
+                  ),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Container(
@@ -361,18 +278,21 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                           ),
                           SizedBox(width: Responsive.w(2)),
                           SvgPicture.asset("assets/icons/Vector (2).svg"),
-              ],
-            ),
-          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(height: Responsive.h(1)),
 
                 // Latest Review Section
                 FutureBuilder<ReviewModel?>(
-                  future: ReviewRepository.getLatestPromoterReview(widget.userData.id),
+                  future: ReviewRepository.getLatestPromoterReview(
+                    widget.userData.id,
+                  ),
                   builder: (context, reviewSnapshot) {
-                    if (reviewSnapshot.connectionState == ConnectionState.waiting) {
+                    if (reviewSnapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return Container(
                         width: double.infinity,
                         height: 100,
@@ -417,7 +337,7 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                "No reviews yet",
+                                "Be among the first to support this fighter",
                                 style: TextStyle(
                                   color: AppColor.white.withValues(alpha: 0.7),
                                   fontFamily: AppFonts.appFont,
@@ -447,25 +367,71 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                           children: [
                             Row(
                               children: [
-                                CircleAvatar(
-                                  radius: 16,
-                                  backgroundColor: AppColor.red,
-                                  child: Text(
-                                    latestReview.reviewerName.isNotEmpty
-                                        ? latestReview.reviewerName[0].toUpperCase()
-                                        : 'U',
-                                    style: TextStyle(
-                                      color: AppColor.white,
-                                      fontFamily: AppFonts.appFont,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: Responsive.sp(12),
-                                    ),
+                                StreamBuilder<UserModel?>(
+                                  stream: UserRepository.fetchUserByIdStream(
+                                    latestReview.reviewerId,
                                   ),
+                                  builder: (context, userSnapshot) {
+                                    String? profileImageUrl;
+
+                                    if (userSnapshot.hasData &&
+                                        userSnapshot.data != null) {
+                                      final user = userSnapshot.data!;
+                                      if (user.isFighter &&
+                                          user.roleData is FighterDataModel) {
+                                        final fighter =
+                                            user.roleData as FighterDataModel;
+                                        profileImageUrl =
+                                            fighter.profileImageUrl;
+                                      } else if (user.isPromoter &&
+                                          user.roleData is PromoterDataModel) {
+                                        final promoter =
+                                            user.roleData as PromoterDataModel;
+                                        profileImageUrl =
+                                            promoter.profileImageUrl;
+                                      }
+                                    }
+
+                                    if (profileImageUrl != null &&
+                                        profileImageUrl.isNotEmpty) {
+                                      return CircleAvatar(
+                                        radius: 16,
+                                        backgroundColor: AppColor.red,
+                                        backgroundImage:
+                                            CachedNetworkImageProvider(
+                                              profileImageUrl,
+                                            ),
+                                        onBackgroundImageError:
+                                            (exception, stackTrace) {
+                                              // Handle error silently
+                                            },
+                                      );
+                                    }
+
+                                    // Fallback to initial if no profile picture
+                                    return CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: AppColor.red,
+                                      child: Text(
+                                        latestReview.reviewerName.isNotEmpty
+                                            ? latestReview.reviewerName[0]
+                                                  .toUpperCase()
+                                            : 'U',
+                                        style: TextStyle(
+                                          color: AppColor.white,
+                                          fontFamily: AppFonts.appFont,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: Responsive.sp(12),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                                 SizedBox(width: Responsive.w(2)),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         latestReview.reviewerName,
@@ -479,7 +445,9 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                                       Text(
                                         latestReview.reviewerRole,
                                         style: TextStyle(
-                                          color: AppColor.white.withValues(alpha: 0.7),
+                                          color: AppColor.white.withValues(
+                                            alpha: 0.7,
+                                          ),
                                           fontFamily: AppFonts.appFont,
                                           fontSize: Responsive.sp(8),
                                         ),
@@ -496,7 +464,9 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                                           Icons.star,
                                           color: index < latestReview.rating
                                               ? AppColor.red
-                                              : AppColor.white.withValues(alpha: 0.3),
+                                              : AppColor.white.withValues(
+                                                  alpha: 0.3,
+                                                ),
                                           size: 14,
                                         );
                                       }),
@@ -504,10 +474,13 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                                     SizedBox(height: 2),
                                     Text(
                                       Utils.convertToReadableFormat(
-                                        latestReview.createdAt.toIso8601String(),
+                                        latestReview.createdAt
+                                            .toIso8601String(),
                                       ),
                                       style: TextStyle(
-                                        color: AppColor.white.withValues(alpha: 0.5),
+                                        color: AppColor.white.withValues(
+                                          alpha: 0.5,
+                                        ),
                                         fontFamily: AppFonts.appFont,
                                         fontSize: Responsive.sp(8),
                                       ),
@@ -554,43 +527,62 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
 
                       // Show button only if current user is a fighter
                       if (currentUser.isFighter) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            SizedBox(height: Responsive.h(2)),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                        final promoterUserId = widget.userData.id;
+                        // Check if user has already reviewed this promoter
+                        return FutureBuilder<bool>(
+                          future: ReviewRepository.hasAlreadyReviewed(
+                            reviewerId: currentUser.id,
+                            reviewedUserId: promoterUserId,
+                          ),
+                          builder: (context, reviewSnapshot) {
+                            // Hide button if already reviewed
+                            if (reviewSnapshot.hasData &&
+                                reviewSnapshot.data == true) {
+                              return Container();
+                            }
+
+                            // Show button if not reviewed yet or still checking
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                SizedBox(
-                                  width: 200,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      _ratePromoterBottomSheet(context);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColor.red,
-                                      foregroundColor: AppColor.white,
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: Responsive.h(1.5),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                SizedBox(height: Responsive.h(2)),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    SizedBox(
+                                      width: 200,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          _ratePromoterBottomSheet(context);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColor.red,
+                                          foregroundColor: AppColor.white,
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: Responsive.h(1.5),
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          "Rate This Promoter",
+                                          style: TextStyle(
+                                            color: AppColor.white,
+                                            fontFamily: AppFonts.appFont,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: Responsive.sp(14),
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    child: Text(
-                                      "Rate This Promoter",
-                                      style: TextStyle(
-                                        color: AppColor.white,
-                                        fontFamily: AppFonts.appFont,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: Responsive.sp(14),
-                                      ),
-                                    ),
-                                  ),
+                                  ],
                                 ),
                               ],
-                            ),
-                          ],
+                            );
+                          },
                         );
                       }
                     }
@@ -598,6 +590,14 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                     return Container();
                   },
                 ),
+
+                SizedBox(height: Responsive.h(2)),
+
+                // Photos Section
+                _buildPhotosSection(context, widget.userData.id, false),
+
+                // Videos Section
+                _buildVideosSection(context, widget.userData.id, false),
 
                 SizedBox(height: Responsive.h(2)),
               ],
@@ -620,18 +620,23 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
           radius: 35,
           backgroundColor: AppColor.white.withValues(alpha: 0.1),
           child:
-              promoter.companyLogo != null && promoter.companyLogo!.isNotEmpty
+              promoter.profileImageUrl != null &&
+                  promoter.profileImageUrl!.isNotEmpty
               ? ClipOval(
                   child: CachedNetworkImage(
-                    imageUrl: promoter.companyLogo!,
+                    imageUrl: promoter.profileImageUrl!,
                     width: 70,
                     height: 70,
                     fit: BoxFit.cover,
-                    errorWidget: (context, url, error) =>
-                        Image(image: AssetImage("assets/images/image.png")),
+                    placeholder: (context, url) => Image(
+                      image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                    ),
+                    errorWidget: (context, url, error) => Image(
+                      image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                    ),
                   ),
                 )
-              : Image(image: AssetImage("assets/images/image.png")),
+              : Image(image: AssetImage("assets/images/Ellipse 24 (1).png")),
         ),
         Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -646,35 +651,77 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Row(
-              children: [
-                SvgPicture.asset("assets/icons/call.svg"),
-                SizedBox(width: Responsive.w(1)),
-                Text(
-                  promoter.contactNumber ?? "Phone not set",
-                  style: TextStyle(
-                    fontSize: Responsive.textScaleFactor * 12,
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.normal,
+            GestureDetector(
+              onTap: () {
+                if (promoter.contactNumber != null &&
+                    promoter.contactNumber!.isNotEmpty &&
+                    promoter.contactNumber != "Phone not set") {
+                  _launchPhone(context, promoter.contactNumber!);
+                }
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset("assets/icons/call.svg"),
+                  SizedBox(width: Responsive.w(1)),
+                  Text(
+                    promoter.contactNumber ?? "Phone not set",
+                    style: TextStyle(
+                      fontSize: Responsive.textScaleFactor * 12,
+                      color:
+                          (promoter.contactNumber != null &&
+                              promoter.contactNumber!.isNotEmpty &&
+                              promoter.contactNumber != "Phone not set")
+                          ? AppColor.red
+                          : AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.normal,
+                      decoration:
+                          (promoter.contactNumber != null &&
+                              promoter.contactNumber!.isNotEmpty &&
+                              promoter.contactNumber != "Phone not set")
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            Row(
-              children: [
-                SvgPicture.asset("assets/icons/mail-02.svg"),
-                SizedBox(width: Responsive.w(1)),
-                Text(
-                  promoter.contactEmail ?? "Email not set",
-                  style: TextStyle(
-                    fontSize: Responsive.textScaleFactor * 12,
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.normal,
+            GestureDetector(
+              onTap: () {
+                if (promoter.contactEmail != null &&
+                    promoter.contactEmail!.isNotEmpty &&
+                    promoter.contactEmail != "Email not set") {
+                  _launchEmail(context, promoter.contactEmail!);
+                }
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset("assets/icons/mail-02.svg"),
+                  SizedBox(width: Responsive.w(1)),
+                  Text(
+                    promoter.contactEmail ?? "Email not set",
+                    style: TextStyle(
+                      fontSize: Responsive.textScaleFactor * 12,
+                      color:
+                          (promoter.contactEmail != null &&
+                              promoter.contactEmail!.isNotEmpty &&
+                              promoter.contactEmail != "Email not set")
+                          ? AppColor.red
+                          : AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.normal,
+                      decoration:
+                          (promoter.contactEmail != null &&
+                              promoter.contactEmail!.isNotEmpty &&
+                              promoter.contactEmail != "Email not set")
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -765,69 +812,72 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
           ),
           Flexible(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 5.5,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  event.eventTitle,
-                  style: TextStyle(
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.bold,
-                    fontSize: Responsive.sp(14),
-                  ),
+                children: [
+                  Text(
+                    event.eventTitle,
+                    style: TextStyle(
+                      color: AppColor.white,
+                      fontFamily: AppFonts.appFont,
+                      fontWeight: FontWeight.bold,
+                      fontSize: Responsive.sp(14),
+                    ),
                     maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                  SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 14,
-                      color: AppColor.white.withValues(alpha: 0.7),
-                    ),
-                    SizedBox(width: Responsive.w(1)),
-                    Expanded(
-                      child: Text(
-                        DateFormat('MMM dd, yyyy').format(event.eventDate),
-                        style: TextStyle(
-                          color: AppColor.white.withValues(alpha: 0.7),
-                          fontFamily: AppFonts.appFont,
-                          fontSize: Responsive.sp(10),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 2.5),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: AppColor.white.withValues(alpha: 0.7),
                       ),
-                    ),
-                  ],
-                ),
-                  SizedBox(height: 2),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 14,
-                      color: AppColor.white.withValues(alpha: 0.7),
-                    ),
-                    SizedBox(width: Responsive.w(1)),
-                    Expanded(
-                      child: Text(
-                        event.location,
-                        style: TextStyle(
-                          color: AppColor.white.withValues(alpha: 0.7),
-                          fontFamily: AppFonts.appFont,
-                          fontSize: Responsive.sp(10),
+                      SizedBox(width: Responsive.w(1)),
+                      Expanded(
+                        child: Text(
+                          DateFormat('MMM dd, yyyy').format(event.eventDate),
+                          style: TextStyle(
+                            color: AppColor.white.withValues(alpha: 0.7),
+                            fontFamily: AppFonts.appFont,
+                            fontSize: Responsive.sp(10),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                  SizedBox(height: 1),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: AppColor.white.withValues(alpha: 0.7),
+                      ),
+                      SizedBox(width: Responsive.w(1)),
+                      Expanded(
+                        child: Text(
+                          event.location,
+                          style: TextStyle(
+                            color: AppColor.white.withValues(alpha: 0.7),
+                            fontFamily: AppFonts.appFont,
+                            fontSize: Responsive.sp(10),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -1017,7 +1067,9 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
 
   void _ratePromoterBottomSheet(BuildContext context) {
     final String promoterUserId = widget.userData.id;
-    final String promoterName = (widget.userData.roleData as PromoterDataModel).companyName ?? 'Promoter';
+    final String promoterName =
+        (widget.userData.roleData as PromoterDataModel).companyName ??
+        'Promoter';
 
     showModalBottomSheet(
       context: context,
@@ -1033,6 +1085,384 @@ class _PromoterPublicProfileState extends State<PromoterPublicProfile> {
         );
       },
     );
+  }
+
+  Widget _buildActiveEventsSection(
+    BuildContext context,
+    EventService eventService,
+  ) {
+    return StreamBuilder<List<EventModel>>(
+      stream: eventService.getActiveEventsByPromoter(widget.userData.id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox.shrink();
+        }
+
+        if (snapshot.hasError) {
+          return SizedBox.shrink();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox.shrink();
+        }
+
+        final events = snapshot.data!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Active Events",
+                style: TextStyle(
+                  color: AppColor.white,
+                  fontFamily: AppFonts.appFont,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(16),
+                ),
+              ),
+            ),
+            SizedBox(height: Responsive.h(1)),
+            SizedBox(
+              height: Responsive.h(30),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: events.length,
+                itemBuilder: (context, index) {
+                  final event = events[index];
+                  return _buildEventCard(context, event);
+                },
+              ),
+            ),
+            SizedBox(height: Responsive.h(2)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPhotosSection(
+    BuildContext context,
+    String userId,
+    bool isOwnProfile,
+  ) {
+    return StreamBuilder<List<ProfileMediaModel>>(
+      stream: ProfileMediaService.getPhotosStream(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox.shrink();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Photos",
+                style: TextStyle(
+                  color: AppColor.white,
+                  fontFamily: AppFonts.appFont,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(16),
+                ),
+              ),
+            ),
+            SizedBox(height: Responsive.h(1)),
+            _buildPhotosGrid(context, userId, isOwnProfile),
+            SizedBox(height: Responsive.h(2)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildVideosSection(
+    BuildContext context,
+    String userId,
+    bool isOwnProfile,
+  ) {
+    return StreamBuilder<List<ProfileMediaModel>>(
+      stream: ProfileMediaService.getVideosStream(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox.shrink();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Videos",
+                style: TextStyle(
+                  color: AppColor.white,
+                  fontFamily: AppFonts.appFont,
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.sp(16),
+                ),
+              ),
+            ),
+            SizedBox(height: Responsive.h(1)),
+            _buildVideosGrid(context, userId, isOwnProfile),
+            SizedBox(height: Responsive.h(2)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPhotosGrid(
+    BuildContext context,
+    String userId,
+    bool isOwnProfile,
+  ) {
+    return StreamBuilder<List<ProfileMediaModel>>(
+      stream: ProfileMediaService.getPhotosStream(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: Responsive.h(20),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: AppColor.white.withValues(alpha: 0.1),
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Center(
+              child: CircularProgressIndicator(color: AppColor.red),
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox.shrink();
+        }
+
+        final photos = snapshot.data!;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1,
+          ),
+          itemCount: photos.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenMediaViewer(
+                      mediaList: photos,
+                      initialIndex: index,
+                      isOwnProfile: isOwnProfile,
+                      userId: userId,
+                      onDelete: null, // No delete for public profile
+                    ),
+                  ),
+                );
+              },
+              child: _buildMediaItem(context, photos[index], isOwnProfile),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildVideosGrid(
+    BuildContext context,
+    String userId,
+    bool isOwnProfile,
+  ) {
+    return StreamBuilder<List<ProfileMediaModel>>(
+      stream: ProfileMediaService.getVideosStream(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: Responsive.h(20),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: AppColor.white.withValues(alpha: 0.1),
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Center(
+              child: CircularProgressIndicator(color: AppColor.red),
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SizedBox.shrink();
+        }
+
+        final videos = snapshot.data!;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1,
+          ),
+          itemCount: videos.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenMediaViewer(
+                      mediaList: videos,
+                      initialIndex: index,
+                      isOwnProfile: isOwnProfile,
+                      userId: userId,
+                      onDelete: null, // No delete for public profile
+                    ),
+                  ),
+                );
+              },
+              child: _buildMediaItem(context, videos[index], isOwnProfile),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMediaItem(
+    BuildContext context,
+    ProfileMediaModel media,
+    bool isOwnProfile,
+  ) {
+    // Check if URL is a video file
+    final isVideoUrl =
+        media.url.toLowerCase().endsWith('.mp4') ||
+        media.url.toLowerCase().endsWith('.mov') ||
+        media.url.toLowerCase().endsWith('.avi') ||
+        media.url.toLowerCase().endsWith('.mkv') ||
+        media.url.toLowerCase().endsWith('.webm') ||
+        media.type == 'video';
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: media.type == 'photo' && !isVideoUrl
+              ? CachedNetworkImage(
+                  imageUrl: media.url,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: AppColor.black,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColor.red,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: AppColor.black,
+                    child: Icon(Icons.error_outline, color: AppColor.red),
+                  ),
+                )
+              : Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // For videos, show a placeholder instead of trying to load the video URL as an image
+                    Container(
+                      color: AppColor.black,
+                      child: Center(
+                        child: Icon(
+                          Icons.videocam,
+                          color: AppColor.white.withValues(alpha: 0.5),
+                          size: 48,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColor.black.withValues(alpha: 0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.play_arrow,
+                          color: AppColor.white,
+                          size: 32,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _launchEmail(BuildContext context, String email) async {
+    final Uri emailUri =
+        Uri.parse('mailto:${Uri.encodeComponent(email)}');
+
+    try {
+      final launched = await launchUrl(
+        emailUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Could not open email app. Is one installed?',
+          context,
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Email launcher error: $e\n$st');
+      if (context.mounted) {
+        Utils.flushBarErrorMassage('Could not launch email: ${e.toString()}', context);
+      }
+    }
+  }
+
+  Future<void> _launchPhone(BuildContext context, String phoneNumber) async {
+    final cleanedNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final Uri phoneUri = Uri.parse('tel:$cleanedNumber');
+
+    try {
+      final launched = await launchUrl(
+        phoneUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Could not open phone dialer',
+          context,
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Phone launcher error: $e\n$st');
+      if (context.mounted) {
+        Utils.flushBarErrorMassage('Error: ${e.toString()}', context);
+      }
+    }
   }
 }
 
@@ -1050,7 +1480,8 @@ class _PromoterRatingBottomSheetContent extends StatefulWidget {
       _PromoterRatingBottomSheetContentState();
 }
 
-class _PromoterRatingBottomSheetContentState extends State<_PromoterRatingBottomSheetContent> {
+class _PromoterRatingBottomSheetContentState
+    extends State<_PromoterRatingBottomSheetContent> {
   int _selectedRating = 0;
   final TextEditingController _commentController = TextEditingController();
   bool _isSubmitting = false;
@@ -1162,8 +1593,8 @@ class _PromoterRatingBottomSheetContentState extends State<_PromoterRatingBottom
 
       if (currentUser.isFighter && currentUser.roleData != null) {
         final fighterData = currentUser.roleData as FighterDataModel;
-        reviewerName = fighterData.fullName.isNotEmpty 
-            ? fighterData.fullName 
+        reviewerName = fighterData.fullName.isNotEmpty
+            ? fighterData.fullName
             : 'Fighter';
         reviewerRole = 'Fighter';
       } else if (currentUser.isPromoter && currentUser.roleData != null) {
@@ -1425,7 +1856,7 @@ class _PromoterRatingBottomSheetContentState extends State<_PromoterRatingBottom
                 ),
                 SizedBox(height: Responsive.h(2)),
               ],
-      ),
+            ),
     );
   }
 }

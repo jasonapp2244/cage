@@ -69,7 +69,7 @@ class FightingStylesService {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
+          .map((doc) => doc.data())
           .map((data) => data['name'] as String)
           .toList();
     });

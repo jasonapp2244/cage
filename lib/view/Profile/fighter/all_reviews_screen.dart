@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/models/review_model.dart';
+import 'package:cage/models/fighter_model.dart';
+import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/user_model.dart';
 import 'package:cage/repository/review_repository.dart';
+import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
@@ -109,7 +114,7 @@ class AllReviewsScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: StreamBuilder<List<ReviewModel>>(
-          stream: isPromoter 
+          stream: isPromoter
               ? ReviewRepository.getPromoterReviews(fighterUserId)
               : ReviewRepository.getFighterReviews(fighterUserId),
           builder: (context, snapshot) {
@@ -149,7 +154,7 @@ class AllReviewsScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      "No reviews yet",
+                      "Be among the first to support this fighter",
                       style: TextStyle(
                         color: AppColor.white,
                         fontFamily: AppFonts.appFont,
@@ -315,7 +320,10 @@ class AllReviewsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColor.black,
-        border: Border.all(color: AppColor.white.withValues(alpha: 0.1), width: 1),
+        border: Border.all(
+          color: AppColor.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -324,19 +332,52 @@ class AllReviewsScreen extends StatelessWidget {
           // Reviewer info and rating
           Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: AppColor.red,
-                child: Text(
-                  review.reviewerName.isNotEmpty
-                      ? review.reviewerName[0].toUpperCase()
-                      : 'U',
-                  style: TextStyle(
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              StreamBuilder<UserModel?>(
+                stream: UserRepository.fetchUserByIdStream(review.reviewerId),
+                builder: (context, userSnapshot) {
+                  String? profileImageUrl;
+
+                  if (userSnapshot.hasData && userSnapshot.data != null) {
+                    final user = userSnapshot.data!;
+                    if (user.isFighter && user.roleData is FighterDataModel) {
+                      final fighter = user.roleData as FighterDataModel;
+                      profileImageUrl = fighter.profileImageUrl;
+                    } else if (user.isPromoter &&
+                        user.roleData is PromoterDataModel) {
+                      final promoter = user.roleData as PromoterDataModel;
+                      profileImageUrl = promoter.profileImageUrl;
+                    }
+                  }
+
+                  if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+                    return CircleAvatar(
+                      radius: 20,
+                      backgroundColor: AppColor.red,
+                      backgroundImage: CachedNetworkImageProvider(
+                        profileImageUrl,
+                      ),
+                      onBackgroundImageError: (exception, stackTrace) {
+                        // Handle error silently
+                      },
+                    );
+                  }
+
+                  // Fallback to initial if no profile picture
+                  return CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColor.red,
+                    child: Text(
+                      review.reviewerName.isNotEmpty
+                          ? review.reviewerName[0].toUpperCase()
+                          : 'U',
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                },
               ),
               SizedBox(width: 12),
               Expanded(

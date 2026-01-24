@@ -1,9 +1,11 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ContactUsView extends StatefulWidget {
   const ContactUsView({super.key});
@@ -63,6 +65,93 @@ class _ContactUsViewState extends State<ContactUsView> {
     }
   }
 
+  Future<void> _launchPhone(String phoneNumber) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Cannot make phone call'),
+              backgroundColor: AppColor.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColor.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchEmail(String email) async {
+    final Uri emailUri =
+        Uri.parse('mailto:${Uri.encodeComponent(email)}');
+    try {
+      final launched = await launchUrl(
+        emailUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open email app. Is one installed?'),
+            backgroundColor: AppColor.red,
+          ),
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Email launcher error: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not launch email: $e'),
+            backgroundColor: AppColor.red,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchMaps(String address) async {
+    // Encode the address for Google Maps URL
+    final String encodedAddress = Uri.encodeComponent(address);
+    final Uri mapsUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$encodedAddress');
+    
+    try {
+      if (await canLaunchUrl(mapsUri)) {
+        await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Cannot open maps'),
+              backgroundColor: AppColor.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColor.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Responsive.init(context);
@@ -77,7 +166,18 @@ class _ContactUsViewState extends State<ContactUsView> {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      // Try to find MainWrapper state (for drawer navigation)
+                      final state = context.findAncestorStateOfType<MainWrapperState>();
+                      if (state != null) {
+                        state.resetToHome();
+                        return;
+                      }
+                      // Fallback to normal navigation
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      }
+                    },
                     child: SvgPicture.asset(
                       "assets/icons/arrow-left-01.svg",
                       color: AppColor.red,
@@ -98,7 +198,7 @@ class _ContactUsViewState extends State<ContactUsView> {
             // Content
             Expanded(
               child: _isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                         color: AppColor.red,
                       ),
@@ -146,45 +246,53 @@ class _ContactUsViewState extends State<ContactUsView> {
                                 if (_email != null && _email!.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 24.0),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 4.0),
-                                          child: SvgPicture.asset(
-                                            "assets/icons/mail-02.svg",
-                                            color: AppColor.red,
-                                            width: 20,
-                                            height: 20,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Email',
-                                                style: TextStyle(
-                                                  fontSize: Responsive.textScaleFactor * 14,
-                                                  color: AppColor.white.withValues(alpha: 0.7),
-                                                  fontFamily: AppFonts.appFont,
-                                                ),
+                                    child: InkWell(
+                                      onTap: () => _launchEmail(_email!),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 4.0),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/mail-02.svg",
+                                                color: AppColor.red,
+                                                width: 20,
+                                                height: 20,
                                               ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                _email!,
-                                                style: TextStyle(
-                                                  fontSize: Responsive.textScaleFactor * 16,
-                                                  color: AppColor.white,
-                                                  fontFamily: AppFonts.appFont,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Email',
+                                                    style: TextStyle(
+                                                      fontSize: Responsive.textScaleFactor * 14,
+                                                      color: AppColor.white.withValues(alpha: 0.7),
+                                                      fontFamily: AppFonts.appFont,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    _email!,
+                                                    style: TextStyle(
+                                                      fontSize: Responsive.textScaleFactor * 16,
+                                                      color: AppColor.red,
+                                                      fontFamily: AppFonts.appFont,
+                                                      fontWeight: FontWeight.w500,
+                                                      decoration: TextDecoration.underline,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ),
 
@@ -192,45 +300,53 @@ class _ContactUsViewState extends State<ContactUsView> {
                                 if (_phoneNumber != null && _phoneNumber!.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 24.0),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 4.0),
-                                          child: SvgPicture.asset(
-                                            "assets/icons/call.svg",
-                                            color: AppColor.red,
-                                            width: 20,
-                                            height: 20,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Phone Number',
-                                                style: TextStyle(
-                                                  fontSize: Responsive.textScaleFactor * 14,
-                                                  color: AppColor.white.withValues(alpha: 0.7),
-                                                  fontFamily: AppFonts.appFont,
-                                                ),
+                                    child: InkWell(
+                                      onTap: () => _launchPhone(_phoneNumber!),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 4.0),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/call.svg",
+                                                color: AppColor.red,
+                                                width: 20,
+                                                height: 20,
                                               ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                _phoneNumber!,
-                                                style: TextStyle(
-                                                  fontSize: Responsive.textScaleFactor * 16,
-                                                  color: AppColor.white,
-                                                  fontFamily: AppFonts.appFont,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Phone Number',
+                                                    style: TextStyle(
+                                                      fontSize: Responsive.textScaleFactor * 14,
+                                                      color: AppColor.white.withValues(alpha: 0.7),
+                                                      fontFamily: AppFonts.appFont,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    _phoneNumber!,
+                                                    style: TextStyle(
+                                                      fontSize: Responsive.textScaleFactor * 16,
+                                                      color: AppColor.red,
+                                                      fontFamily: AppFonts.appFont,
+                                                      fontWeight: FontWeight.w500,
+                                                      decoration: TextDecoration.underline,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ),
 
@@ -238,45 +354,53 @@ class _ContactUsViewState extends State<ContactUsView> {
                                 if (_address != null && _address!.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 24.0),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 4.0),
-                                          child: Icon(
-                                            Icons.location_on,
-                                            color: AppColor.red,
-                                            size: 20,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Address',
-                                                style: TextStyle(
-                                                  fontSize: Responsive.textScaleFactor * 14,
-                                                  color: AppColor.white.withValues(alpha: 0.7),
-                                                  fontFamily: AppFonts.appFont,
-                                                ),
+                                    child: InkWell(
+                                      onTap: () => _launchMaps(_address!),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 4.0),
+                                              child: Icon(
+                                                Icons.location_on,
+                                                color: AppColor.red,
+                                                size: 20,
                                               ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                _address!,
-                                                style: TextStyle(
-                                                  fontSize: Responsive.textScaleFactor * 16,
-                                                  color: AppColor.white,
-                                                  fontFamily: AppFonts.appFont,
-                                                  fontWeight: FontWeight.w500,
-                                                  height: 1.5,
-                                                ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Address',
+                                                    style: TextStyle(
+                                                      fontSize: Responsive.textScaleFactor * 14,
+                                                      color: AppColor.white.withValues(alpha: 0.7),
+                                                      fontFamily: AppFonts.appFont,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    _address!,
+                                                    style: TextStyle(
+                                                      fontSize: Responsive.textScaleFactor * 16,
+                                                      color: AppColor.red,
+                                                      fontFamily: AppFonts.appFont,
+                                                      fontWeight: FontWeight.w500,
+                                                      height: 1.5,
+                                                      decoration: TextDecoration.underline,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ),
 

@@ -27,14 +27,22 @@ class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
 
   @override
-  State<MainWrapper> createState() => _MainWrapperState();
+  State<MainWrapper> createState() => MainWrapperState();
 }
 
-class _MainWrapperState extends State<MainWrapper> {
+class MainWrapperState extends State<MainWrapper> {
   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
 
   int _currentIndex = 0;
   bool _isDrawerNavigation = false; // Track if we're navigating from drawer
+
+  // Public method to reset navigation to home
+  void resetToHome() {
+    setState(() {
+      _currentIndex = 0;
+      _isDrawerNavigation = false;
+    });
+  }
 
   // Bottom Navigation Pages (Main App Flow)
   final List<Widget> _bottomNavPages = [
@@ -135,7 +143,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.hideDrawer();
                     setState(() {
                       _currentIndex = 0;
                       _isDrawerNavigation = true;
@@ -146,7 +154,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.hideDrawer();
                     setState(() {
                       _currentIndex = 1;
                       _isDrawerNavigation = true;
@@ -157,7 +165,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.hideDrawer();
                     setState(() {
                       _currentIndex = 2;
                       _isDrawerNavigation = true;
@@ -170,7 +178,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.hideDrawer();
                     setState(() {
                       _currentIndex = 3;
                       _isDrawerNavigation = true;
@@ -181,7 +189,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.hideDrawer();
                     setState(() {
                       _currentIndex = 4;
                       _isDrawerNavigation = true;
@@ -192,7 +200,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.hideDrawer();
                     setState(() {
                       _currentIndex = 5;
                       _isDrawerNavigation = true;
@@ -203,7 +211,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () {
-                    _drawerController.hideDrawer();
+                    drawerProvider.hideDrawer();
                     setState(() {
                       _currentIndex = 6;
                       _isDrawerNavigation = true;
@@ -214,6 +222,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 ),
                 ListTile(
                   onTap: () async {
+                    drawerProvider.hideDrawer();
                     await authProvider.logout(context);
                   },
                   leading: SvgPicture.asset("assets/icons/logout-03.svg"),
@@ -226,7 +235,19 @@ class _MainWrapperState extends State<MainWrapper> {
       ),
       child: Scaffold(
         body: _isDrawerNavigation
-            ? _drawerPages[_currentIndex]
+            ? PopScope(
+                canPop: false,
+                onPopInvoked: (didPop) {
+                  if (!didPop) {
+                    // Reset to home when back is pressed
+                    setState(() {
+                      _currentIndex = 0;
+                      _isDrawerNavigation = false;
+                    });
+                  }
+                },
+                child: _drawerPages[_currentIndex],
+              )
             : _bottomNavPages[_currentIndex],
         bottomNavigationBar: _buildBottomNavBar(),
       ),
@@ -307,45 +328,58 @@ class _MainWrapperState extends State<MainWrapper> {
     );
   }
 
-  BottomNavigationBar _buildBottomNavBar() {
-    return BottomNavigationBar(
-      currentIndex: _isDrawerNavigation
-          ? 0
-          : _currentIndex, // Reset to 0 if from drawer
-      onTap: (index) => setState(() {
-        _currentIndex = index;
-        _isDrawerNavigation = false; // Switch to bottom nav mode
-      }),
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.black,
-      selectedItemColor: AppColor.white,
-      unselectedItemColor: Colors.grey,
-      items: [
-        BottomNavigationBarItem(
-          // assets/icons/home_seleted.svg
-          activeIcon: SvgPicture.asset("assets/icons/Group 1000002074.svg"),
-          icon: SvgPicture.asset("assets/icons/home_unseleted.svg"),
-          label: '',
-        ),
-        BottomNavigationBarItem(
-          activeIcon: SvgPicture.asset("assets/icons/exploer_seleted.svg"),
-          icon: SvgPicture.asset("assets/icons/exploer.svg"),
-          label: '',
-        ),
-        // assets/icons/home_unseleted.svg
-        BottomNavigationBarItem(
-          activeIcon: SvgPicture.asset(
-            "assets/icons/notification_selected.svg",
-          ),
-          icon: SvgPicture.asset("assets/icons/notification.svg"),
-          label: '',
-        ),
-        BottomNavigationBarItem(
-          activeIcon: _buildProfileIcon(isSelected: true),
-          icon: _buildProfileIcon(isSelected: false),
-          label: '',
-        ),
-      ],
+  Widget _buildBottomNavBar() {
+    return StreamBuilder<Map<String, Color>>(
+      stream: AppColor.colorStream,
+      initialData: {
+        'black': AppColor.black,
+        'red': AppColor.red,
+        'white': AppColor.white,
+      },
+      builder: (context, snapshot) {
+        final black = snapshot.data?['black'] ?? AppColor.black;
+        final white = snapshot.data?['white'] ?? AppColor.white;
+        
+        return BottomNavigationBar(
+          currentIndex: _isDrawerNavigation
+              ? 0
+              : _currentIndex, // Reset to 0 if from drawer
+          onTap: (index) => setState(() {
+            _currentIndex = index;
+            _isDrawerNavigation = false; // Switch to bottom nav mode
+          }),
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: black,
+          selectedItemColor: white,
+          unselectedItemColor: Colors.grey,
+          items: [
+            BottomNavigationBarItem(
+              // assets/icons/home_seleted.svg
+              activeIcon: SvgPicture.asset("assets/icons/Group 1000002074.svg"),
+              icon: SvgPicture.asset("assets/icons/home_unseleted.svg"),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: SvgPicture.asset("assets/icons/exploer_seleted.svg"),
+              icon: SvgPicture.asset("assets/icons/exploer.svg"),
+              label: '',
+            ),
+            // assets/icons/home_unseleted.svg
+            BottomNavigationBarItem(
+              activeIcon: SvgPicture.asset(
+                "assets/icons/notification_selected.svg",
+              ),
+              icon: SvgPicture.asset("assets/icons/notification.svg"),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: _buildProfileIcon(isSelected: true),
+              icon: _buildProfileIcon(isSelected: false),
+              label: '',
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -528,7 +562,7 @@ class _MainWrapperState extends State<MainWrapper> {
 //               ),
 //               ListTile(
 //                 onTap: () {
-//                   _drawerController.hideDrawer();
+//                   drawerProvider.hideDrawer();
 //                   setState(() => _currentIndex = 0);
 //                 },
 //                 leading: Icon(Icons.home),
@@ -536,7 +570,7 @@ class _MainWrapperState extends State<MainWrapper> {
 //               ),
 //               ListTile(
 //                 onTap: () {
-//                   _drawerController.hideDrawer();
+//                   drawerProvider.hideDrawer();
 //                   setState(() => _currentIndex = 3); // Profile
 //                 },
 //                 leading: Icon(Icons.account_circle_rounded),

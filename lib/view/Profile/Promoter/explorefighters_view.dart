@@ -275,7 +275,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                         final fighter = user.roleData as FighterDataModel;
 
                         return Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(11),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(22),
                             color: AppColor.black,
@@ -286,6 +286,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               // Profile Row
                               Row(
@@ -372,7 +373,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                                 ],
                               ),
 
-                              SizedBox(height: Responsive.h(1)),
+                              SizedBox(height: Responsive.h(0.8)),
 
                               // Fighter Name
                               Text(
@@ -388,7 +389,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                                 overflow: TextOverflow.ellipsis,
                               ),
 
-                              SizedBox(height: Responsive.h(1)),
+                              SizedBox(height: Responsive.h(0.8)),
 
                               // Fighting Style
                               if (fighter.fightingStyle != null &&
@@ -420,7 +421,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                                 ),
 
                               // Stats Row
-                              SizedBox(height: Responsive.h(0.5)),
+                              SizedBox(height: Responsive.h(0.4)),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -431,7 +432,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                                 ],
                               ),
 
-                              SizedBox(height: Responsive.h(1)),
+                              SizedBox(height: Responsive.h(0.8)),
 
                               GestureDetector(
                                 onTap: () {

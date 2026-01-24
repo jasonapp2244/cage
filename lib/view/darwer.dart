@@ -5,11 +5,7 @@ class DrawerWrapper extends StatelessWidget {
   final Widget child;
   final String title;
 
-  const DrawerWrapper({
-    required this.child,
-    required this.title,
-    super.key,
-  });
+  const DrawerWrapper({required this.child, required this.title, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,12 +19,12 @@ class DrawerWrapper extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.blueGrey, Colors.blueGrey.withValues(alpha:0.2)],
+            colors: [Colors.blueGrey, Colors.blueGrey.withValues(alpha: 0.2)],
           ),
         ),
       ),
       controller: advancedDrawerController,
-      
+
       drawer: SafeArea(
         child: SizedBox(
           child: ListTileTheme(
@@ -64,7 +60,8 @@ class DrawerWrapper extends StatelessWidget {
             ),
           ),
         ),
-      ),child: Scaffold(
+      ),
+      child: Scaffold(
         appBar: AppBar(
           title: Text(title),
           leading: IconButton(

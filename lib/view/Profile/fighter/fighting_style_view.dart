@@ -86,9 +86,9 @@ class _FightingStyleViewState extends State<FightingStyleView> {
               ),
               SizedBox(height: Responsive.h(3)),
               if (_isLoading)
-                const Center(
+                Center(
                   child: Padding(
-                    padding: EdgeInsets.all(32.0),
+                    padding: const EdgeInsets.all(32.0),
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(AppColor.red),
                     ),
@@ -106,7 +106,7 @@ class _FightingStyleViewState extends State<FightingStyleView> {
                     ),
                   ),
                   child: DropdownButtonFormField<String>(
-                    value: _selectedFightingStyle,
+                    initialValue: _selectedFightingStyle,
                     decoration: InputDecoration(
                       hintText: "Select your fighting style",
                       hintStyle: GoogleFonts.dmSans(

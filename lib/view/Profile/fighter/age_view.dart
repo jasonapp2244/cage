@@ -35,6 +35,7 @@ class AgeViewState extends State<AgeView> {
 
   @override
   Widget build(BuildContext context) {
+    Responsive.init(context);
     final authProvider = Provider.of<AuthViewmodel>(context);
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -55,8 +56,8 @@ class AgeViewState extends State<AgeView> {
                   ),
                 ),
                 SizedBox(height: Responsive.h(2)),
-                const Text(
-                  'What’s your age?',
+                Text(
+                  "What's your age?",
                   style: TextStyle(
                     color: AppColor.white,
                     fontFamily: AppFonts.appFont,

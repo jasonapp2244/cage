@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cage/models/user_model.dart';
 import 'package:cage/models/fighter_model.dart';
-import 'package:cage/models/user_subscription_model.dart';
 import 'package:flutter/foundation.dart';
 
 class SubscriptionRepository {

@@ -6,6 +6,7 @@ import 'package:cage/services/payment_service.dart';
 import 'package:cage/services/subscription_service.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
 import 'package:cage/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -34,6 +35,17 @@ class _SubscriptionPlansViewState extends State<SubscriptionPlansView> {
   void dispose() {
     _isDisposed = true;
     super.dispose();
+  }
+
+  void _goBack(BuildContext ctx) {
+    final state = ctx.findAncestorStateOfType<MainWrapperState>();
+    if (state != null) {
+      state.resetToHome();
+      return;
+    }
+    if (Navigator.canPop(ctx)) {
+      Navigator.pop(ctx);
+    }
   }
 
   Future<void> _checkPaymentAvailability() async {
@@ -90,7 +102,7 @@ class _SubscriptionPlansViewState extends State<SubscriptionPlansView> {
             'Subscription activated successfully!',
             context,
           );
-          Navigator.pop(context);
+          _goBack(context);
         }
       }
     } catch (e) {
@@ -118,7 +130,7 @@ class _SubscriptionPlansViewState extends State<SubscriptionPlansView> {
         backgroundColor: AppColor.black,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: AppColor.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => _goBack(context),
         ),
         title: Text(
           'Subscription Plans',

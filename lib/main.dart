@@ -10,6 +10,8 @@ import 'package:cage/provider/role_provider.dart';
 import 'package:cage/provider/tab_controller.dart';
 import 'package:cage/provider/ticket_provider.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/res/components/app_theme.dart';
+import 'package:cage/models/app_theme_model.dart';
 import 'package:cage/services/block_status_monitor.dart';
 import 'package:cage/services/notification_service.dart';
 import 'package:cage/services/payment_service.dart';
@@ -30,6 +32,14 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     print("Firebase initialized successfully");
+    
+    // Initialize app colors from Firestore
+    await AppColor.initialize();
+    print("App colors initialized successfully");
+    
+    // Initialize app theme from Firestore
+    await AppTheme.initialize();
+    print("App theme initialized successfully");
     
     // Initialize local notifications
     await NotificationService.initialize();
@@ -73,6 +83,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final BlockStatusMonitor _blockMonitor = BlockStatusMonitor();
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   StreamSubscription<User?>? _authStateSubscription;
+  StreamSubscription<Map<String, Color>>? _colorSubscription;
+  StreamSubscription<AppThemeModel>? _themeSubscription;
   User? _previousUser;
 
   @override
@@ -82,6 +94,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Set up auth state listener after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupAuthStateListener();
+      _setupColorListener();
+      _setupThemeListener();
     });
   }
 
@@ -89,8 +103,32 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _authStateSubscription?.cancel();
+    _colorSubscription?.cancel();
+    _themeSubscription?.cancel();
     _blockMonitor.dispose();
     super.dispose();
+  }
+
+  void _setupColorListener() {
+    _colorSubscription = AppColor.colorStream.listen((colors) {
+      if (mounted) {
+        setState(() {
+          // Colors are updated automatically in AppColor class
+          // This setState will trigger a rebuild with new colors
+        });
+      }
+    });
+  }
+
+  void _setupThemeListener() {
+    _themeSubscription = AppTheme.themeStream.listen((theme) {
+      if (mounted) {
+        setState(() {
+          // Theme is updated automatically in AppTheme class
+          // This setState will trigger a rebuild with new theme
+        });
+      }
+    });
   }
 
   void _setupAuthStateListener() {

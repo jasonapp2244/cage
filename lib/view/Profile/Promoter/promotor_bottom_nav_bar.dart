@@ -134,9 +134,11 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() {
-                      _currentIndex = 0;
-                      _isDrawerNavigation = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() {
+                        _currentIndex = 0;
+                        _isDrawerNavigation = true;
+                      });
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/home.svg"),
@@ -145,9 +147,11 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() {
-                      _currentIndex = 1;
-                      _isDrawerNavigation = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() {
+                        _currentIndex = 1;
+                        _isDrawerNavigation = true;
+                      });
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
@@ -156,9 +160,11 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() {
-                      _currentIndex = 2;
-                      _isDrawerNavigation = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() {
+                        _currentIndex = 2;
+                        _isDrawerNavigation = true;
+                      });
                     });
                   },
                   leading: SvgPicture.asset(
@@ -169,9 +175,11 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() {
-                      _currentIndex = 3;
-                      _isDrawerNavigation = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() {
+                        _currentIndex = 3;
+                        _isDrawerNavigation = true;
+                      });
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/setting.svg"),
@@ -180,9 +188,11 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() {
-                      _currentIndex = 4;
-                      _isDrawerNavigation = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() {
+                        _currentIndex = 4;
+                        _isDrawerNavigation = true;
+                      });
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
@@ -191,9 +201,11 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() {
-                      _currentIndex = 5;
-                      _isDrawerNavigation = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() {
+                        _currentIndex = 5;
+                        _isDrawerNavigation = true;
+                      });
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
@@ -202,9 +214,11 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ListTile(
                   onTap: () {
                     _drawerController.hideDrawer();
-                    setState(() {
-                      _currentIndex = 6;
-                      _isDrawerNavigation = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) setState(() {
+                        _currentIndex = 6;
+                        _isDrawerNavigation = true;
+                      });
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/mail-02.svg"),
@@ -212,6 +226,7 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                 ),
                 ListTile(
                   onTap: () async {
+                    _drawerController.hideDrawer();
                     await authProvider.logout(context);
                   },
                   leading: SvgPicture.asset("assets/icons/logout-03.svg"),
@@ -305,45 +320,58 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
     );
   }
 
-  BottomNavigationBar _buildBottomNavBar() {
-    return BottomNavigationBar(
-      currentIndex: _isDrawerNavigation
-          ? 0
-          : _currentIndex, // Reset to 0 if from drawer
-      onTap: (index) => setState(() {
-        _currentIndex = index;
-        _isDrawerNavigation = false; // Switch to bottom nav mode
-      }),
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.black,
-      selectedItemColor: Colors.red,
-      unselectedItemColor: Colors.grey,
-      items: [
-        BottomNavigationBarItem(
-          // assets/icons/home_seleted.svg
-          activeIcon: SvgPicture.asset("assets/icons/Group 1000002074.svg"),
-          icon: SvgPicture.asset("assets/icons/home_unseleted.svg"),
-          label: '',
-        ),
-        BottomNavigationBarItem(
-          activeIcon: SvgPicture.asset("assets/icons/fighetr_selected.svg"),
-          icon: SvgPicture.asset("assets/icons/fighter_unselected.svg"),
-          label: '',
-        ),
-        // assets/icons/home_unseleted.svg
-        BottomNavigationBarItem(
-          activeIcon: SvgPicture.asset(
-            "assets/icons/notification_selected.svg",
-          ),
-          icon: SvgPicture.asset("assets/icons/notification.svg"),
-          label: '',
-        ),
-        BottomNavigationBarItem(
-          activeIcon: _buildProfileIcon(isSelected: true),
-          icon: _buildProfileIcon(isSelected: false),
-          label: '',
-        ),
-      ],
+  Widget _buildBottomNavBar() {
+    return StreamBuilder<Map<String, Color>>(
+      stream: AppColor.colorStream,
+      initialData: {
+        'black': AppColor.black,
+        'red': AppColor.red,
+        'white': AppColor.white,
+      },
+      builder: (context, snapshot) {
+        final black = snapshot.data?['black'] ?? AppColor.black;
+        final red = snapshot.data?['red'] ?? AppColor.red;
+        
+        return BottomNavigationBar(
+          currentIndex: _isDrawerNavigation
+              ? 0
+              : _currentIndex, // Reset to 0 if from drawer
+          onTap: (index) => setState(() {
+            _currentIndex = index;
+            _isDrawerNavigation = false; // Switch to bottom nav mode
+          }),
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: black,
+          selectedItemColor: red,
+          unselectedItemColor: Colors.grey,
+          items: [
+            BottomNavigationBarItem(
+              // assets/icons/home_seleted.svg
+              activeIcon: SvgPicture.asset("assets/icons/Group 1000002074.svg"),
+              icon: SvgPicture.asset("assets/icons/home_unseleted.svg"),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: SvgPicture.asset("assets/icons/fighetr_selected.svg"),
+              icon: SvgPicture.asset("assets/icons/fighter_unselected.svg"),
+              label: '',
+            ),
+            // assets/icons/home_unseleted.svg
+            BottomNavigationBarItem(
+              activeIcon: SvgPicture.asset(
+                "assets/icons/notification_selected.svg",
+              ),
+              icon: SvgPicture.asset("assets/icons/notification.svg"),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: _buildProfileIcon(isSelected: true),
+              icon: _buildProfileIcon(isSelected: false),
+              label: '',
+            ),
+          ],
+        );
+      },
     );
   }
 

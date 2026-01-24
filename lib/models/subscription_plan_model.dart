@@ -32,7 +32,7 @@ class SubscriptionPlanModel {
   });
 
   factory SubscriptionPlanModel.fromMap(Map<String, dynamic> map, String id) {
-    DateTime? _parseDateTime(dynamic dateValue) {
+    DateTime? parseDateTime(dynamic dateValue) {
       if (dateValue == null) return null;
       try {
         if (dateValue is DateTime) {
@@ -67,8 +67,8 @@ class SubscriptionPlanModel {
               : [])
           : [],
       isActive: map['isActive'] ?? true,
-      createdAt: _parseDateTime(map['createdAt']) ?? DateTime.now(),
-      updatedAt: _parseDateTime(map['updatedAt']),
+      createdAt: parseDateTime(map['createdAt']) ?? DateTime.now(),
+      updatedAt: parseDateTime(map['updatedAt']),
       stripePriceId: map['stripePriceId']?.toString(),
       sortOrder: map['sortOrder'] is int 
           ? map['sortOrder'] 

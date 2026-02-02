@@ -7,6 +7,7 @@ import 'package:cage/services/subscription_service.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
+import 'package:cage/view/Profile/Promoter/promotor_bottom_nav_bar.dart';
 import 'package:cage/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -38,11 +39,19 @@ class _SubscriptionPlansViewState extends State<SubscriptionPlansView> {
   }
 
   void _goBack(BuildContext ctx) {
-    final state = ctx.findAncestorStateOfType<MainWrapperState>();
-    if (state != null) {
-      state.resetToHome();
+    // Try to find MainWrapper state (for drawer navigation)
+    final fighterState = ctx.findAncestorStateOfType<MainWrapperState>();
+    if (fighterState != null) {
+      fighterState.resetToHome();
       return;
     }
+    // Try to find PromotorBottomNavBar state (for promoter drawer navigation)
+    final promoterState = ctx.findAncestorStateOfType<PromotorBottomNavBarState>();
+    if (promoterState != null) {
+      promoterState.resetToHome();
+      return;
+    }
+    // Fallback to normal navigation
     if (Navigator.canPop(ctx)) {
       Navigator.pop(ctx);
     }

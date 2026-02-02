@@ -21,6 +21,7 @@ class Sginupview extends StatefulWidget {
 class _SginupviewState extends State<Sginupview> {
   final ValueNotifier<bool> _obsecurePassword = ValueNotifier<bool>(true);
   bool _rememberMe = false;
+  bool _googleInitScheduled = false;
   TextEditingController emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -43,6 +44,13 @@ class _SginupviewState extends State<Sginupview> {
   Widget build(BuildContext context) {
     // Initialize responsive class
     Responsive.init(context);
+    if (!_googleInitScheduled) {
+      _googleInitScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        AuthViewmodel.ensureGoogleSignInReady();
+      });
+    }
     final authViewmodel = Provider.of<AuthViewmodel>(context);
 
     return Scaffold(
@@ -127,7 +135,7 @@ class _SginupviewState extends State<Sginupview> {
                     );
                   },
                 ),
-                SizedBox(height: Responsive.h(2)),
+                SizedBox(height: Responsive.h(1)),
                 //
                 TextFormField(
                   style: TextStyle(color: AppColor.white),
@@ -174,7 +182,7 @@ class _SginupviewState extends State<Sginupview> {
                   },
                 ),
 
-                SizedBox(height: Responsive.h(2)),
+                SizedBox(height: Responsive.h(1)),
                 ValueListenableBuilder(
                   valueListenable: _obsecurePassword,
                   builder: (context, value, child) {
@@ -230,7 +238,7 @@ class _SginupviewState extends State<Sginupview> {
                     );
                   },
                 ),
-                SizedBox(height: Responsive.h(1.5)),
+                SizedBox(height: Responsive.h(1)),
                 Row(
                   children: [
                     Checkbox(
@@ -254,7 +262,7 @@ class _SginupviewState extends State<Sginupview> {
                     ),
                   ],
                 ),
-                SizedBox(height: Responsive.h(2.5)),
+                SizedBox(height: Responsive.h(1.5)),
                 AuthButton(
                   buttontext: "Sign Up",
                   loading: authViewmodel.loading,
@@ -285,7 +293,7 @@ class _SginupviewState extends State<Sginupview> {
                     }
                   },
                 ),
-                SizedBox(height: Responsive.h(5)),
+                SizedBox(height: Responsive.h(2)),
                 Row(
                   children: [
                     Expanded(child: Divider(color: AppColor.white)),
@@ -305,45 +313,50 @@ class _SginupviewState extends State<Sginupview> {
                     Expanded(child: Divider(color: AppColor.white)),
                   ],
                 ),
-                SizedBox(height: Responsive.h(5)),
+                SizedBox(height: Responsive.h(2)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     AbsorbPointer(
-                      absorbing: authViewmodel.loading,
+                      absorbing: authViewmodel.socialLoading,
                       child: SocialButton(
                         iconPath: 'assets/icons/google.svg',
-                        ontap: () =>
-                            authViewmodel.performGoogleSignIn(context),
+                        loading: authViewmodel.socialLoading,
+                        ontap: () => authViewmodel.performGoogleSignIn(context),
                       ),
                     ),
                     _buildSocialButton("assets/icons/facebook.svg"),
                     _buildSocialButton("assets/icons/apple.svg"),
                   ],
                 ),
-                SizedBox(height: Responsive.h(5)),
-                Text.rich(
-                  textAlign: TextAlign.center,
-                  TextSpan(
-                    text: "Have an account? ",
-                    style: TextStyle(
-                      color: AppColor.white,
-                      fontSize: Responsive.sp(10),
-                    ),
-                    children: [
-                      TextSpan(
-                        text: "Login here",
-                        style: TextStyle(
-                          color: AppColor.red,
-                          fontSize: Responsive.sp(10),
-                          fontWeight: FontWeight.bold,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.pushNamed(context, RoutesName.login);
-                          },
+                SizedBox(height: Responsive.h(3)),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.signup);
+                  },
+                  child: Text.rich(
+                    textAlign: TextAlign.center,
+                    TextSpan(
+                      text: "Have an account? ",
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontSize: Responsive.sp(10),
                       ),
-                    ],
+                      children: [
+                        TextSpan(
+                          text: "Login here",
+                          style: TextStyle(
+                            color: AppColor.red,
+                            fontSize: Responsive.sp(10),
+                            fontWeight: FontWeight.bold,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pushNamed(context, RoutesName.login);
+                            },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

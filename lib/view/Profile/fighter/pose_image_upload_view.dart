@@ -105,7 +105,10 @@ class _PoseImageUploadViewState extends State<PoseImageUploadView> {
 
   Future<void> _uploadAndContinue() async {
     if (_selectedImage == null) {
-      Utils.flushBarErrorMassage("Please select a pose image first", context);
+      // Skip pose image upload and continue to next screen
+      if (mounted) {
+        Navigator.pushNamed(context, RoutesName.namecoachview);
+      }
       return;
     }
 
@@ -153,6 +156,13 @@ class _PoseImageUploadViewState extends State<PoseImageUploadView> {
           _isUploading = false;
         });
       }
+    }
+  }
+
+  Future<void> _skipAndContinue() async {
+    // Skip pose image upload and continue to next screen
+    if (mounted) {
+      Navigator.pushNamed(context, RoutesName.namecoachview);
     }
   }
 
@@ -248,7 +258,7 @@ class _PoseImageUploadViewState extends State<PoseImageUploadView> {
                         ],
                       ),
                     ),
-                    SizedBox(height: Responsive.h(3)),
+                    SizedBox(height: Responsive.h(1)),
                     // Image Preview/Upload Area
                     GestureDetector(
                       onTap: () => _showImageSourceDialog(),
@@ -337,10 +347,27 @@ class _PoseImageUploadViewState extends State<PoseImageUploadView> {
                     ],
                   ],
                 ),
-                Button(
-                  text: _isUploading ? "Uploading..." : "Continue",
-                  enabled: !_isUploading && _selectedImage != null,
-                  onTap: _uploadAndContinue,
+                SizedBox(height: Responsive.h(1)),
+                Column(
+                  children: [
+                    Button(
+                      text: _isUploading ? "Uploading..." : "Continue",
+                      enabled: !_isUploading,
+                      onTap: _uploadAndContinue,
+                    ),
+                    SizedBox(height: Responsive.h(1)),
+                    TextButton(
+                      onPressed: _isUploading ? null : _skipAndContinue,
+                      child: Text(
+                        "Skip for now",
+                        style: GoogleFonts.dmSans(
+                          color: AppColor.white.withValues(alpha: 0.7),
+                          fontSize: Responsive.sp(14),
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

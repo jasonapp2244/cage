@@ -3,6 +3,8 @@ import 'package:cage/models/fighter_model.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cage/services/fighting_styles_service.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   // Controllers for form fields
@@ -13,9 +15,14 @@ class ProfileViewModel extends ChangeNotifier {
   late TextEditingController fightloseController;
   late TextEditingController fightknockoutController;
   late TextEditingController weightController;
+  late TextEditingController heightFeetController;
+  late TextEditingController heightInchesController;
   late TextEditingController coachController;
   late TextEditingController tapologyController;
   late TextEditingController locationController;
+  late TextEditingController lastBloodController;
+  late TextEditingController lastExamController;
+  late TextEditingController eyeExamController;
 
   // Focus nodes for form fields
   late FocusNode nameFocusNode;
@@ -25,6 +32,8 @@ class ProfileViewModel extends ChangeNotifier {
   late FocusNode fightloseFocusNode;
   late FocusNode fightknockoutFocusNode;
   late FocusNode weightFocusNode;
+  late FocusNode heightFeetFocusNode;
+  late FocusNode heightInchesFocusNode;
   late FocusNode coachFocusNode;
   late FocusNode tapologyFocusNode;
   late FocusNode locationFocusNode;
@@ -38,8 +47,19 @@ class ProfileViewModel extends ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  // Fighting style
+  String? _selectedFightingStyle;
+  String? get selectedFightingStyle => _selectedFightingStyle;
+  List<String> _fightingStyles = [];
+  List<String> get fightingStyles => _fightingStyles;
+  bool _isLoadingFightingStyles = false;
+  bool get isLoadingFightingStyles => _isLoadingFightingStyles;
+
+  final FightingStylesService _fightingStylesService = FightingStylesService();
+
   ProfileViewModel() {
     _initializeControllers();
+    _loadFightingStyles();
   }
 
   void _initializeControllers() {
@@ -51,9 +71,14 @@ class ProfileViewModel extends ChangeNotifier {
     fightloseController = TextEditingController();
     fightknockoutController = TextEditingController();
     weightController = TextEditingController();
+    heightFeetController = TextEditingController();
+    heightInchesController = TextEditingController();
     coachController = TextEditingController();
     tapologyController = TextEditingController();
     locationController = TextEditingController();
+    lastBloodController = TextEditingController();
+    lastExamController = TextEditingController();
+    eyeExamController = TextEditingController();
 
     // Initialize focus nodes
     nameFocusNode = FocusNode();
@@ -63,6 +88,8 @@ class ProfileViewModel extends ChangeNotifier {
     fightloseFocusNode = FocusNode();
     fightknockoutFocusNode = FocusNode();
     weightFocusNode = FocusNode();
+    heightFeetFocusNode = FocusNode();
+    heightInchesFocusNode = FocusNode();
     coachFocusNode = FocusNode();
     tapologyFocusNode = FocusNode();
     locationFocusNode = FocusNode();
@@ -71,17 +98,114 @@ class ProfileViewModel extends ChangeNotifier {
 
   /// Load current fighter data into form fields
   void loadCurrentData(FighterDataModel fighterData) {
-    nameController.text = fighterData.fullName ?? '';
-    phoneController.text = fighterData.coachContact ?? '';
+    nameController.text = fighterData.fullName;
+    // Load email from FirebaseAuth
+    final user = FirebaseAuth.instance.currentUser;
+    emailController.text = user?.email ?? '';
+    phoneController.text = fighterData.coachContact;
     fightwonController.text = fighterData.fightWin.toString();
     fightloseController.text = fighterData.fightsLose.toString();
     fightknockoutController.text = fighterData.fightsKnockout.toString();
     weightController.text = fighterData.weight ?? '';
-    coachController.text = fighterData.coachName ?? '';
-    tapologyController.text = fighterData.urlProfile ?? '';
+    final heightCm = double.tryParse(fighterData.height);
+    if (heightCm != null && heightCm > 0) {
+      final totalInches = heightCm / 2.54;
+      final feet = (totalInches / 12).floor();
+      final inches = (totalInches % 12).round();
+      heightFeetController.text = feet.toString();
+      heightInchesController.text = inches.toString();
+    }
+    coachController.text = fighterData.coachName;
+    tapologyController.text = fighterData.urlProfile;
     locationController.text = fighterData.location ?? '';
+    _setMedicalDateIfValid(lastBloodController, fighterData.lastBlood);
+    _setMedicalDateIfValid(lastExamController, fighterData.lastExam);
+    if (fighterData.eyeExam != null && fighterData.eyeExam!.isNotEmpty) {
+      _setMedicalDateIfValid(eyeExamController, fighterData.eyeExam!);
+    }
+    // Set fighting style
+    _selectedFightingStyle = fighterData.fightingStyle;
 
     notifyListeners();
+  }
+
+  void _setMedicalDateIfValid(TextEditingController c, String value) {
+    if (value.isEmpty || value == 'Not set' || value == '0') return;
+    c.text = value;
+  }
+
+  /// Load fighting styles from Firestore
+  Future<void> _loadFightingStyles() async {
+    _isLoadingFightingStyles = true;
+    notifyListeners();
+    try {
+      _fightingStyles = await _fightingStylesService.getAllFightingStyles();
+    } catch (e) {
+      print('Error loading fighting styles: $e');
+      _fightingStyles = [];
+    } finally {
+      _isLoadingFightingStyles = false;
+      notifyListeners();
+    }
+  }
+
+  /// Persist height (ft + in) as cm when both provided and valid.
+  Future<void> _saveHeightIfValid(
+    AuthViewmodel authProvider,
+    String uid,
+  ) async {
+    final ft = int.tryParse(heightFeetController.text.trim());
+    final inch = int.tryParse(heightInchesController.text.trim());
+    if (ft != null && inch != null && ft >= 0 && inch >= 0 && inch < 12) {
+      final totalInches = ft * 12 + inch;
+      final cm = (totalInches * 2.54).round();
+      await authProvider.addUserFieldByRole(
+        uid: uid,
+        fieldName: 'height',
+        value: cm.toString(),
+      );
+    }
+  }
+
+  /// Set selected fighting style
+  void setFightingStyle(String? style) {
+    _selectedFightingStyle = style;
+    notifyListeners();
+  }
+
+  static String _formatMedicalDate(DateTime d) =>
+      '${d.day}/${d.month}/${d.year}';
+
+  void setLastBloodDate(DateTime d) {
+    lastBloodController.text = _formatMedicalDate(d);
+    notifyListeners();
+  }
+
+  void setLastExamDate(DateTime d) {
+    lastExamController.text = _formatMedicalDate(d);
+    notifyListeners();
+  }
+
+  void setEyeExamDate(DateTime d) {
+    eyeExamController.text = _formatMedicalDate(d);
+    notifyListeners();
+  }
+
+  /// Parse "d/M/yyyy" to DateTime for calendar initialDate. Returns null if invalid.
+  static DateTime? parseMedicalDate(String s) {
+    if (s.isEmpty || s == 'Not set') return null;
+    final parts = s.split('/');
+    if (parts.length != 3) return null;
+    final day = int.tryParse(parts[0].trim());
+    final month = int.tryParse(parts[1].trim());
+    final year = int.tryParse(parts[2].trim());
+    if (day == null || month == null || year == null) return null;
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    try {
+      return DateTime(year, month, day);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Save profile data to Firestore
@@ -125,6 +249,7 @@ class ProfileViewModel extends ChangeNotifier {
           fieldName: 'weight',
           value: weightController.text.trim(),
         ),
+        _saveHeightIfValid(authProvider, uid),
         authProvider.addUserFieldByRole(
           uid: uid,
           fieldName: 'coachName',
@@ -140,6 +265,30 @@ class ProfileViewModel extends ChangeNotifier {
           fieldName: 'selectLocation',
           value: locationController.text.trim(),
         ),
+        if (lastBloodController.text.trim().isNotEmpty)
+          authProvider.addUserFieldByRole(
+            uid: uid,
+            fieldName: 'lastBlood',
+            value: lastBloodController.text.trim(),
+          ),
+        if (lastExamController.text.trim().isNotEmpty)
+          authProvider.addUserFieldByRole(
+            uid: uid,
+            fieldName: 'lastExam',
+            value: lastExamController.text.trim(),
+          ),
+        if (eyeExamController.text.trim().isNotEmpty)
+          authProvider.addUserFieldByRole(
+            uid: uid,
+            fieldName: 'eyeExam',
+            value: eyeExamController.text.trim(),
+          ),
+        if (_selectedFightingStyle != null)
+          authProvider.addUserFieldByRole(
+            uid: uid,
+            fieldName: 'fightingStyle',
+            value: _selectedFightingStyle!,
+          ),
       ]);
 
       _setLoading(false);
@@ -159,7 +308,7 @@ class ProfileViewModel extends ChangeNotifier {
     }
 
     if (phoneController.text.trim().isEmpty) {
-      _setError('Phone number is required');
+      _setError('Coach phone number is required');
       return false;
     }
 
@@ -177,6 +326,24 @@ class ProfileViewModel extends ChangeNotifier {
     if (int.tryParse(fightknockoutController.text.trim()) == null) {
       _setError('Fight knockouts must be a number');
       return false;
+    }
+
+    final wins = int.tryParse(fightwonController.text.trim()) ?? 0;
+    final knockouts = int.tryParse(fightknockoutController.text.trim()) ?? 0;
+    if (knockouts > wins) {
+      _setError('Knockouts cannot exceed wins');
+      return false;
+    }
+
+    final ftStr = heightFeetController.text.trim();
+    final inStr = heightInchesController.text.trim();
+    if (ftStr.isNotEmpty || inStr.isNotEmpty) {
+      final ft = int.tryParse(ftStr);
+      final inch = int.tryParse(inStr);
+      if (ft == null || inch == null || ft < 0 || inch < 0 || inch >= 12) {
+        _setError('Height: use feet ≥ 0 and inches 0–11');
+        return false;
+      }
     }
 
     _clearError();
@@ -216,9 +383,14 @@ class ProfileViewModel extends ChangeNotifier {
     fightloseController.dispose();
     fightknockoutController.dispose();
     weightController.dispose();
+    heightFeetController.dispose();
+    heightInchesController.dispose();
     coachController.dispose();
     tapologyController.dispose();
     locationController.dispose();
+    lastBloodController.dispose();
+    lastExamController.dispose();
+    eyeExamController.dispose();
 
     // Dispose focus nodes
     nameFocusNode.dispose();
@@ -228,6 +400,8 @@ class ProfileViewModel extends ChangeNotifier {
     fightloseFocusNode.dispose();
     fightknockoutFocusNode.dispose();
     weightFocusNode.dispose();
+    heightFeetFocusNode.dispose();
+    heightInchesFocusNode.dispose();
     coachFocusNode.dispose();
     tapologyFocusNode.dispose();
     locationFocusNode.dispose();

@@ -67,6 +67,7 @@ dependencies:
   # Payment packages
   flutter_stripe: ^11.1.0
   pay: ^2.0.0
+  geocoding: ^4.0.0
 
 dev_dependencies:
   flutter_test:

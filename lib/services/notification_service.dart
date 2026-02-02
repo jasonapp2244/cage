@@ -161,6 +161,99 @@ class NotificationService {
     await _notifications.cancel(id);
   }
 
+  // Send notification to fighter when they send a request
+  static Future<void> sendRequestSentNotification({
+    required String fighterId,
+    required String eventTitle,
+    required String promoterName,
+    required String eventId,
+    required String interestId,
+  }) async {
+    try {
+      const title = 'Request Sent';
+      final body = 'Your request for "$eventTitle" has been sent to $promoterName';
+
+      // Try to initialize if not already done
+      if (!_initialized) {
+        await initialize();
+      }
+
+      // If still not initialized (e.g., web platform), skip local notification
+      if (!_initialized) {
+        // Still save to Firestore for the fighter
+        await FirebaseFirestore.instance
+            .collection('notifications')
+            .add({
+          'fighterId': fighterId,
+          'type': 'request_sent',
+          'title': title,
+          'body': body,
+          'promoterName': promoterName,
+          'eventTitle': eventTitle,
+          'eventId': eventId,
+          'interestId': interestId,
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        return;
+      }
+
+      const AndroidNotificationDetails androidDetails =
+          AndroidNotificationDetails(
+        'request_sent',
+        'Request Sent',
+        channelDescription: 'Notifications when you send event requests',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+      );
+
+      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const NotificationDetails details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      final notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+      await _notifications.show(
+        notificationId,
+        title,
+        body,
+        details,
+        payload: 'request_sent:$fighterId',
+      );
+
+      // Also save notification to Firestore for the fighter
+      await FirebaseFirestore.instance
+          .collection('notifications')
+          .add({
+        'fighterId': fighterId,
+        'type': 'request_sent',
+        'title': title,
+        'body': body,
+        'promoterName': promoterName,
+        'eventTitle': eventTitle,
+        'eventId': eventId,
+        'interestId': interestId,
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (kDebugMode) {
+        print('Request sent notification sent to fighter: $fighterId');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error sending request sent notification: $e');
+      }
+    }
+  }
+
   // Send notification to fighter when their request is accepted or rejected
   static Future<void> sendRequestStatusNotification({
     required String fighterId,

@@ -1,10 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cage/models/promoter_filter_model.dart';
 import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/promoter_provider.dart';
 import 'package:cage/repository/review_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/view/Profile/Promoter/promoter_public_profile.dart';
+import 'package:cage/view/Profile/fighter/promoter_filter_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,6 +23,9 @@ class ExploerPromoter extends StatefulWidget {
 class _ExploerPromoterState extends State<ExploerPromoter> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  PromoterFilterModel _filter = PromoterFilterModel();
+  List<UserModel> _filteredPromoters = [];
+  bool _isFiltering = false;
 
   @override
   void initState() {
@@ -32,7 +38,70 @@ class _ExploerPromoterState extends State<ExploerPromoter> {
       setState(() {
         _searchQuery = _searchController.text;
       });
+      if (_filter.hasActiveFilters) {
+        _applyFilters();
+      }
     });
+  }
+
+  Future<void> _showFilterDialog() async {
+    final result = await showDialog<PromoterFilterModel>(
+      context: context,
+      builder: (context) => PromoterFilterDialog(
+        currentFilter: _filter,
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _filter = result;
+      });
+      await _applyFilters();
+    }
+  }
+
+  Future<void> _applyFilters() async {
+    if (!_filter.hasActiveFilters) {
+      setState(() {
+        _filteredPromoters = [];
+        _isFiltering = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isFiltering = true;
+    });
+
+    try {
+      final promoterProvider = context.read<PromoterProvider>();
+      final allPromoters = promoterProvider.promoters;
+      
+      // Apply search first
+      final searchFiltered = _searchQuery.isEmpty
+          ? allPromoters
+          : promoterProvider.searchPromoters(_searchQuery);
+
+      // Then apply other filters
+      final filtered = await promoterProvider.filterPromoters(
+        promoters: searchFiltered,
+        filter: _filter,
+      );
+
+      if (mounted) {
+        setState(() {
+          _filteredPromoters = filtered;
+          _isFiltering = false;
+        });
+      }
+    } catch (e) {
+      print('Error applying filters: $e');
+      if (mounted) {
+        setState(() {
+          _isFiltering = false;
+        });
+      }
+    }
   }
 
   @override
@@ -52,7 +121,7 @@ class _ExploerPromoterState extends State<ExploerPromoter> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search Field
+              // Search Field and Filter Button
               Row(
                 children: [
                   Expanded(
@@ -95,7 +164,7 @@ class _ExploerPromoterState extends State<ExploerPromoter> {
                             ),
                             filled: true,
                             fillColor: AppColor.white.withValues(alpha: 0.08),
-                            hintText: "Search Promoters...",
+                            hintText: "Search by promoter name...",
                             hintStyle: GoogleFonts.dmSans(
                               color: AppColor.white,
                               fontWeight: FontWeight.normal,
@@ -106,12 +175,51 @@ class _ExploerPromoterState extends State<ExploerPromoter> {
                       ),
                     ),
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColor.black.withValues(alpha: 0.05),
+                  SizedBox(width: Responsive.w(2)),
+                  // Filter Button
+                  GestureDetector(
+                    onTap: _showFilterDialog,
+                    child: Container(
+                      width: Responsive.h(7.0),
+                      height: Responsive.h(7.0),
+                      decoration: BoxDecoration(
+                        color: _filter.hasActiveFilters
+                            ? AppColor.red
+                            : AppColor.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        border: Border.all(
+                          color: _filter.hasActiveFilters
+                              ? AppColor.red
+                              : AppColor.white.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Icon(
+                              Icons.tune,
+                              color: _filter.hasActiveFilters
+                                  ? AppColor.white
+                                  : AppColor.white.withValues(alpha: 0.7),
+                              size: 20,
+                            ),
+                          ),
+                          if (_filter.hasActiveFilters)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: AppColor.white,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    child: SvgPicture.asset("assets/icons/solar_bell-bold.svg"),
                   ),
                 ],
               ),
@@ -171,9 +279,42 @@ class _ExploerPromoterState extends State<ExploerPromoter> {
                       );
                     }
 
-                    final promoters = _searchQuery.isEmpty
-                        ? promoterProvider.promoters
-                        : promoterProvider.searchPromoters(_searchQuery);
+                    // Apply filters if active, otherwise just search
+                    List<UserModel> promoters;
+                    
+                    if (_isFiltering) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: AppColor.red),
+                            SizedBox(height: 16),
+                            Text(
+                              "Applying filters...",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    
+                    if (_filter.hasActiveFilters && _filteredPromoters.isNotEmpty) {
+                      promoters = _filteredPromoters;
+                    } else if (_filter.hasActiveFilters) {
+                      // Filters are active but no results yet, trigger filter
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _applyFilters();
+                      });
+                      promoters = [];
+                    } else {
+                      // No filters, just apply search
+                      promoters = _searchQuery.isEmpty
+                          ? promoterProvider.promoters
+                          : promoterProvider.searchPromoters(_searchQuery);
+                    }
 
                     print('UI: Found ${promoters.length} promoters to display');
 
@@ -189,9 +330,11 @@ class _ExploerPromoterState extends State<ExploerPromoter> {
                             ),
                             SizedBox(height: 16),
                             Text(
-                              _searchQuery.isEmpty
-                                  ? "No promoters found"
-                                  : "No promoters match your search",
+                              _filter.hasActiveFilters
+                                  ? "No promoters match your filters"
+                                  : _searchQuery.isEmpty
+                                      ? "No promoters found"
+                                      : "No promoters match your search",
                               style: TextStyle(
                                 color: AppColor.white.withValues(alpha: 0.7),
                                 fontSize: 16,

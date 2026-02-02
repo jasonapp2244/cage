@@ -4,6 +4,7 @@ import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/Profile/fighter/createnew_ticticket_view.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
+import 'package:cage/view/Profile/Promoter/promotor_bottom_nav_bar.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/models/ticket_model.dart';
 import 'package:cage/provider/ticket_provider.dart';
@@ -43,9 +44,15 @@ class _SupportViewState extends State<SupportView> {
                   GestureDetector(
                     onTap: () {
                       // Try to find MainWrapper state (for drawer navigation)
-                      final state = context.findAncestorStateOfType<MainWrapperState>();
-                      if (state != null) {
-                        state.resetToHome();
+                      final fighterState = context.findAncestorStateOfType<MainWrapperState>();
+                      if (fighterState != null) {
+                        fighterState.resetToHome();
+                        return;
+                      }
+                      // Try to find PromotorBottomNavBar state (for promoter drawer navigation)
+                      final promoterState = context.findAncestorStateOfType<PromotorBottomNavBarState>();
+                      if (promoterState != null) {
+                        promoterState.resetToHome();
                         return;
                       }
                       // Fallback to normal navigation

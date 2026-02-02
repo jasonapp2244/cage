@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cage/models/review_model.dart';
+import 'package:cage/services/firebase_cache_helper.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReviewRepository {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -39,11 +40,11 @@ class ReviewRepository {
       
       return false;
     } catch (e) {
-      print('Error checking if already reviewed: $e');
+      FirebaseCacheHelper.debugLog('Error checking if already reviewed: $e');
       return false;
     }
   }
-  
+
   // Check if a reviewer has already reviewed a promoter
   static Future<bool> hasAlreadyReviewedPromoter({
     required String reviewerId,
@@ -69,7 +70,7 @@ class ReviewRepository {
       // Check if reviewerId already exists in the reviews
       return reviewsList.any((review) => review['reviewerId'] == reviewerId);
     } catch (e) {
-      print('Error checking if already reviewed promoter: $e');
+      FirebaseCacheHelper.debugLog('Error checking if already reviewed promoter: $e');
       return false;
     }
   }
@@ -247,20 +248,18 @@ class ReviewRepository {
   // Get average rating for a fighter
   static Future<double> getAverageRating(String fighterUserId) async {
     try {
-      final snapshot = await _firestore
-          .collection('userData')
-          .doc(fighterUserId)
-          .get();
+      final ref = _firestore.collection('userData').doc(fighterUserId);
+      final snapshot = await FirebaseCacheHelper.getDocCacheFirst(ref);
 
       if (!snapshot.exists) return 0.0;
-      
-      final userData = snapshot.data()!;
+
+      final userData = snapshot.data()! as Map<String, dynamic>;
       final fighterData = userData['fighterData'];
-      
+
       if (fighterData == null || fighterData['reviews'] == null) {
         return 0.0;
       }
-      
+
       final reviewsList = List<dynamic>.from(fighterData['reviews']);
       if (reviewsList.isEmpty) return 0.0;
 
@@ -271,7 +270,7 @@ class ReviewRepository {
 
       return totalRating / reviewsList.length;
     } catch (e) {
-      print('Error calculating average rating: $e');
+      FirebaseCacheHelper.debugLog('Error calculating average rating: $e');
       return 0.0;
     }
   }
@@ -526,20 +525,18 @@ class ReviewRepository {
   // Get average rating for a promoter
   static Future<double> getAveragePromoterRating(String promoterUserId) async {
     try {
-      final snapshot = await _firestore
-          .collection('userData')
-          .doc(promoterUserId)
-          .get();
+      final ref = _firestore.collection('userData').doc(promoterUserId);
+      final snapshot = await FirebaseCacheHelper.getDocCacheFirst(ref);
 
       if (!snapshot.exists) return 0.0;
-      
-      final userData = snapshot.data()!;
+
+      final userData = snapshot.data()! as Map<String, dynamic>;
       final promoterData = userData['promoterData'];
-      
+
       if (promoterData == null || promoterData['reviews'] == null) {
         return 0.0;
       }
-      
+
       final reviewsList = List<dynamic>.from(promoterData['reviews']);
       if (reviewsList.isEmpty) return 0.0;
 
@@ -550,8 +547,31 @@ class ReviewRepository {
 
       return totalRating / reviewsList.length;
     } catch (e) {
-      print('Error calculating average promoter rating: $e');
+      FirebaseCacheHelper.debugLog('Error calculating average promoter rating: $e');
       return 0.0;
+    }
+  }
+
+  // Get reviews count for a promoter
+  static Future<int> getPromoterReviewsCount(String promoterUserId) async {
+    try {
+      final ref = _firestore.collection('userData').doc(promoterUserId);
+      final snapshot = await FirebaseCacheHelper.getDocCacheFirst(ref);
+
+      if (!snapshot.exists) return 0;
+
+      final userData = snapshot.data()! as Map<String, dynamic>;
+      final promoterData = userData['promoterData'];
+
+      if (promoterData == null || promoterData['reviews'] == null) {
+        return 0;
+      }
+
+      final reviewsList = List<dynamic>.from(promoterData['reviews']);
+      return reviewsList.length;
+    } catch (e) {
+      FirebaseCacheHelper.debugLog('Error getting promoter reviews count: $e');
+      return 0;
     }
   }
 }

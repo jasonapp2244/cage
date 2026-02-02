@@ -3,6 +3,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/auth/sginupview.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class EditProfileTextfeild extends StatelessWidget {
   final String text;
@@ -10,6 +11,8 @@ class EditProfileTextfeild extends StatelessWidget {
   final FocusNode focusNode;
   // final FocusNode currentfocusNode;
   final FocusNode nextfocusNode;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const EditProfileTextfeild({
     super.key,
@@ -18,6 +21,8 @@ class EditProfileTextfeild extends StatelessWidget {
     required this.focusNode,
     // required this.currentfocusNode,
     required this.nextfocusNode,
+    this.keyboardType,
+    this.inputFormatters,
   });
 
   @override
@@ -26,6 +31,8 @@ class EditProfileTextfeild extends StatelessWidget {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: TextStyle(color: AppColor.white),
       decoration: InputDecoration(
         

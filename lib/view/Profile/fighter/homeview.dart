@@ -1123,6 +1123,18 @@ class _SendRequestButtonState extends State<_SendRequestButton> {
         print('Notification error: $e');
       });
 
+      // Send notification to fighter confirming request was sent (non-blocking)
+      NotificationService.sendRequestSentNotification(
+        fighterId: fighterId,
+        eventTitle: widget.event.eventTitle,
+        promoterName: widget.event.promoterName,
+        eventId: widget.event.id,
+        interestId: interestId,
+      ).catchError((e) {
+        // Notification failed, but interest was created successfully
+        print('Fighter notification error: $e');
+      });
+
       // Show success message
       if (mounted) {
         Utils.flushBarErrorMassage(

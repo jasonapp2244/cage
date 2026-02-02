@@ -15,6 +15,7 @@ class RoutesName {
   static const String roleView = "role_view";
 
   static const String nameview = "name_view";
+  static const String profileImageUploadSignupView = "profile_image_upload_signup_view";
   static const String poseImageUploadView = "pose_image_upload_view";
   static const String supportView = "support_view";
 

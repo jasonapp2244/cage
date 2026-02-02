@@ -126,13 +126,7 @@ class LocationProvider extends ChangeNotifier {
         markerId: const MarkerId('selected-location'),
         position: selectedLocation,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: InfoWindow(
-          title: locationData.address,
-          snippet: LocationHelper.formatCoordinates(
-            locationData.latitude,
-            locationData.longitude,
-          ),
-        ),
+        infoWindow: InfoWindow(title: locationData.address),
       ),
     );
   }
@@ -149,13 +143,7 @@ class LocationProvider extends ChangeNotifier {
         markerId: const MarkerId('selected-location'),
         position: position,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: InfoWindow(
-          title: 'Getting address...',
-          snippet: LocationHelper.formatCoordinates(
-            position.latitude,
-            position.longitude,
-          ),
-        ),
+        infoWindow: InfoWindow(title: 'Getting address...'),
       ),
     );
 
@@ -163,8 +151,10 @@ class LocationProvider extends ChangeNotifier {
 
     // Get actual address using reverse geocoding
     try {
-      print('🗺️ Getting address for coordinates: ${position.latitude}, ${position.longitude}');
-      final address = await LocationService.getAddressFromCoordinates(
+      print(
+        '🗺️ Getting address for coordinates: ${position.latitude}, ${position.longitude}',
+      );
+      final address = await LocationService.getCityStateFromCoordinates(
         latitude: position.latitude,
         longitude: position.longitude,
       );
@@ -181,13 +171,7 @@ class LocationProvider extends ChangeNotifier {
           markerId: const MarkerId('selected-location'),
           position: position,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: InfoWindow(
-            title: address,
-            snippet: LocationHelper.formatCoordinates(
-              position.latitude,
-              position.longitude,
-            ),
-          ),
+          infoWindow: InfoWindow(title: address),
         ),
       );
 
@@ -195,22 +179,20 @@ class LocationProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('💥 Error getting address for selected location: $e');
-      
+
       // Update marker with coordinate fallback if reverse geocoding fails
       _markers.removeWhere(
         (marker) => marker.markerId.value == 'selected-location',
       );
 
-      final fallbackTitle = 'Location: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
+      final fallbackTitle =
+          'Location: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
       _markers.add(
         Marker(
           markerId: const MarkerId('selected-location'),
           position: position,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: InfoWindow(
-            title: fallbackTitle,
-            snippet: 'Tap to retry getting address',
-          ),
+          infoWindow: InfoWindow(title: fallbackTitle),
         ),
       );
 
@@ -238,11 +220,17 @@ class LocationProvider extends ChangeNotifier {
 
       final uid = Utils.getCurrentUid();
 
+      // Derive "City, State" for display + storage.
+      final cityState = await LocationService.getCityStateFromCoordinates(
+        latitude: selectedMarker.position.latitude,
+        longitude: selectedMarker.position.longitude,
+      );
+
       // Create location data object
       final locationData = LocationService.createLocationData(
         latitude: selectedMarker.position.latitude,
         longitude: selectedMarker.position.longitude,
-        address: selectedMarker.infoWindow.title,
+        address: cityState,
       );
 
       // Save to Firestore

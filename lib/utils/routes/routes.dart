@@ -24,6 +24,7 @@ import 'package:cage/view/Profile/fighter/coach_conatct.dart';
 import 'package:cage/view/Profile/fighter/coach_view.dart';
 import 'package:cage/view/Profile/fighter/createnew_ticticket_view.dart';
 import 'package:cage/view/Profile/fighter/enter_name_view.dart';
+import 'package:cage/view/Profile/fighter/profile_image_upload_signup_view.dart';
 import 'package:cage/view/Profile/fighter/pose_image_upload_view.dart';
 import 'package:cage/view/exploer/events_view.dart';
 import 'package:cage/view/Profile/fighter/eye_test_view.dart';
@@ -174,6 +175,11 @@ class Routes {
       case RoutesName.nameview:
         return MaterialPageRoute(
           builder: (BuildContext context) => EnterNameView(),
+        );
+
+      case RoutesName.profileImageUploadSignupView:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => ProfileImageUploadSignupView(),
         );
 
       case RoutesName.poseImageUploadView:

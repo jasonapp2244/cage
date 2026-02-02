@@ -32,6 +32,10 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+        <!-- Workaround for Vulkan/Impeller GPU OOM crashes on some devices. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -44,7 +48,7 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyD6fce90tdhc2Vms4O-8JqwvF7feJrYE3I" />
+            android:value="AIzaSyDKFS3kaSGFiqTXQJC5n0YJFgidYHSMBhA" />
         <!-- Google Pay configuration -->
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"

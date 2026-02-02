@@ -1,5 +1,5 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+# Define iOS platform to satisfy CocoaPods and avoid auto-assign warning
+platform :ios, '14.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -29,6 +29,10 @@ flutter_ios_podfile_setup
 
 target 'Runner' do
   use_frameworks!
+
+  # Resolve GTMSessionFetcher conflict: Firebase wants >= 3.4, google_sign_in wants ~> 3.3.
+  # Pin to 3.x so both Firebase Auth/Storage and GoogleSignIn are satisfied.
+  pod 'GTMSessionFetcher/Core', '~> 3.4'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do

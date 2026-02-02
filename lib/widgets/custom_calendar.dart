@@ -81,13 +81,16 @@ class _CustomCalendarState extends State<CustomCalendar> {
             onPressed: _previousMonth,
             icon: Icon(Icons.chevron_left, color: AppColor.white, size: 28),
           ),
-          Text(
-            _getMonthYearString(_focusedDate),
-            style: TextStyle(
-              fontFamily: AppFonts.appFont,
-              color: AppColor.white,
-              fontSize: Responsive.sp(18),
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Text(
+              _getMonthYearString(_focusedDate),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppFonts.appFont,
+                color: AppColor.white,
+                fontSize: Responsive.sp(18),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           IconButton(

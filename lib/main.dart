@@ -19,8 +19,11 @@ import 'package:cage/utils/routes/routes.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/viewmodel/notification_settings_viewmodel.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,8 +34,21 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print("Firebase initialized successfully");
-    
+
+    // Enable Firestore persistence + large cache for fast cached reads
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+
+    if (kDebugMode) {
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.debug,
+        appleProvider: AppleProvider.debug,
+      );
+      print("App Check (debug) initialized successfully");
+    }
+
     // Initialize app colors from Firestore
     await AppColor.initialize();
     print("App colors initialized successfully");

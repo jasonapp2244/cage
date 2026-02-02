@@ -2,9 +2,11 @@ import 'package:cage/repository/auth_repository.dart';
 import 'package:cage/utils/routes/routes_name.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/auth/loginview.dart';
-import 'package:flutter/material.dart';
-
 import 'dart:io';
+
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +17,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 /// Web client ID (serverClientId) — required for Android. From google-services.json.
 const String _kGoogleSignInWebClientId =
     '230307676453-qm93u1vdbheo46hhsaog1e93b3iaonjj.apps.googleusercontent.com';
+
 /// iOS client ID — used for initialize() on iOS. From GoogleService-Info.plist.
 const String _kGoogleSignInIosClientId =
     '230307676453-qgp9eimk4djgbmatq1bimjeh57rj79eg.apps.googleusercontent.com';
@@ -24,19 +27,32 @@ class AuthViewmodel extends ChangeNotifier {
 
   static Future<void> _ensureGoogleSignInInitialized() async {
     if (_googleSignInInitialized) return;
+    final isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
     await GoogleSignIn.instance.initialize(
       serverClientId: _kGoogleSignInWebClientId,
-      clientId: Platform.isIOS ? _kGoogleSignInIosClientId : null,
+      clientId: isIOS ? _kGoogleSignInIosClientId : null,
     );
     _googleSignInInitialized = true;
   }
+
+  /// Call early (e.g. when login/signup screen loads) to avoid init delay on first tap.
+  static Future<void> ensureGoogleSignInReady() =>
+      _ensureGoogleSignInInitialized();
 
   final _myRepo = AuthRepository();
   bool _isloading = false;
   bool get loading => _isloading;
 
+  bool _socialLoading = false;
+  bool get socialLoading => _socialLoading;
+
   void setloaoding(bool value) {
     _isloading = value;
+    notifyListeners();
+  }
+
+  void setSocialLoading(bool value) {
+    _socialLoading = value;
     notifyListeners();
   }
 
@@ -340,12 +356,12 @@ class AuthViewmodel extends ChangeNotifier {
 
       // Reset loading state before navigation
       setloaoding(false);
-      
+
       // Save login credentials if remember me is checked
       if (rememberMe) {
         await Utils.saveLoginCredentials(email, password);
       }
-      
+
       // Navigate to role selector after successful signup
       Navigator.pushNamed(context, RoutesName.roleView);
     } on FirebaseAuthException catch (e) {
@@ -617,17 +633,19 @@ class AuthViewmodel extends ChangeNotifier {
                       .collection('userData')
                       .doc(uid)
                       .update({
-                    'isBlocked': false,
-                    'blockType': null,
-                    'blockUntil': null,
-                    'blockReason': null,
-                    'status': 'Active',
-                  });
+                        'isBlocked': false,
+                        'blockType': null,
+                        'blockUntil': null,
+                        'blockReason': null,
+                        'status': 'Active',
+                      });
                   print('Temporary block expired, user unblocked');
                 } else {
                   // Still blocked, show expiration date
-                  final formattedDate = '${blockUntilDate.day}/${blockUntilDate.month}/${blockUntilDate.year}';
-                  blockMessage = 'Your account has been temporarily blocked until $formattedDate.';
+                  final formattedDate =
+                      '${blockUntilDate.day}/${blockUntilDate.month}/${blockUntilDate.year}';
+                  blockMessage =
+                      'Your account has been temporarily blocked until $formattedDate.';
                   if (blockReason != null && blockReason.isNotEmpty) {
                     blockMessage += '\nReason: $blockReason';
                   }
@@ -713,7 +731,7 @@ class AuthViewmodel extends ChangeNotifier {
         // Set loading to false on error
         setloaoding(false);
       }
-        } catch (e) {
+    } catch (e) {
       // Login failed - error message already shown by loginWithEmailPassword
       print('Login failed, staying on login screen: $e');
       // Set loading to false on login failure
@@ -733,13 +751,13 @@ class AuthViewmodel extends ChangeNotifier {
       );
       return;
     }
-    setloaoding(true);
+    setSocialLoading(true);
     try {
       await _ensureGoogleSignInInitialized();
       if (!context.mounted) return;
 
       if (!GoogleSignIn.instance.supportsAuthenticate()) {
-        setloaoding(false);
+        setSocialLoading(false);
         if (context.mounted) {
           Utils.flushBarErrorMassage(
             'Google Sign-In is not supported on this device.',
@@ -749,14 +767,20 @@ class AuthViewmodel extends ChangeNotifier {
         return;
       }
 
-      final GoogleSignInAccount googleUser =
-          await GoogleSignIn.instance.authenticate();
+      // Try lightweight auth first (fast path for returning users); otherwise show account picker.
+      final lightweightFuture = GoogleSignIn.instance
+          .attemptLightweightAuthentication();
+      GoogleSignInAccount? googleUser = lightweightFuture != null
+          ? await lightweightFuture
+          : null;
+      googleUser ??= await GoogleSignIn.instance.authenticate();
       if (!context.mounted) return;
+
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
       if (!context.mounted) return;
       final String? idToken = googleAuth.idToken;
       if (idToken == null || idToken.isEmpty) {
-        setloaoding(false);
+        setSocialLoading(false);
         if (context.mounted) {
           Utils.flushBarErrorMassage(
             'Google sign-in failed: no ID token received.',
@@ -807,12 +831,12 @@ class AuthViewmodel extends ChangeNotifier {
                     .collection('userData')
                     .doc(uid)
                     .update({
-                  'isBlocked': false,
-                  'blockType': null,
-                  'blockUntil': null,
-                  'blockReason': null,
-                  'status': 'Active',
-                });
+                      'isBlocked': false,
+                      'blockType': null,
+                      'blockUntil': null,
+                      'blockReason': null,
+                      'status': 'Active',
+                    });
                 if (!context.mounted) return;
               } else {
                 final d = blockUntilDate;
@@ -832,7 +856,7 @@ class AuthViewmodel extends ChangeNotifier {
           if (shouldBlock) {
             await FirebaseAuth.instance.signOut();
             await GoogleSignIn.instance.signOut();
-            setloaoding(false);
+            setSocialLoading(false);
             if (context.mounted) {
               Utils.flushBarErrorMassage(blockMessage, context);
             }
@@ -840,7 +864,7 @@ class AuthViewmodel extends ChangeNotifier {
           }
         }
 
-        setloaoding(false);
+        setSocialLoading(false);
         if (role == 'Fighter') {
           Navigator.pushNamedAndRemoveUntil(
             context,
@@ -872,14 +896,14 @@ class AuthViewmodel extends ChangeNotifier {
         'promoterData': null,
       });
       if (!context.mounted) return;
-      setloaoding(false);
+      setSocialLoading(false);
       Navigator.pushNamedAndRemoveUntil(
         context,
         RoutesName.roleView,
         (route) => false,
       );
     } on GoogleSignInException catch (e) {
-      setloaoding(false);
+      setSocialLoading(false);
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return; // User cancelled — no error message
       }
@@ -889,7 +913,7 @@ class AuthViewmodel extends ChangeNotifier {
         context,
       );
     } on FirebaseAuthException catch (e) {
-      setloaoding(false);
+      setSocialLoading(false);
       if (!context.mounted) return;
       String code = e.code;
       if (code.startsWith('firebase_auth/')) {
@@ -915,7 +939,7 @@ class AuthViewmodel extends ChangeNotifier {
       }
       Utils.flushBarErrorMassage(msg, context);
     } catch (e) {
-      setloaoding(false);
+      setSocialLoading(false);
       if (context.mounted) {
         Utils.flushBarErrorMassage(
           e.toString().contains('network')
@@ -995,6 +1019,102 @@ class AuthViewmodel extends ChangeNotifier {
     } catch (e) {
       print('Logout failed: $e');
       // Reset loading state on error
+      setloaoding(false);
+    }
+  }
+
+  /// Delete account: remove login only, notify admin. Admin can later remove data.
+  Future<void> requestAccountDeletion(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    setloaoding(true);
+    try {
+      final uid = user.uid;
+      final email = user.email ?? '';
+      String userName = 'Unknown';
+      String role = 'User';
+
+      final doc = await FirebaseFirestore.instance
+          .collection('userData')
+          .doc(uid)
+          .get();
+      if (doc.exists) {
+        final d = doc.data()!;
+        role = d['role'] ?? 'User';
+        final fd = d['fighterData'];
+        final pd = d['promoterData'];
+        if (fd is Map<String, dynamic>) {
+          final v = fd['fullName'] ?? fd['name'];
+          if (v is String && v.isNotEmpty) userName = v;
+        } else if (pd is Map<String, dynamic>) {
+          final v = pd['companyName'] ?? pd['prompterName'] ?? pd['fullName'];
+          if (v is String && v.isNotEmpty) userName = v;
+        }
+      }
+
+      await FirebaseFirestore.instance.collection('accountDeleteRequests').add({
+        'userId': uid,
+        'userEmail': email,
+        'userName': userName,
+        'role': role,
+        'deletedAt': FieldValue.serverTimestamp(),
+        'dataRemoved': false,
+      });
+
+      await FirebaseFirestore.instance.collection('userData').doc(uid).set({
+        'accountDeleted': true,
+        'accountDeletedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      bool authDeleted = false;
+      try {
+        await user.delete();
+        authDeleted = true;
+      } on FirebaseAuthException catch (e) {
+        if (!context.mounted) return;
+        final code = e.code.replaceFirst('firebase_auth/', '');
+        String msg = 'Could not delete account. Please try again.';
+        if (code == 'requires-recent-login') {
+          msg =
+              'For security, please sign out, sign in again, then try Delete Account.';
+        } else if (e.message != null && e.message!.isNotEmpty) {
+          msg = e.message!;
+        }
+        Utils.flushBarErrorMassage(msg, context);
+      } catch (e) {
+        if (context.mounted) {
+          Utils.flushBarErrorMassage(
+            'Could not delete account. Please sign out, sign in again, and retry.',
+            context,
+          );
+        }
+      }
+
+      if (!authDeleted) {
+        setloaoding(false);
+        return;
+      }
+
+      await FirebaseAuth.instance.signOut();
+      await GoogleSignIn.instance.signOut();
+      await Utils.clearAll();
+      await Utils.clearLoginCredentials();
+
+      if (!context.mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const Loginview()),
+        (r) => false,
+      );
+    } catch (e) {
+      print('Request account deletion error: $e');
+      if (context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Something went wrong. Please try again.',
+          context,
+        );
+      }
+    } finally {
       setloaoding(false);
     }
   }

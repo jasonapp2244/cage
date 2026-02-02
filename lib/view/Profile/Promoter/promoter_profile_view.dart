@@ -207,57 +207,47 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
                           );
                         }
 
+                        final promoter = user.roleData as PromoterDataModel;
                         final userId = user.id;
-                        final eventService = EventService();
 
-                        // Count events dynamically and calculate average rating
-                        return StreamBuilder<List<EventModel>>(
-                          stream: eventService.getEventsByPromoter(userId),
-                          builder: (context, eventsSnapshot) {
-                            String numberOfEvents = "0";
+                        // Use manually set numberOfEvents from promoter data
+                        final numberOfEvents = (promoter.numberOfEvents ?? 0).toString();
 
-                            if (eventsSnapshot.hasData) {
-                              numberOfEvents = eventsSnapshot.data!.length
-                                  .toString();
+                        // Calculate average rating from reviews
+                        return StreamBuilder<List<ReviewModel>>(
+                          stream: ReviewRepository.getPromoterReviews(
+                            userId,
+                          ),
+                          builder: (context, reviewsSnapshot) {
+                            String averageRating = "0.0";
+
+                            if (reviewsSnapshot.hasData &&
+                                reviewsSnapshot.data!.isNotEmpty) {
+                              final reviews = reviewsSnapshot.data!;
+                              double totalRating = 0;
+                              for (var review in reviews) {
+                                totalRating += review.rating;
+                              }
+                              averageRating = (totalRating / reviews.length)
+                                  .toStringAsFixed(1);
                             }
 
-                            // Calculate average rating from reviews
-                            return StreamBuilder<List<ReviewModel>>(
-                              stream: ReviewRepository.getPromoterReviews(
-                                userId,
-                              ),
-                              builder: (context, reviewsSnapshot) {
-                                String averageRating = "0.0";
-
-                                if (reviewsSnapshot.hasData &&
-                                    reviewsSnapshot.data!.isNotEmpty) {
-                                  final reviews = reviewsSnapshot.data!;
-                                  double totalRating = 0;
-                                  for (var review in reviews) {
-                                    totalRating += review.rating;
-                                  }
-                                  averageRating = (totalRating / reviews.length)
-                                      .toStringAsFixed(1);
-                                }
-
-                                return Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildStatCard(
-                                        "No of Event Managed",
-                                        numberOfEvents,
-                                      ),
-                                    ),
-                                    SizedBox(width: Responsive.w(2)),
-                                    Expanded(
-                                      child: _buildStatCard(
-                                        "Average Rating",
-                                        averageRating,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: _buildStatCard(
+                                    "No of Event Managed",
+                                    numberOfEvents,
+                                  ),
+                                ),
+                                SizedBox(width: Responsive.w(2)),
+                                Expanded(
+                                  child: _buildStatCard(
+                                    "Average Rating",
+                                    averageRating,
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         );

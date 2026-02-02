@@ -9,7 +9,6 @@ import 'package:cage/view/Profile/Promoter/promoter_home.dart';
 import 'package:cage/view/Profile/Promoter/promoter_profile_view.dart';
 import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
 import 'package:cage/view/notification_view.dart';
-import 'package:cage/view/settings_view.dart';
 import 'package:cage/view/contact_us_view.dart';
 import 'package:cage/view/privacy_policy_view.dart';
 import 'package:cage/view/support_view.dart';
@@ -24,13 +23,21 @@ class PromotorBottomNavBar extends StatefulWidget {
   const PromotorBottomNavBar({super.key});
 
   @override
-  State<PromotorBottomNavBar> createState() => _PromotorBottomNavBarState();
+  State<PromotorBottomNavBar> createState() => PromotorBottomNavBarState();
 }
 
-class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
+class PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
   final AdvancedDrawerController _drawerController = AdvancedDrawerController();
   int _currentIndex = 0;
   bool _isDrawerNavigation = false; // Track if we're navigating from drawer
+
+  // Public method to reset navigation to home
+  void resetToHome() {
+    setState(() {
+      _currentIndex = 0;
+      _isDrawerNavigation = false;
+    });
+  }
 
   // We'll create the pages in the build method to access the drawer controller
   List<Widget> get _bottomNavPages => [
@@ -45,62 +52,11 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
     PromoterHome(
       drawerController: _drawerController,
     ), // Home (same as bottom nav)
-    _buildSubscriptionView(), // Subscription
     SupportView(), // Support
-    SettingsView(), // Settings
     TermConditionView(),
     PrivacyPolicyView(), // Privacy Policy
     ContactUsView(), // Contact Us
   ];
-
-  void _handleMenuButtonPressed() {
-    // This method is not used anymore since we use provider directly
-  }
-
-  // Subscription view for drawer navigation
-  Widget _buildSubscriptionView() {
-    return Scaffold(
-      backgroundColor: AppColor.black,
-      appBar: AppBar(
-        backgroundColor: AppColor.black,
-        title: Text('Subscription', style: TextStyle(color: AppColor.white)),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColor.white),
-          onPressed: () {
-            setState(() {
-              _currentIndex = 0;
-              _isDrawerNavigation = false;
-            });
-          },
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.subscriptions, size: 64, color: AppColor.red),
-            SizedBox(height: 16),
-            Text(
-              'Promoter Subscription Plans',
-              style: TextStyle(
-                color: AppColor.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Manage your promoter subscription here',
-              style: TextStyle(
-                color: AppColor.white.withValues(alpha: 0.7),
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,10 +91,12 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                   onTap: () {
                     _drawerController.hideDrawer();
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) setState(() {
-                        _currentIndex = 0;
-                        _isDrawerNavigation = true;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _currentIndex = 0;
+                          _isDrawerNavigation = true;
+                        });
+                      }
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/home.svg"),
@@ -148,23 +106,12 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                   onTap: () {
                     _drawerController.hideDrawer();
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) setState(() {
-                        _currentIndex = 1;
-                        _isDrawerNavigation = true;
-                      });
-                    });
-                  },
-                  leading: SvgPicture.asset("assets/icons/subcirnbtion.svg"),
-                  title: Text('Subscription'),
-                ),
-                ListTile(
-                  onTap: () {
-                    _drawerController.hideDrawer();
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) setState(() {
-                        _currentIndex = 2;
-                        _isDrawerNavigation = true;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _currentIndex = 1;
+                          _isDrawerNavigation = true;
+                        });
+                      }
                     });
                   },
                   leading: SvgPicture.asset(
@@ -176,23 +123,12 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                   onTap: () {
                     _drawerController.hideDrawer();
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) setState(() {
-                        _currentIndex = 3;
-                        _isDrawerNavigation = true;
-                      });
-                    });
-                  },
-                  leading: SvgPicture.asset("assets/icons/setting.svg"),
-                  title: Text('Settings'),
-                ),
-                ListTile(
-                  onTap: () {
-                    _drawerController.hideDrawer();
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) setState(() {
-                        _currentIndex = 4;
-                        _isDrawerNavigation = true;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _currentIndex = 2;
+                          _isDrawerNavigation = true;
+                        });
+                      }
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
@@ -202,10 +138,12 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                   onTap: () {
                     _drawerController.hideDrawer();
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) setState(() {
-                        _currentIndex = 5;
-                        _isDrawerNavigation = true;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _currentIndex = 3;
+                          _isDrawerNavigation = true;
+                        });
+                      }
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
@@ -215,14 +153,50 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
                   onTap: () {
                     _drawerController.hideDrawer();
                     WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) setState(() {
-                        _currentIndex = 6;
-                        _isDrawerNavigation = true;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _currentIndex = 4;
+                          _isDrawerNavigation = true;
+                        });
+                      }
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/mail-02.svg"),
                   title: Text('Contact Us'),
+                ),
+                ListTile(
+                  onTap: () async {
+                    _drawerController.hideDrawer();
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Delete Account'),
+                        content: const Text(
+                          'This will remove your login access only. '
+                          'Admin will be notified and may remove your data later. Continue?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('No'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Yes'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true && mounted) {
+                      await authProvider.requestAccountDeletion(context);
+                    }
+                  },
+                  leading: Icon(Icons.delete_forever, color: AppColor.red),
+                  title: Text(
+                    'Delete Account',
+                    style: TextStyle(color: AppColor.red),
+                  ),
                 ),
                 ListTile(
                   onTap: () async {
@@ -239,7 +213,19 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
       ),
       child: Scaffold(
         body: _isDrawerNavigation
-            ? _drawerPages[_currentIndex]
+            ? PopScope(
+                canPop: false,
+                onPopInvoked: (didPop) {
+                  if (!didPop) {
+                    // Reset to home when back is pressed
+                    setState(() {
+                      _currentIndex = 0;
+                      _isDrawerNavigation = false;
+                    });
+                  }
+                },
+                child: _drawerPages[_currentIndex],
+              )
             : _bottomNavPages[_currentIndex],
         bottomNavigationBar: _buildBottomNavBar(),
       ),
@@ -251,7 +237,7 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
       stream: UserRepository.fetchCurrentUserStream(),
       builder: (context, snapshot) {
         String? imageUrl;
-        
+
         if (snapshot.hasData && snapshot.data != null) {
           final user = snapshot.data!;
           if (user.isFighter && user.roleData is FighterDataModel) {
@@ -285,7 +271,9 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
         } else {
           avatarWidget = CircleAvatar(
             radius: 15,
-            backgroundColor: AppColor.white.withValues(alpha: isSelected ? 1.0 : 0.5),
+            backgroundColor: AppColor.white.withValues(
+              alpha: isSelected ? 1.0 : 0.5,
+            ),
             backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
           );
         }
@@ -294,26 +282,15 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
           return Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColor.red,
-                width: 2,
-              ),
+              border: Border.all(color: AppColor.red, width: 2),
             ),
             child: ClipOval(
-              child: SizedBox(
-                width: 30,
-                height: 30,
-                child: avatarWidget,
-              ),
+              child: SizedBox(width: 30, height: 30, child: avatarWidget),
             ),
           );
         } else {
           return ClipOval(
-            child: SizedBox(
-              width: 30,
-              height: 30,
-              child: avatarWidget,
-            ),
+            child: SizedBox(width: 30, height: 30, child: avatarWidget),
           );
         }
       },
@@ -331,7 +308,7 @@ class _PromotorBottomNavBarState extends State<PromotorBottomNavBar> {
       builder: (context, snapshot) {
         final black = snapshot.data?['black'] ?? AppColor.black;
         final red = snapshot.data?['red'] ?? AppColor.red;
-        
+
         return BottomNavigationBar(
           currentIndex: _isDrawerNavigation
               ? 0

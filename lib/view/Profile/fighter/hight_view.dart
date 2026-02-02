@@ -17,19 +17,24 @@ class HightView extends StatefulWidget {
 }
 
 class _HightViewState extends State<HightView> {
-  final FixedExtentScrollController _scrollController =
+  final FixedExtentScrollController _feetController =
       FixedExtentScrollController();
-  List<int> heightValues = List.generate(
-    50,
-    (index) => 110 + index,
-  ); // 140-189 cm
-  int selectedHeight = 270;
+  final FixedExtentScrollController _inchesController =
+      FixedExtentScrollController();
+
+  // Reasonable human height range for signup (can be adjusted easily).
+  final List<int> _feetValues = List.generate(6, (index) => 3 + index); // 3..8
+  final List<int> _inchValues = List.generate(12, (index) => index); // 0..11
+
+  int _selectedFeet = 5;
+  int _selectedInches = 10;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.jumpToItem(heightValues.indexOf(selectedHeight));
+      _feetController.jumpToItem(_feetValues.indexOf(_selectedFeet));
+      _inchesController.jumpToItem(_inchValues.indexOf(_selectedInches));
     });
   }
 
@@ -37,6 +42,9 @@ class _HightViewState extends State<HightView> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthViewmodel>(context);
     Responsive.init(context);
+
+    final totalInches = (_selectedFeet * 12) + _selectedInches;
+    final heightCm = totalInches * 2.54;
 
     return Scaffold(
       backgroundColor: AppColor.black,
@@ -67,7 +75,7 @@ class _HightViewState extends State<HightView> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Please enter your height in centimeters',
+                'Please enter your height in feet and inches',
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               Center(
@@ -78,7 +86,7 @@ class _HightViewState extends State<HightView> {
                     Container(
                       decoration: BoxDecoration(color: AppColor.black),
                       height: 420,
-                      width: 105,
+                      width: 220,
                       child: Stack(
                         children: [
                           // Top line
@@ -96,61 +104,114 @@ class _HightViewState extends State<HightView> {
                             child: Container(height: 3, color: AppColor.red),
                           ),
                           // Wheel picker
-                          ListWheelScrollView(
-                            controller: _scrollController,
-                            itemExtent: 50,
-                            perspective: 0.002,
-                            diameterRatio: 2.0,
-                            physics: const FixedExtentScrollPhysics(),
-                            onSelectedItemChanged: (index) {
-                              setState(() {
-                                selectedHeight = heightValues[index];
-                              });
-                            },
-                            children: heightValues.map((height) {
-                              return Center(
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '$height',
-                                      style: TextStyle(
-                                        fontFamily: AppFonts.appFont,
-                                        fontSize: 42,
-                                        color: height == selectedHeight
-                                            ? AppColor.white
-                                            : Colors.grey,
-                                        fontWeight: height == selectedHeight
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                    SizedBox(width: 2),
-                                    Column(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          'cm',
-                                          style: TextStyle(
-                                            fontFamily: AppFonts.appFont,
-                                            fontSize: 18,
-                                            color: height == selectedHeight
-                                                ? AppColor.white
-                                                : Colors.grey,
-                                            fontWeight: height == selectedHeight
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ListWheelScrollView(
+                                  controller: _feetController,
+                                  itemExtent: 50,
+                                  perspective: 0.002,
+                                  diameterRatio: 2.0,
+                                  physics: const FixedExtentScrollPhysics(),
+                                  onSelectedItemChanged: (index) {
+                                    setState(() {
+                                      _selectedFeet = _feetValues[index];
+                                    });
+                                  },
+                                  children: _feetValues.map((feet) {
+                                    final isSelected = feet == _selectedFeet;
+                                    return Center(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '$feet',
+                                            style: TextStyle(
+                                              fontFamily: AppFonts.appFont,
+                                              fontSize: 42,
+                                              color: isSelected
+                                                  ? AppColor.white
+                                                  : Colors.grey,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'ft',
+                                            style: TextStyle(
+                                              fontFamily: AppFonts.appFont,
+                                              fontSize: 18,
+                                              color: isSelected
+                                                  ? AppColor.white
+                                                  : Colors.grey,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                              Expanded(
+                                child: ListWheelScrollView(
+                                  controller: _inchesController,
+                                  itemExtent: 50,
+                                  perspective: 0.002,
+                                  diameterRatio: 2.0,
+                                  physics: const FixedExtentScrollPhysics(),
+                                  onSelectedItemChanged: (index) {
+                                    setState(() {
+                                      _selectedInches = _inchValues[index];
+                                    });
+                                  },
+                                  children: _inchValues.map((inches) {
+                                    final isSelected =
+                                        inches == _selectedInches;
+                                    return Center(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '$inches',
+                                            style: TextStyle(
+                                              fontFamily: AppFonts.appFont,
+                                              fontSize: 42,
+                                              color: isSelected
+                                                  ? AppColor.white
+                                                  : Colors.grey,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'in',
+                                            style: TextStyle(
+                                              fontFamily: AppFonts.appFont,
+                                              fontSize: 18,
+                                              color: isSelected
+                                                  ? AppColor.white
+                                                  : Colors.grey,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -159,12 +220,16 @@ class _HightViewState extends State<HightView> {
                     Button(
                       text: "Next",
                       onTap: () {
-                        print('Selected height: $selectedHeight cm');
+                        // Keep existing stored value in cm so other app screens remain compatible.
+                        final cmToStore = heightCm.round();
+                        print(
+                          "Selected height: ${_selectedFeet}ft ${_selectedInches}in (~$cmToStore cm)",
+                        );
                         var uid = Utils.getCurrentUid();
                         authProvider.addUserFieldByRole(
                           uid: uid,
                           fieldName: 'height',
-                          value: selectedHeight.toString(),
+                          value: cmToStore.toString(),
                         );
                         Navigator.pushNamed(context, RoutesName.weightView);
                       },
@@ -198,7 +263,8 @@ class _HightViewState extends State<HightView> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _feetController.dispose();
+    _inchesController.dispose();
     super.dispose();
   }
 }

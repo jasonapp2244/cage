@@ -201,7 +201,7 @@ class _EidtProfileContent extends StatelessWidget {
                         ),
                       ),
                       child: DropdownButtonFormField<String>(
-                        value: profileProvider.selectedFightingStyle,
+                        initialValue: profileProvider.selectedFightingStyle,
                         decoration: InputDecoration(
                           label: Text(
                             'Fighting Style',

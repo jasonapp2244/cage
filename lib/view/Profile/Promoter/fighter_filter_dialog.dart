@@ -374,7 +374,7 @@ class _FighterFilterDialogState extends State<FighterFilterDialog> {
         ),
       ),
       child: DropdownButtonFormField<String>(
-        value: _filter.fightingStyle,
+        initialValue: _filter.fightingStyle,
         decoration: InputDecoration(
           hintText: 'Select Fighting Style',
           hintStyle: GoogleFonts.dmSans(

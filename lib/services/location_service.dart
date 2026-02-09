@@ -236,7 +236,7 @@ class LocationService {
         final first = (data['results'] as List).first as Map<String, dynamic>;
         final components = (first['address_components'] as List?) ?? const [];
 
-        String? _getComponent(String type) {
+        String? getComponent(String type) {
           for (final c in components) {
             if (c is Map<String, dynamic>) {
               final types = (c['types'] as List?) ?? const [];
@@ -250,10 +250,10 @@ class LocationService {
         }
 
         final city =
-            _getComponent('locality') ??
-            _getComponent('postal_town') ??
-            _getComponent('administrative_area_level_2');
-        final state = _getComponent('administrative_area_level_1');
+            getComponent('locality') ??
+            getComponent('postal_town') ??
+            getComponent('administrative_area_level_2');
+        final state = getComponent('administrative_area_level_1');
 
         final parts = <String>[
           if (city != null && city.isNotEmpty) city,

@@ -5,6 +5,7 @@ import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/Profile/fighter/eidt_profile.dart';
+import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:cage/models/fighter_model.dart';
@@ -24,6 +25,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class FighterPublicProfile extends StatefulWidget {
   final UserModel? userData;
@@ -581,7 +585,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Weight Style",
+                        "Weight",
                         style: TextStyle(
                           color: AppColor.white,
                           fontFamily: AppFonts.appFont,
@@ -624,7 +628,7 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Fighting Style",
+                        "Height",
                         style: TextStyle(
                           color: AppColor.white,
                           fontFamily: AppFonts.appFont,
@@ -633,14 +637,64 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                         ),
                       ),
                       Text(
-                        fighter.fightingStyle ??
-                            fighter.fightsStyle ??
-                            "Not set",
+                        fighter.height ?? "Not set",
                         style: TextStyle(
                           color: AppColor.white,
                           fontFamily: AppFonts.appFont,
                           fontWeight: FontWeight.bold,
                           fontSize: Responsive.sp(20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: Responsive.w(2)),
+            Expanded(
+              child: Container(
+                // width: Responsive.w(30),
+                height: Responsive.w(22),
+                decoration: BoxDecoration(
+                  color: AppColor.black,
+
+                  border: BoxBorder.all(
+                    color: AppColor.white.withValues(alpha: 0.1),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Fighting Style",
+                        style: TextStyle(
+                          color: AppColor.white,
+                          fontFamily: AppFonts.appFont,
+                          fontWeight: FontWeight.normal,
+                          fontSize: Responsive.sp(10.5),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      Expanded(
+                        child: Text(
+                          fighter.fightingStyle ??
+                              fighter.fightsStyle ??
+                              "Not set",
+                          style: TextStyle(
+                            color: AppColor.white,
+                            fontFamily: AppFonts.appFont,
+                            fontWeight: FontWeight.bold,
+                            fontSize: Responsive.sp(20),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
                         ),
                       ),
                     ],
@@ -654,41 +708,119 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
         SizedBox(height: Responsive.h(2)),
 
         // Pose Image Display
-        if (fighter.poseImageUrl != null && fighter.poseImageUrl!.isNotEmpty)
-          Container(
-            width: double.infinity,
-            height: Responsive.h(50),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColor.white.withValues(alpha: 0.1),
-                width: 2,
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: CachedNetworkImage(
-                imageUrl: fighter.poseImageUrl!,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: AppColor.black,
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppColor.red),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: AppColor.black,
-                  child: Center(
-                    child: Icon(
-                      Icons.error_outline,
-                      color: AppColor.red,
-                      size: 48,
-                    ),
-                  ),
-                ),
-              ),
+        Container(
+          width: double.infinity,
+          height: Responsive.h(50),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColor.white.withValues(alpha: 0.1),
+              width: 2,
             ),
           ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child:
+                fighter.poseImageUrl != null && fighter.poseImageUrl!.isNotEmpty
+                ? Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: fighter.poseImageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: AppColor.black,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColor.red,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) =>
+                            _buildDummyPoseImage(),
+                      ),
+                      // Show edit/remove buttons only for own profile
+                      if (isOwnProfile)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                onTap: () => _updatePoseImage(context),
+                                child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColor.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.edit,
+                                    color: AppColor.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () => _removePoseImage(context),
+                                child: Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColor.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: AppColor.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  )
+                : Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      _buildDummyPoseImage(),
+                      // Show upload button only for own profile when no image
+                      if (isOwnProfile)
+                        Positioned.fill(
+                          child: GestureDetector(
+                            onTap: () => _updatePoseImage(context),
+                            child: Container(
+                              color: AppColor.black.withValues(alpha: 0.3),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add_photo_alternate,
+                                      color: AppColor.white,
+                                      size: 48,
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      "Tap to upload pose image",
+                                      style: GoogleFonts.dmSans(
+                                        color: AppColor.white,
+                                        fontSize: Responsive.sp(14),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+          ),
+        ),
 
         SizedBox(height: Responsive.h(1)),
 
@@ -1446,7 +1578,10 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
                   );
                   await controller.setMapStyle(mapStyle);
                 } catch (e) {
-                  print('Error setting map style: $e');
+                  // Silently handle map style errors - not critical
+                  if (kDebugMode) {
+                    print('Error setting map style: $e');
+                  }
                 }
               },
               markers: {
@@ -2066,6 +2201,220 @@ class _FighterPublicProfileState extends State<FighterPublicProfile> {
             backgroundColor: AppColor.red,
           ),
         );
+      }
+    }
+  }
+
+  Widget _buildDummyPoseImage() {
+    return Container(
+      color: AppColor.black,
+      child: Image(
+        image: AssetImage("assets/icons/Mask group.png"),
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Future<void> _updatePoseImage(BuildContext context) async {
+    final ImagePicker picker = ImagePicker();
+
+    // Show image source dialog
+    final ImageSource? source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: AppColor.black,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.all(Responsive.w(5)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: Responsive.w(15),
+              height: 4,
+              margin: EdgeInsets.only(bottom: Responsive.h(2)),
+              decoration: BoxDecoration(
+                color: AppColor.white.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt, color: AppColor.red),
+              title: Text(
+                "Take Photo",
+                style: GoogleFonts.dmSans(
+                  color: AppColor.white,
+                  fontSize: Responsive.sp(16),
+                ),
+              ),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_library, color: AppColor.red),
+              title: Text(
+                "Choose from Gallery",
+                style: GoogleFonts.dmSans(
+                  color: AppColor.white,
+                  fontSize: Responsive.sp(16),
+                ),
+              ),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            SizedBox(height: Responsive.h(2)),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    try {
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 90,
+      );
+
+      if (image != null && mounted) {
+        setState(() {
+          _isUploading = true;
+        });
+
+        final authProvider = Provider.of<AuthViewmodel>(context, listen: false);
+        final uid = Utils.getCurrentUid();
+
+        // Upload pose image
+        final downloadUrl = await authProvider.uploadPoseImage(
+          File(image.path),
+          uid,
+        );
+
+        if (downloadUrl != null) {
+          // Save URL to fighterData
+          await authProvider.addUserFieldByRole(
+            uid: uid,
+            fieldName: 'poseImageUrl',
+            value: downloadUrl,
+          );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Pose image updated successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            setState(() {
+              _isUploading = false;
+            });
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to upload image. Please try again.'),
+                backgroundColor: AppColor.red,
+              ),
+            );
+            setState(() {
+              _isUploading = false;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: AppColor.red,
+          ),
+        );
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _removePoseImage(BuildContext context) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColor.black,
+        title: Text(
+          'Remove Pose Image?',
+          style: TextStyle(color: AppColor.white),
+        ),
+        content: Text(
+          'Are you sure you want to remove your pose image? You can add it back later.',
+          style: TextStyle(color: AppColor.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: AppColor.white)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Remove', style: TextStyle(color: AppColor.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        setState(() {
+          _isUploading = true;
+        });
+
+        final uid = Utils.getCurrentUid();
+
+        // Get user role
+        final userDoc = await FirebaseFirestore.instance
+            .collection('userData')
+            .doc(uid)
+            .get();
+
+        if (!userDoc.exists || userDoc.data() == null) {
+          throw Exception('User not found');
+        }
+
+        final role = userDoc.data()!['role'] as String?;
+        if (role != 'Fighter') {
+          throw Exception('User is not a fighter');
+        }
+
+        // Remove pose image URL from fighterData using FieldValue.delete()
+        await FirebaseFirestore.instance.collection('userData').doc(uid).update(
+          {'fighterData.poseImageUrl': FieldValue.delete()},
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Pose image removed successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          setState(() {
+            _isUploading = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              backgroundColor: AppColor.red,
+            ),
+          );
+          setState(() {
+            _isUploading = false;
+          });
+        }
       }
     }
   }

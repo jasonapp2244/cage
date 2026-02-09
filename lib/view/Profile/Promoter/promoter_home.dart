@@ -1,9 +1,14 @@
+import 'dart:math';
 import 'package:cage/fonts/fonts.dart';
+import 'package:cage/provider/fighter_provider.dart';
+import 'package:cage/repository/review_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/view/Profile/Promoter/explorefighters_view.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -17,10 +22,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:cage/models/event_interest_model.dart';
 import 'package:cage/repository/event_interest_repository.dart';
-import 'package:cage/repository/subscription_repository.dart';
 import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/utils/routes/routes_name.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PromoterHome extends StatefulWidget {
   final AdvancedDrawerController? drawerController;
@@ -32,6 +38,14 @@ class PromoterHome extends StatefulWidget {
 
 class _PromoterHomeState extends State<PromoterHome> {
   final EventService _eventService = EventService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<FighterProvider>().fetchFighters();
+    });
+  }
 
   /// Validates if a URL is a valid image URL
   /// Returns false for social media page URLs (Instagram, Facebook, etc.)
@@ -365,6 +379,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   "Company Name",
@@ -374,13 +389,17 @@ class _PromoterHomeState extends State<PromoterHome> {
                                     fontSize: Responsive.sp(10),
                                   ),
                                 ),
-                                Text(
-                                  companyName,
-                                  style: TextStyle(
-                                    color: AppColor.white,
-                                    fontFamily: AppFonts.appFont,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.sp(12),
+                                Expanded(
+                                  child: Text(
+                                    companyName,
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontFamily: AppFonts.appFont,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.sp(12),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.right,
                                   ),
                                 ),
                               ],
@@ -388,6 +407,7 @@ class _PromoterHomeState extends State<PromoterHome> {
                             SizedBox(height: Responsive.h(1)),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   "Contact Email",
@@ -397,13 +417,17 @@ class _PromoterHomeState extends State<PromoterHome> {
                                     fontSize: Responsive.sp(10),
                                   ),
                                 ),
-                                Text(
-                                  contactEmail,
-                                  style: TextStyle(
-                                    color: AppColor.white,
-                                    fontFamily: AppFonts.appFont,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.sp(12),
+                                Expanded(
+                                  child: Text(
+                                    contactEmail,
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontFamily: AppFonts.appFont,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.sp(12),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.right,
                                   ),
                                 ),
                               ],
@@ -685,289 +709,6 @@ class _PromoterHomeState extends State<PromoterHome> {
                                 ),
                               );
                             },
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: Responsive.h(2)),
-
-                // 🔹 Subscribed Fighters Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Subscribed Fighters",
-                      style: TextStyle(
-                        color: AppColor.white,
-                        fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.normal,
-                        fontSize: Responsive.textScaleFactor * 14,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: Responsive.h(1)),
-                
-                // Subscribed Fighters List
-                StreamBuilder<List<UserModel>>(
-                  stream: SubscriptionRepository.getSubscribedFighters(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return SizedBox(
-                        height: 250,
-                        child: Center(
-                          child: CircularProgressIndicator(color: AppColor.red),
-                        ),
-                      );
-                    }
-
-                    if (snapshot.hasError) {
-                      if (kDebugMode) {
-                        print('Error loading subscribed fighters: ${snapshot.error}');
-                      }
-                      return SizedBox(
-                        height: 100,
-                        child: Center(
-                          child: Text(
-                            'Error loading fighters',
-                            style: TextStyle(
-                              color: AppColor.white.withValues(alpha: 0.7),
-                              fontSize: Responsive.sp(12),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    final fighters = snapshot.data ?? [];
-
-                    if (fighters.isEmpty) {
-                      return SizedBox(
-                        height: 100,
-                        child: Center(
-                          child: Text(
-                            'No subscribed fighters available',
-                            style: TextStyle(
-                              color: AppColor.white.withValues(alpha: 0.7),
-                              fontSize: Responsive.sp(12),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    return SizedBox(
-                      height: 250,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: fighters.length,
-                        padding: EdgeInsets.symmetric(horizontal: 0),
-                        itemBuilder: (context, index) {
-                          final fighter = fighters[index];
-                          final fighterData = fighter.roleData as FighterDataModel;
-                          
-                          // Calculate average rating
-                          final reviews = fighterData.reviews;
-                          final averageRating = SubscriptionRepository.calculateAverageRating(reviews);
-                          
-                          // Get profile image
-                          final profileImageUrl = fighterData.profileImageUrl ?? 
-                                                (fighterData.urlProfile.isNotEmpty && fighterData.urlProfile != 'https' 
-                                                  ? fighterData.urlProfile 
-                                                  : null) ??
-                                                fighterData.uploadProfile;
-                          
-                          // Get location
-                          String location = "Location not set";
-                          if (fighterData.location != null && fighterData.location!.isNotEmpty) {
-                            location = fighterData.location!;
-                            // Extract city and state if it's a full address
-                            final parts = location.split(',');
-                            if (parts.length >= 2) {
-                              location = "${parts[parts.length - 2].trim()}, ${parts[parts.length - 1].trim()}";
-                            }
-                          }
-                          
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: Container(
-                              width: Responsive.w(45),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                  color: AppColor.white.withValues(alpha: 0.1),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Profile Image with Rating
-                                  Stack(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(18),
-                                        ),
-                                        child: profileImageUrl != null && 
-                                               profileImageUrl.isNotEmpty &&
-                                               profileImageUrl != 'https'
-                                            ? CachedNetworkImage(
-                                                imageUrl: profileImageUrl,
-                                                width: double.infinity,
-                                                height: Responsive.h(18),
-                                                fit: BoxFit.cover,
-                                                placeholder: (context, url) => Container(
-                                                  height: Responsive.h(18),
-                                                  color: AppColor.white.withValues(alpha: 0.1),
-                                                  child: Center(
-                                                    child: CircularProgressIndicator(
-                                                      color: AppColor.red,
-                                                      strokeWidth: 2,
-                                                    ),
-                                                  ),
-                                                ),
-                                                errorWidget: (context, url, error) => Container(
-                                                  height: Responsive.h(18),
-                                                  color: AppColor.white.withValues(alpha: 0.1),
-                                                  child: Icon(
-                                                    Icons.person,
-                                                    color: AppColor.white.withValues(alpha: 0.5),
-                                                    size: 40,
-                                                  ),
-                                                ),
-                                              )
-                                            : Container(
-                                                height: Responsive.h(18),
-                                                color: AppColor.white.withValues(alpha: 0.1),
-                                                child: Icon(
-                                                  Icons.person,
-                                                  color: AppColor.white.withValues(alpha: 0.5),
-                                                  size: 40,
-                                                ),
-                                              ),
-                                      ),
-                                      // Rating Badge
-                                      Positioned(
-                                        top: 8,
-                                        right: 8,
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppColor.black.withValues(alpha: 0.7),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.star,
-                                                color: AppColor.red,
-                                                size: 14,
-                                              ),
-                                              SizedBox(width: 4),
-                                              Text(
-                                                averageRating > 0 
-                                                    ? averageRating.toStringAsFixed(1)
-                                                    : '0.0',
-                                                style: TextStyle(
-                                                  color: AppColor.white,
-                                                  fontFamily: AppFonts.appFont,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: Responsive.sp(12),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  
-                                  // Fighter Name and Location
-                                  Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          fighterData.fullName,
-                                          style: TextStyle(
-                                            color: AppColor.white,
-                                            fontFamily: AppFonts.appFont,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: Responsive.sp(14),
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.location_on,
-                                              color: AppColor.white.withValues(alpha: 0.7),
-                                              size: 14,
-                                            ),
-                                            SizedBox(width: 4),
-                                            Expanded(
-                                              child: Text(
-                                                location,
-                                                style: TextStyle(
-                                                  color: AppColor.white.withValues(alpha: 0.7),
-                                                  fontFamily: AppFonts.appFont,
-                                                  fontSize: Responsive.sp(10),
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 8),
-                                        
-                                        // View Profile Button
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => FighterPublicProfile(
-                                                  userData: fighter,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          child: Container(
-                                            width: double.infinity,
-                                            padding: EdgeInsets.symmetric(vertical: 10),
-                                            decoration: BoxDecoration(
-                                              color: AppColor.white.withValues(alpha: 0.2),
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                "View Profile",
-                                                style: TextStyle(
-                                                  color: AppColor.white,
-                                                  fontFamily: AppFonts.appFont,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: Responsive.sp(12),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           );
                         },
                       ),
@@ -1302,161 +1043,294 @@ class _PromoterHomeState extends State<PromoterHome> {
                 ),
                 SizedBox(height: Responsive.h(2)),
 
-                // 🔹 Fighter Scouting
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Fighter Scouting",
-                      style: TextStyle(
-                        color: AppColor.white,
-                        fontFamily: AppFonts.appFont,
-                        fontWeight: FontWeight.normal,
-                        fontSize: Responsive.textScaleFactor * 14,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          "View All",
-                          style: TextStyle(
-                            color: AppColor.white,
-                            fontFamily: AppFonts.appFont,
-                            fontWeight: FontWeight.bold,
-                            fontSize: Responsive.textScaleFactor * 14,
-                          ),
-                        ),
-                        SizedBox(width: Responsive.w(2)),
-                        SvgPicture.asset("assets/icons/Vector (2).svg"),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: Responsive.h(2)),
+                // 🔹 Fighter Scouting (real fighters, randomly ordered)
+                Consumer<FighterProvider>(
+                  builder: (context, fighterProvider, _) {
+                    final fighters = fighterProvider.fighters;
+                    final shuffled = List<UserModel>.from(fighters)..shuffle(Random());
+                    final displayCount = shuffled.length > 10 ? 10 : shuffled.length;
 
-                SizedBox(
-                  height: Responsive.h(30),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 10,
-                    padding: EdgeInsets.symmetric(horizontal: 0),
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                        child: Container(
-                          width: Responsive.w(50),
-                          height: Responsive.h(50),
-                          decoration: BoxDecoration(
-                            border: BoxBorder.all(
-                              color: AppColor.white.withValues(alpha: 0.1),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Fighter Scouting",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontFamily: AppFonts.appFont,
+                                fontWeight: FontWeight.normal,
+                                fontSize: Responsive.textScaleFactor * 14,
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: Responsive.sp(34),
-                                      backgroundImage: AssetImage(
-                                        "assets/images/Frame 1000002190.png",
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          "4.7",
-                                          style: TextStyle(
-                                            color: AppColor.white,
-                                            fontFamily: AppFonts.appFont,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize:
-                                                Responsive.textScaleFactor * 14,
-                                          ),
-                                        ),
-                                        SizedBox(width: Responsive.w(1)),
-                                        SvgPicture.asset(
-                                          "assets/icons/Vector (3).svg",
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                            GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ExploreFightersView(),
                                 ),
-                                SizedBox(height: Responsive.h(2)),
-                                Text(
-                                  "Corey Herwitz",
-                                  style: TextStyle(
-                                    color: AppColor.white,
-                                    fontFamily: AppFonts.appFont,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Responsive.textScaleFactor * 14,
-                                  ),
-                                ),
-                                SizedBox(height: Responsive.h(1)),
-                                Row(
-                                  children: [
-                                    SvgPicture.asset(
-                                      "assets/icons/location-05 (1).svg",
-                                    ),
-                                    SizedBox(width: Responsive.w(1)),
-                                    Text(
-                                      "San Francisco, CA",
-                                      style: TextStyle(
-                                        color: AppColor.white,
-                                        fontFamily: AppFonts.appFont,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            Responsive.textScaleFactor * 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: Responsive.h(1)),
-                                GestureDetector(
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => FighterPublicProfile(),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "View All",
+                                    style: TextStyle(
+                                      color: AppColor.white,
+                                      fontFamily: AppFonts.appFont,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Responsive.textScaleFactor * 14,
                                     ),
                                   ),
-                                  child: Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      borderRadius:
-                                          BorderRadiusDirectional.circular(22),
-                                      color: AppColor.white.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          "View Profile",
-                                          style: GoogleFonts.dmSans(
-                                            color: AppColor.white,
-                                            fontWeight: FontWeight.w700,
-                                            fontSize:
-                                                Responsive.textScaleFactor * 12,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                  SizedBox(width: Responsive.w(2)),
+                                  SvgPicture.asset("assets/icons/Vector (2).svg"),
+                                ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                        SizedBox(height: Responsive.h(2)),
+                        fighterProvider.isLoading && shuffled.isEmpty
+                            ? SizedBox(
+                                height: Responsive.h(30),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColor.white,
+                                  ),
+                                ),
+                              )
+                            : displayCount == 0
+                                ? SizedBox(
+                                    height: Responsive.h(20),
+                                    child: Center(
+                                      child: Text(
+                                        "No fighters yet",
+                                        style: TextStyle(
+                                          color: AppColor.white.withValues(alpha: 0.7),
+                                          fontSize: Responsive.textScaleFactor * 14,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : SizedBox(
+                                    height: Responsive.h(30),
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: displayCount,
+                                      padding: EdgeInsets.symmetric(horizontal: 0),
+                                      itemBuilder: (context, index) {
+                                        final user = shuffled[index];
+                                        if (user.roleData == null ||
+                                            user.roleData is! FighterDataModel) {
+                                          return SizedBox.shrink();
+                                        }
+                                        final fighter =
+                                            user.roleData as FighterDataModel;
+                                        final locationDisplay =
+                                            _extractCityFromLocation(
+                                                fighter.location);
+
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 2.0),
+                                          child: Container(
+                                            width: Responsive.w(50),
+                                            height: Responsive.h(50),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: AppColor.white
+                                                    .withValues(alpha: 0.1),
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                            ),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      CircleAvatar(
+                                                        radius:
+                                                            Responsive.sp(34),
+                                                        backgroundColor:
+                                                            AppColor.white
+                                                                .withValues(
+                                                                    alpha: 0.1),
+                                                        child: _fighterAvatar(
+                                                            fighter),
+                                                      ),
+                                                      FutureBuilder<double>(
+                                                        future: ReviewRepository
+                                                            .getAverageRating(
+                                                                user.id),
+                                                        builder: (context,
+                                                            ratingSnapshot) {
+                                                          double avg = 0.0;
+                                                          if (ratingSnapshot
+                                                              .hasData) {
+                                                            avg = ratingSnapshot
+                                                                .data!;
+                                                          }
+                                                          return Row(
+                                                            children: [
+                                                              Text(
+                                                                avg.toStringAsFixed(
+                                                                    1),
+                                                                style:
+                                                                    TextStyle(
+                                                                  color: AppColor
+                                                                      .white,
+                                                                  fontFamily:
+                                                                      AppFonts
+                                                                          .appFont,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize:
+                                                                      Responsive.textScaleFactor *
+                                                                          14,
+                                                                ),
+                                                              ),
+                                                              SizedBox(
+                                                                  width:
+                                                                      Responsive
+                                                                          .w(
+                                                                              1)),
+                                                              SvgPicture.asset(
+                                                                "assets/icons/Vector (3).svg",
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                      height:
+                                                          Responsive.h(2)),
+                                                  Text(
+                                                    fighter.fullName
+                                                            .isNotEmpty
+                                                        ? fighter.fullName
+                                                        : "Unknown Fighter",
+                                                    style: TextStyle(
+                                                      color: AppColor.white,
+                                                      fontFamily:
+                                                          AppFonts.appFont,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: Responsive
+                                                              .textScaleFactor *
+                                                          14,
+                                                    ),
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  SizedBox(
+                                                      height:
+                                                          Responsive.h(1)),
+                                                  Row(
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        "assets/icons/location-05 (1).svg",
+                                                      ),
+                                                      SizedBox(
+                                                          width:
+                                                              Responsive.w(1)),
+                                                      Expanded(
+                                                        child: Text(
+                                                          locationDisplay,
+                                                          style: TextStyle(
+                                                            color: AppColor
+                                                                .white,
+                                                            fontFamily:
+                                                                AppFonts
+                                                                    .appFont,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold,
+                                                            fontSize: Responsive
+                                                                    .textScaleFactor *
+                                                                14,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                      height:
+                                                          Responsive.h(1)),
+                                                  GestureDetector(
+                                                    onTap: () =>
+                                                        Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            FighterPublicProfile(
+                                                                userData: user),
+                                                      ),
+                                                    ),
+                                                    child: Container(
+                                                      width: double.infinity,
+                                                      decoration:
+                                                          BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadiusDirectional
+                                                                .circular(22),
+                                                        color: AppColor.white
+                                                            .withValues(
+                                                                alpha: 0.1),
+                                                      ),
+                                                      child: Center(
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child: Text(
+                                                            "View Profile",
+                                                            style: GoogleFonts
+                                                                .dmSans(
+                                                              color: AppColor
+                                                                  .white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              fontSize: Responsive
+                                                                      .textScaleFactor *
+                                                                  12,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                        SizedBox(height: Responsive.h(2)),
+                      ],
+                    );
+                  },
                 ),
 
                 SizedBox(height: Responsive.h(2)),
@@ -1536,6 +1410,54 @@ class _PromoterHomeState extends State<PromoterHome> {
     );
   }
 
+  Widget _fighterAvatar(FighterDataModel fighter) {
+    final imageUrl = fighter.profileImageUrl != null &&
+            fighter.profileImageUrl!.isNotEmpty
+        ? fighter.profileImageUrl
+        : fighter.uploadProfile != null && fighter.uploadProfile!.isNotEmpty
+            ? fighter.uploadProfile
+            : null;
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          width: 70,
+          height: 70,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Image(
+            image: AssetImage("assets/images/Ellipse 24 (1).png"),
+            fit: BoxFit.cover,
+          ),
+          errorWidget: (_, __, ___) => Image(
+            image: AssetImage("assets/images/Ellipse 24 (1).png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+    return Image(
+      image: AssetImage("assets/images/Ellipse 24 (1).png"),
+      fit: BoxFit.cover,
+    );
+  }
+
+  String _extractCityFromLocation(String? location) {
+    if (location == null || location.isEmpty) return "Unknown";
+    if (RegExp(r'^[\d\.-]+,\s*[\d\.-]+$').hasMatch(location.trim())) {
+      return "Location";
+    }
+    final parts = location.split(',').map((e) => e.trim()).toList();
+    if (parts.length >= 4) return parts[parts.length - 3];
+    if (parts.length == 3) return parts[1];
+    if (parts.length == 2) return parts[0];
+    if (parts.length == 1) {
+      return parts[0].length > 12
+          ? "${parts[0].substring(0, 12)}..."
+          : parts[0];
+    }
+    return location.length > 12 ? "${location.substring(0, 12)}..." : location;
+  }
+
   void _showEventDetailsBottomSheet(BuildContext context, EventModel event) {
     showModalBottomSheet(
       context: context,
@@ -1551,151 +1473,335 @@ class _PromoterHomeState extends State<PromoterHome> {
         minChildSize: 0.5,
         maxChildSize: 1,
         builder: (context, scrollController) {
-          return SingleChildScrollView(
-            controller: scrollController,
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                left: Responsive.w(5),
-                right: Responsive.w(5),
-                top: Responsive.h(3),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title
-                    Text(
-                      "Fight Details",
-                      style: GoogleFonts.dmSans(
-                        color: AppColor.white,
-                        fontSize: Responsive.sp(18),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: Responsive.h(2)),
+          return FutureBuilder<UserModel?>(
+            future: UserRepository.fetchUserById(event.promoterId),
+            builder: (context, promoterSnapshot) {
+              PromoterDataModel? promoterData;
+              if (promoterSnapshot.hasData &&
+                  promoterSnapshot.data != null &&
+                  promoterSnapshot.data!.isPromoter) {
+                promoterData =
+                    promoterSnapshot.data!.roleData as PromoterDataModel;
+              }
 
-                    // Event Image
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: event.thumbnailImageUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: event.thumbnailImageUrl!,
-                              width: double.infinity,
-                              height: Responsive.h(25),
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) => Container(
-                                height: Responsive.h(25),
-                                color: AppColor.white.withValues(alpha: 0.1),
-                                child: Icon(
-                                  Icons.image,
-                                  color: AppColor.white.withValues(alpha: 0.5),
-                                ),
-                              ),
-                            )
-                          : Container(
-                              height: Responsive.h(25),
-                              color: AppColor.white.withValues(alpha: 0.1),
-                              child: Icon(
-                                Icons.image,
-                                color: AppColor.white.withValues(alpha: 0.5),
-                              ),
-                            ),
-                    ),
-                    SizedBox(height: Responsive.h(2)),
-
-                    // Event Title
-                    Text(
-                      event.eventTitle,
-                      style: GoogleFonts.dmSans(
-                        color: AppColor.white,
-                        fontSize: Responsive.sp(16),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: Responsive.h(1)),
-
-                    // Event Description
-                    Text(
-                      event.description,
-                      style: GoogleFonts.dmSans(
-                        color: AppColor.white.withValues(alpha: 0.8),
-                        fontSize: Responsive.sp(12),
-                      ),
-                    ),
-                    SizedBox(height: Responsive.h(2)),
-
-                    Row(
+              return SingleChildScrollView(
+                controller: scrollController,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: Responsive.w(5),
+                    right: Responsive.w(5),
+                    top: Responsive.h(3),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Divider(
-                            color: AppColor.white.withValues(alpha: 0.2),
+                        // Title
+                        Text(
+                          "Fight Details",
+                          style: GoogleFonts.dmSans(
+                            color: AppColor.white,
+                            fontSize: Responsive.sp(18),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: Responsive.h(0.5)),
+                        SizedBox(height: Responsive.h(2)),
 
-                    // Additional Info Section
-                    _buildDetailRow(
-                      "Date",
-                      DateFormat('MMMM d, yyyy').format(event.eventDate),
-                    ),
-                    _buildDetailRow("Time", event.eventTime),
-                    _buildDetailRow("Location", event.location),
+                        // Event Image
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: event.thumbnailImageUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: event.thumbnailImageUrl!,
+                                  width: double.infinity,
+                                  height: Responsive.h(25),
+                                  fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                    height: Responsive.h(25),
+                                    color: AppColor.white.withValues(alpha: 0.1),
+                                    child: Icon(
+                                      Icons.image,
+                                      color: AppColor.white.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  height: Responsive.h(25),
+                                  color: AppColor.white.withValues(alpha: 0.1),
+                                  child: Icon(
+                                    Icons.image,
+                                    color: AppColor.white.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                        ),
+                        SizedBox(height: Responsive.h(2)),
 
-                    SizedBox(height: Responsive.h(0.5)),
-                    SvgPicture.asset("assets/images/Frame 1000002180.svg"),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColor.red),
-                        borderRadius: BorderRadius.circular(22),
-                        color: AppColor.black,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Center(
-                          child: Text(
-                            "Open Map",
+                        // Event Title
+                        Text(
+                          event.eventTitle,
+                          style: GoogleFonts.dmSans(
+                            color: AppColor.white,
+                            fontSize: Responsive.sp(16),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: Responsive.h(1)),
+
+                        // Event Description
+                        Text(
+                          event.description,
+                          style: GoogleFonts.dmSans(
+                            color: AppColor.white.withValues(alpha: 0.8),
+                            fontSize: Responsive.sp(12),
+                          ),
+                        ),
+                        SizedBox(height: Responsive.h(2)),
+
+                        // Promoter Contact (email, phone with url_launcher)
+                        if (promoterData != null &&
+                            (promoterData.contactEmail != null ||
+                                promoterData.contactNumber != null)) ...[
+                          Text(
+                            "Contact Host",
                             style: GoogleFonts.dmSans(
                               color: AppColor.white,
-                              fontSize: Responsive.sp(10),
+                              fontSize: Responsive.sp(14),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          SizedBox(height: Responsive.h(1)),
+                          if (promoterData.contactEmail != null &&
+                              promoterData.contactEmail!.isNotEmpty)
+                            GestureDetector(
+                              onTap: () => _launchEmail(
+                                  context, promoterData!.contactEmail!),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: Responsive.w(3),
+                                  vertical: Responsive.h(1),
+                                ),
+                                margin: EdgeInsets.only(bottom: Responsive.h(1)),
+                                decoration: BoxDecoration(
+                                  color: AppColor.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: AppColor.white.withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.email_outlined,
+                                        color: AppColor.red, size: 20),
+                                    SizedBox(width: Responsive.w(2)),
+                                    Expanded(
+                                      child: Text(
+                                        promoterData.contactEmail!,
+                                        style: GoogleFonts.dmSans(
+                                          color: AppColor.white,
+                                          fontSize: Responsive.sp(12),
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(Icons.arrow_forward_ios,
+                                        color: AppColor.white.withValues(alpha: 0.5),
+                                        size: 16),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          if (promoterData.contactNumber != null &&
+                              promoterData.contactNumber!.isNotEmpty)
+                            GestureDetector(
+                              onTap: () => _launchPhone(
+                                  context, promoterData!.contactNumber!),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: Responsive.w(3),
+                                  vertical: Responsive.h(1),
+                                ),
+                                margin: EdgeInsets.only(bottom: Responsive.h(1)),
+                                decoration: BoxDecoration(
+                                  color: AppColor.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: AppColor.white.withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.phone_outlined,
+                                        color: AppColor.red, size: 20),
+                                    SizedBox(width: Responsive.w(2)),
+                                    Expanded(
+                                      child: Text(
+                                        promoterData.contactNumber!,
+                                        style: GoogleFonts.dmSans(
+                                          color: AppColor.white,
+                                          fontSize: Responsive.sp(12),
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(Icons.arrow_forward_ios,
+                                        color: AppColor.white.withValues(alpha: 0.5),
+                                        size: 16),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          SizedBox(height: Responsive.h(2)),
+                        ],
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: AppColor.white.withValues(alpha: 0.2),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                        SizedBox(height: Responsive.h(0.5)),
+
+                        // Additional Info Section
+                        _buildDetailRow(
+                          "Date",
+                          DateFormat('MMMM d, yyyy')
+                              .format(event.eventDate.toLocal()),
+                        ),
+                        _buildDetailRow("Time", event.eventTime),
+                        _buildDetailRow("Location", event.location),
+
+                        SizedBox(height: Responsive.h(0.5)),
+                        GestureDetector(
+                          onTap: () => _launchMaps(context, event.location),
+                          child: Column(
+                            children: [
+                              SvgPicture.asset(
+                                  "assets/images/Frame 1000002180.svg"),
+                              SizedBox(height: Responsive.h(0.5)),
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: AppColor.red),
+                                  borderRadius: BorderRadius.circular(22),
+                                  color: AppColor.black,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: Text(
+                                      "Open Map",
+                                      style: GoogleFonts.dmSans(
+                                        color: AppColor.white,
+                                        fontSize: Responsive.sp(10),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _buildDetailRow("Event Type", event.eventType),
+                        _buildDetailRow("Weight Class", event.weightClass),
+                        _buildDetailRow(
+                            "Required Record", event.requiredRecord),
+                        _buildDetailRow("Age Limit", event.ageLimit),
+                        _buildDetailRow(
+                          "Fighting Style Preferred",
+                          event.fightingStylePreferred,
+                        ),
+                        _buildDetailRow(
+                          "Deadline to Apply",
+                          DateFormat('MMMM d, yyyy')
+                              .format(event.deadlineToApply.toLocal()),
+                        ),
+                        if (Utils.getCurrentUid() == event.promoterId)
+                          AuthButton(
+                            buttontext: "Edit",
+                            onPress: () {
+                              Navigator.pop(context);
+                              Navigator.pushNamed(
+                                context,
+                                RoutesName.CreateEventView,
+                                arguments: event,
+                              );
+                            },
+                            loading: false,
+                          ),
+                        SizedBox(height: Responsive.h(2)),
+                      ],
                     ),
-                    _buildDetailRow("Event Type", event.eventType),
-                    _buildDetailRow("Weight Class", event.weightClass),
-                    _buildDetailRow("Required Record", event.requiredRecord),
-                    _buildDetailRow("Age Limit", event.ageLimit),
-                    _buildDetailRow(
-                      "Fighting Style Preferred",
-                      event.fightingStylePreferred,
-                    ),
-                    _buildDetailRow(
-                      "Deadline to Apply",
-                      DateFormat('MMMM d, yyyy').format(event.deadlineToApply),
-                    ),
-                    // Action Button
-                    AuthButton(
-                      buttontext: "Edit",
-                      onPress: () {
-                        Navigator.pop(context);
-                      },
-                      loading: false,
-                    ),
-                    SizedBox(height: Responsive.h(2)),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),
     );
+  }
+
+  Future<void> _launchEmail(BuildContext context, String email) async {
+    final Uri emailUri =
+        Uri.parse('mailto:${Uri.encodeComponent(email)}');
+    try {
+      final launched = await launchUrl(
+        emailUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Could not open email app',
+          context,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Utils.flushBarErrorMassage('Error: $e', context);
+      }
+    }
+  }
+
+  Future<void> _launchPhone(BuildContext context, String phoneNumber) async {
+    final cleaned = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final Uri phoneUri = Uri.parse('tel:$cleaned');
+    try {
+      final launched = await launchUrl(
+        phoneUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        Utils.flushBarErrorMassage(
+          'Could not open phone dialer',
+          context,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Utils.flushBarErrorMassage('Error: $e', context);
+      }
+    }
+  }
+
+  Future<void> _launchMaps(BuildContext context, String address) async {
+    final encoded = Uri.encodeComponent(address);
+    final Uri mapsUri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$encoded');
+    try {
+      if (await canLaunchUrl(mapsUri)) {
+        await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+      } else if (context.mounted) {
+        Utils.flushBarErrorMassage('Cannot open maps', context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Utils.flushBarErrorMassage('Error: $e', context);
+      }
+    }
   }
 
   // Fetch fighter details from Firestore

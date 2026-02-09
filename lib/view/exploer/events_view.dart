@@ -21,8 +21,32 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
-class EventsView extends StatelessWidget {
+class EventsView extends StatefulWidget {
   const EventsView({super.key});
+
+  @override
+  State<EventsView> createState() => _EventsViewState();
+}
+
+class _EventsViewState extends State<EventsView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   /// Validates if a URL is a valid image URL
   /// Returns false for social media page URLs (Instagram, Facebook, etc.)
@@ -81,6 +105,7 @@ class EventsView extends StatelessWidget {
                 height: Responsive.h(7.0),
                 padding: const EdgeInsets.all(6.0),
                 child: TextField(
+                  controller: _searchController,
                   style: TextStyle(color: AppColor.white),
                   cursorColor: AppColor.red,
                   cursorErrorColor: AppColor.red,
@@ -104,7 +129,7 @@ class EventsView extends StatelessWidget {
                     ),
                     filled: true,
                     fillColor: AppColor.white.withValues(alpha: 0.08),
-                    hintText: "Search Event ...",
+                    hintText: "Search by event title...",
                     hintStyle: GoogleFonts.dmSans(
                       color: AppColor.white,
                       fontWeight: FontWeight.normal,
@@ -149,14 +174,42 @@ class EventsView extends StatelessWidget {
                       );
                     }
 
-                    final events = snapshot.data ?? [];
-                    print('Loaded ${events.length} events');
+                    final allEvents = snapshot.data ?? [];
+                    
+                    // Filter events by search query
+                    final events = _searchQuery.isEmpty
+                        ? allEvents
+                        : allEvents.where((event) {
+                            final title = event.eventTitle.toLowerCase();
+                            final query = _searchQuery.toLowerCase().trim();
+                            return title.contains(query);
+                          }).toList();
+                    
+                    print('Loaded ${allEvents.length} events, showing ${events.length} after search');
 
                     if (events.isEmpty) {
                       return Center(
-                        child: Text(
-                          'No events available',
-                          style: TextStyle(color: AppColor.white),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _searchQuery.isEmpty
+                                  ? Icons.event_busy
+                                  : Icons.search_off,
+                              color: AppColor.white.withValues(alpha: 0.5),
+                              size: 48,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              _searchQuery.isEmpty
+                                  ? 'No events available'
+                                  : 'No events match your search',
+                              style: TextStyle(
+                                color: AppColor.white.withValues(alpha: 0.7),
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     }
@@ -687,8 +740,9 @@ class EventsView extends StatelessWidget {
                         _buildDetailRow("Location", event.location),
 
                         SizedBox(height: Responsive.h(0.5)),
-                        if (event.locationCoordinates != null)
-                          Container(
+                        GestureDetector(
+                          onTap: () => _launchMaps(context, event.location),
+                          child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(color: AppColor.red),
                               borderRadius: BorderRadius.circular(22),
@@ -708,6 +762,7 @@ class EventsView extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ),
                         _buildDetailRow("Event Type", event.eventType),
                         _buildDetailRow("Weight Class", event.weightClass),
                         _buildDetailRow("Required Record", event.requiredRecord),
@@ -766,6 +821,23 @@ class EventsView extends StatelessWidget {
           'Could not launch email: ${e.toString()}',
           context,
         );
+      }
+    }
+  }
+
+  Future<void> _launchMaps(BuildContext context, String address) async {
+    final encoded = Uri.encodeComponent(address);
+    final Uri mapsUri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$encoded');
+    try {
+      if (await canLaunchUrl(mapsUri)) {
+        await launchUrl(mapsUri, mode: LaunchMode.externalApplication);
+      } else if (context.mounted) {
+        Utils.flushBarErrorMassage('Cannot open maps', context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Utils.flushBarErrorMassage('Error: $e', context);
       }
     }
   }
@@ -961,6 +1033,19 @@ class _InterestedButtonState extends State<_InterestedButton> {
         // Notification failed, but interest was created successfully
         if (kDebugMode) {
           print('Notification error: $e');
+        }
+      });
+
+      // Send notification to fighter confirming request was sent (non-blocking)
+      NotificationService.sendRequestSentNotification(
+        fighterId: fighterId,
+        eventTitle: widget.event.eventTitle,
+        promoterName: widget.event.promoterName,
+        eventId: widget.event.id,
+        interestId: interestId,
+      ).catchError((e) {
+        if (kDebugMode) {
+          print('Fighter notification error: $e');
         }
       });
 

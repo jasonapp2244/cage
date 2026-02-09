@@ -1,9 +1,11 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/res/components/app_theme.dart';
+import 'package:cage/services/firebase_cache_helper.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
+import 'package:cage/view/Profile/Promoter/promotor_bottom_nav_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -34,46 +36,36 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
     });
 
     try {
-      // Get user role
       String? role = await Utils.getSavedRole('role');
 
-      // If role not in local storage, get from Firestore
       if (role == null) {
         final userId = Utils.getCurrentUid();
-        final userDoc = await _firestore
-            .collection('userData')
-            .doc(userId)
-            .get();
+        final userRef = _firestore.collection('userData').doc(userId);
+        final userDoc = await FirebaseCacheHelper.getDocCacheFirst(userRef);
 
         if (userDoc.exists && userDoc.data() != null) {
-          role = userDoc.data()!['role'] as String?;
+          role = (userDoc.data()! as Map<String, dynamic>)['role'] as String?;
           if (role != null) {
             await Utils.saveSavedRole('role', role);
           }
         }
       }
 
-      // Default to Fighter if role is not found
       final userRole = role ?? 'Fighter';
-
-      final doc = await _firestore
-          .collection('appSettings')
-          .doc('privacyPolicy')
-          .get();
+      final policyRef = _firestore.collection('appSettings').doc('privacyPolicy');
+      final doc = await FirebaseCacheHelper.getDocCacheFirst(policyRef);
 
       if (doc.exists && doc.data() != null) {
-        final data = doc.data()!;
+        final data = doc.data()! as Map<String, dynamic>;
         final roleKey = userRole.toLowerCase();
 
-        // Try to get role-specific content
         if (data.containsKey('${roleKey}Content')) {
           setState(() {
-            _content = data['${roleKey}Content'] ?? '';
+            _content = data['${roleKey}Content'] as String? ?? '';
           });
         } else if (data.containsKey('content')) {
-          // Fallback to old format for backward compatibility
           setState(() {
-            _content = data['content'] ?? '';
+            _content = data['content'] as String? ?? '';
           });
         } else {
           setState(() {
@@ -116,10 +108,16 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
                   GestureDetector(
                     onTap: () {
                       // Try to find MainWrapper state (for drawer navigation)
-                      final state = context
+                      final fighterState = context
                           .findAncestorStateOfType<MainWrapperState>();
-                      if (state != null) {
-                        state.resetToHome();
+                      if (fighterState != null) {
+                        fighterState.resetToHome();
+                        return;
+                      }
+                      // Try to find PromotorBottomNavBar state (for promoter drawer navigation)
+                      final promoterState = context.findAncestorStateOfType<PromotorBottomNavBarState>();
+                      if (promoterState != null) {
+                        promoterState.resetToHome();
                         return;
                       }
                       // Fallback to normal navigation

@@ -109,7 +109,9 @@ class _FightStyleViewState extends State<FightStyleView> {
                       ),
                       child: Center(
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColor.red),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColor.red,
+                          ),
                         ),
                       ),
                     )
@@ -119,13 +121,18 @@ class _FightStyleViewState extends State<FightStyleView> {
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(Responsive.w(12)),
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: Colors.red.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Column(
                         children: [
                           Text(
                             _errorMessage!,
-                            style: const TextStyle(color: Colors.red, fontSize: 14),
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           ElevatedButton(
@@ -133,7 +140,10 @@ class _FightStyleViewState extends State<FightStyleView> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColor.red,
                             ),
-                            child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                            child: const Text(
+                              'Retry',
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                         ],
                       ),
@@ -155,7 +165,8 @@ class _FightStyleViewState extends State<FightStyleView> {
                     DropdownButtonFormField<String>(
                       initialValue: _selectedFightStyle,
                       style: TextStyle(color: AppColor.white),
-                      dropdownColor: AppColor.white.withValues(alpha: 0.1),
+                      dropdownColor: AppColor.constBlack,
+
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(Responsive.w(12)),
@@ -173,7 +184,7 @@ class _FightStyleViewState extends State<FightStyleView> {
                         fillColor: AppColor.white.withValues(alpha: 0.08),
                         hintText: "Select",
                         hintStyle: GoogleFonts.dmSans(
-                          color: Colors.grey,
+                          color: AppColor.constRed,
                           fontSize: 15,
                         ),
                       ),

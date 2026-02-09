@@ -10,7 +10,6 @@ import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:cage/view/Profile/fighter/homeview.dart';
 import 'package:cage/view/Profile/fighter/subscription_plans_view.dart';
 import 'package:cage/view/notification_view.dart';
-import 'package:cage/view/settings_view.dart';
 import 'package:cage/view/contact_us_view.dart';
 import 'package:cage/view/privacy_policy_view.dart';
 import 'package:cage/view/support_view.dart';
@@ -57,7 +56,6 @@ class MainWrapperState extends State<MainWrapper> {
     Homeview(), // Home (same as bottom nav)
     SubscriptionPlansView(), // Subscription Plans
     SupportView(), // Support
-    SettingsView(), // Settings
     TermConditionView(), // Terms & Conditions
     PrivacyPolicyView(), // Privacy Policy
     ContactUsView(), // Contact Us
@@ -184,8 +182,8 @@ class MainWrapperState extends State<MainWrapper> {
                       _isDrawerNavigation = true;
                     });
                   },
-                  leading: SvgPicture.asset("assets/icons/setting.svg"),
-                  title: Text('Settings'),
+                  leading: SvgPicture.asset("assets/icons/term_condition.svg"),
+                  title: Text('Terms & Conditions'),
                 ),
                 ListTile(
                   onTap: () {
@@ -196,7 +194,7 @@ class MainWrapperState extends State<MainWrapper> {
                     });
                   },
                   leading: SvgPicture.asset("assets/icons/term_condition.svg"),
-                  title: Text('Terms & Conditions'),
+                  title: Text('Privacy Policy'),
                 ),
                 ListTile(
                   onTap: () {
@@ -206,19 +204,42 @@ class MainWrapperState extends State<MainWrapper> {
                       _isDrawerNavigation = true;
                     });
                   },
-                  leading: SvgPicture.asset("assets/icons/term_condition.svg"),
-                  title: Text('Privacy Policy'),
-                ),
-                ListTile(
-                  onTap: () {
-                    drawerProvider.hideDrawer();
-                    setState(() {
-                      _currentIndex = 6;
-                      _isDrawerNavigation = true;
-                    });
-                  },
                   leading: SvgPicture.asset("assets/icons/mail-02.svg"),
                   title: Text('Contact Us'),
+                ),
+                ListTile(
+                  onTap: () async {
+                    drawerProvider.hideDrawer();
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Delete Account'),
+                        content: const Text(
+                          'This will remove your login access only. '
+                          'Admin will be notified and may remove your data later. Continue?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('No'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Yes'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true && mounted) {
+                      await authProvider.requestAccountDeletion(context);
+                    }
+                  },
+                  leading: Icon(Icons.delete_forever, color: AppColor.white),
+                  title: Text(
+                    'Delete Account',
+                    style: TextStyle(color: AppColor.white),
+                  ),
                 ),
                 ListTile(
                   onTap: () async {
@@ -259,7 +280,7 @@ class MainWrapperState extends State<MainWrapper> {
       stream: UserRepository.fetchCurrentUserStream(),
       builder: (context, snapshot) {
         String? imageUrl;
-        
+
         if (snapshot.hasData && snapshot.data != null) {
           final user = snapshot.data!;
           if (user.isFighter && user.roleData is FighterDataModel) {
@@ -293,7 +314,9 @@ class MainWrapperState extends State<MainWrapper> {
         } else {
           avatarWidget = CircleAvatar(
             radius: 15,
-            backgroundColor: AppColor.white.withValues(alpha: isSelected ? 1.0 : 0.5),
+            backgroundColor: AppColor.white.withValues(
+              alpha: isSelected ? 1.0 : 0.5,
+            ),
             backgroundImage: AssetImage("assets/images/Ellipse 24 (1).png"),
           );
         }
@@ -302,26 +325,15 @@ class MainWrapperState extends State<MainWrapper> {
           return Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColor.white,
-                width: 2,
-              ),
+              border: Border.all(color: AppColor.white, width: 2),
             ),
             child: ClipOval(
-              child: SizedBox(
-                width: 30,
-                height: 30,
-                child: avatarWidget,
-              ),
+              child: SizedBox(width: 30, height: 30, child: avatarWidget),
             ),
           );
         } else {
           return ClipOval(
-            child: SizedBox(
-              width: 30,
-              height: 30,
-              child: avatarWidget,
-            ),
+            child: SizedBox(width: 30, height: 30, child: avatarWidget),
           );
         }
       },
@@ -339,7 +351,7 @@ class MainWrapperState extends State<MainWrapper> {
       builder: (context, snapshot) {
         final black = snapshot.data?['black'] ?? AppColor.black;
         final white = snapshot.data?['white'] ?? AppColor.white;
-        
+
         return BottomNavigationBar(
           currentIndex: _isDrawerNavigation
               ? 0

@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -17,6 +20,7 @@ class SelectLocationViewState extends State<SelectLocationView> {
   final Completer<GoogleMapController> _controller = Completer();
   final TextEditingController _searchController = TextEditingController();
   String _mapStyle = '';
+  late final LocationProvider _locationProvider;
 
   static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(37.7749, -122.4194), // Example: San Francisco
@@ -26,30 +30,33 @@ class SelectLocationViewState extends State<SelectLocationView> {
   @override
   void initState() {
     super.initState();
+    _locationProvider = LocationProvider();
+
+    // Load optional map styling
     rootBundle.loadString('assets/map_style.json').then((string) {
-      _mapStyle = string;
+      if (!mounted) return;
+      setState(() {
+        _mapStyle = string;
+      });
+    }).catchError((_) {
+      // ignore style load errors
     });
 
-    // Initialize location provider
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final locationProvider = Provider.of<LocationProvider>(
-        context,
-        listen: false,
-      );
-      locationProvider.initialize();
-    });
+    // Initialize location fetching + saved location on the provider we actually render with
+    _locationProvider.initialize();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _locationProvider.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => LocationProvider(),
+    return ChangeNotifierProvider.value(
+      value: _locationProvider,
       child: Consumer<LocationProvider>(
         builder: (context, locationProvider, child) {
           return Scaffold(
@@ -67,9 +74,17 @@ class SelectLocationViewState extends State<SelectLocationView> {
                   myLocationEnabled: true,
                   myLocationButtonEnabled: true,
                   zoomControlsEnabled: false,
-                  onMapCreated: (GoogleMapController controller) {
-                    controller.setMapStyle(_mapStyle);
-                    _controller.complete(controller);
+                  onMapCreated: (GoogleMapController controller) async {
+                    try {
+                      // Skip custom map style on iOS - it often causes blank/gray map tiles.
+                      // Use default map on iOS so tiles render; style works on Android.
+                      if (!Platform.isIOS && _mapStyle.isNotEmpty) {
+                        await controller.setMapStyle(_mapStyle);
+                      }
+                      _controller.complete(controller);
+                    } catch (e) {
+                      _controller.complete(controller);
+                    }
                   },
                   onTap: (LatLng position) async {
                     await locationProvider.selectLocationByTap(position);
@@ -202,11 +217,22 @@ class SelectLocationViewState extends State<SelectLocationView> {
                                   ),
                                 );
 
-                                // Return the selected location
-                                final selectedLocation = locationProvider
-                                    .getSelectedLocation();
-
-                                Navigator.pushNamed(context, RoutesName.home); 
+                                // Navigate based on role: promoter continues to UploadCompanyLogo, fighter goes to home
+                                final uid = Utils.getCurrentUid();
+                                final doc = await FirebaseFirestore.instance
+                                    .collection('userData')
+                                    .doc(uid)
+                                    .get();
+                                final role = doc.data()?['role'] as String?;
+                                if (context.mounted) {
+                                  if (role == 'Promoter') {
+                                    Navigator.pushNamed(
+                                        context, RoutesName.UploadCompanyLogo);
+                                  } else {
+                                    Navigator.pushNamed(
+                                        context, RoutesName.home);
+                                  }
+                                }
                               } else {
                                 // Show error message
                                 ScaffoldMessenger.of(context).showSnackBar(

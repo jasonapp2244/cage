@@ -1,7 +1,9 @@
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/services/firebase_cache_helper.dart';
 import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/view/Profile/fighter/bottom_wraper.dart';
+import 'package:cage/view/Profile/Promoter/promotor_bottom_nav_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -35,13 +37,11 @@ class _ContactUsViewState extends State<ContactUsView> {
     });
 
     try {
-      final doc = await _firestore
-          .collection('appSettings')
-          .doc('contactUs')
-          .get();
+      final contactRef = _firestore.collection('appSettings').doc('contactUs');
+      final doc = await FirebaseCacheHelper.getDocCacheFirst(contactRef);
 
       if (doc.exists && doc.data() != null) {
-        final data = doc.data()!;
+        final data = doc.data()! as Map<String, dynamic>;
         setState(() {
           _email = data['email'] as String?;
           _phoneNumber = data['phoneNumber'] as String?;
@@ -168,9 +168,15 @@ class _ContactUsViewState extends State<ContactUsView> {
                   GestureDetector(
                     onTap: () {
                       // Try to find MainWrapper state (for drawer navigation)
-                      final state = context.findAncestorStateOfType<MainWrapperState>();
-                      if (state != null) {
-                        state.resetToHome();
+                      final fighterState = context.findAncestorStateOfType<MainWrapperState>();
+                      if (fighterState != null) {
+                        fighterState.resetToHome();
+                        return;
+                      }
+                      // Try to find PromotorBottomNavBar state (for promoter drawer navigation)
+                      final promoterState = context.findAncestorStateOfType<PromotorBottomNavBarState>();
+                      if (promoterState != null) {
+                        promoterState.resetToHome();
                         return;
                       }
                       // Fallback to normal navigation

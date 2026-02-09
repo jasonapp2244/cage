@@ -93,6 +93,7 @@ class _ProfilePicState extends State<ProfilePic> {
       onTap: _pickImage,
 
       child: CircleAvatar(
+        radius: Responsive.w(30),
         backgroundColor: AppColor.black,
         child: SvgPicture.asset("assets/icons/Frame 1410120931.svg"),
       ),

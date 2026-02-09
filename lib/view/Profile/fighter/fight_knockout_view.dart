@@ -1,7 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cage/fonts/fonts.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
-import 'package:cage/view/auth/sginupview.dart';
 import 'package:cage/viewmodel/auth_viewmodel.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/utils/routes/routes_name.dart';
@@ -19,17 +20,38 @@ class FightKnockoutView extends StatefulWidget {
 class _FightKnockoutViewState extends State<FightKnockoutView> {
   final FixedExtentScrollController _scrollController =
       FixedExtentScrollController();
-  List<int> heightValues = List.generate(
-    50,
-    (index) => 00 + index,
-  ); // 140-189 cm
-  int selectedHeight = 100;
+  List<int> heightValues = [0];
+  int selectedHeight = 0;
+  bool _loadingWins = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadWinsAndCapKnockouts());
+  }
+
+  Future<void> _loadWinsAndCapKnockouts() async {
+    final uid = Utils.getCurrentUid();
+    final doc = await FirebaseFirestore.instance
+        .collection('userData')
+        .doc(uid)
+        .get();
+    int wins = 0;
+    final fd = doc.data()?['fighterData'];
+    if (fd is Map<String, dynamic>) {
+      wins = int.tryParse(fd['fightWin']?.toString() ?? '0') ?? 0;
+    }
+    if (!mounted) return;
+    setState(() {
+      _loadingWins = false;
+      heightValues = List.generate(wins + 1, (i) => i);
+      selectedHeight = selectedHeight.clamp(0, wins);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.jumpToItem(heightValues.indexOf(selectedHeight));
+      if (mounted && heightValues.isNotEmpty && _scrollController.hasClients) {
+        final idx = selectedHeight.clamp(0, heightValues.length - 1);
+        _scrollController.jumpToItem(idx);
+      }
     });
   }
 
@@ -68,7 +90,7 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Mention the number of official Knockout in your fight record.',
+                  'Mention the number of official Knockout in your fight record (cannot exceed wins).',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 Center(
@@ -76,6 +98,12 @@ class _FightKnockoutViewState extends State<FightKnockoutView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Wheel picker with selection lines
+                      if (_loadingWins)
+                        Padding(
+                          padding: const EdgeInsets.all(48.0),
+                          child: CircularProgressIndicator(color: AppColor.red),
+                        )
+                      else
                       Container(
                         decoration: BoxDecoration(color: AppColor.black),
                         height: 420,

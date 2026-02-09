@@ -8,6 +8,7 @@ import 'package:cage/utils/routes/responsive.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/widgets/edit_profile_textfeild.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class CreateEventView extends StatefulWidget {
-  const CreateEventView({super.key});
+  final EventModel? existingEvent;
+
+  const CreateEventView({super.key, this.existingEvent});
 
   @override
   State<CreateEventView> createState() => _CreateEventViewState();
@@ -70,11 +73,48 @@ class _CreateEventViewState extends State<CreateEventView> {
 
   final ImagePicker _picker = ImagePicker();
 
+  bool get _isEditMode => widget.existingEvent != null;
+
   @override
   void initState() {
     super.initState();
     _loadPromoterData();
     _loadFightingStyles();
+    _prefillForEdit();
+  }
+
+  void _prefillForEdit() {
+    final event = widget.existingEvent;
+    if (event == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _eventTitleController.text = event.eventTitle;
+        _descriptionController.text = event.description;
+        _eventDateController.text = DateFormat('MMMM dd, yyyy').format(event.eventDate.toLocal());
+        _eventTimeController.text = event.eventTime;
+        _locationController.text = event.location;
+        _eventTypeController.text = event.eventType;
+        _weightClassController.text = event.weightClass;
+        _requiredRecordController.text = event.requiredRecord;
+        _ageLimitController.text = event.ageLimit;
+        _deadlineController.text = DateFormat('MMMM dd, yyyy').format(event.deadlineToApply.toLocal());
+        _selectedEventDate = event.eventDate;
+        _selectedDeadline = event.deadlineToApply;
+        _selectedFightingStyle = event.fightingStylePreferred.isNotEmpty ? event.fightingStylePreferred : null;
+        // Parse time for TimeOfDay
+        try {
+          final parts = event.eventTime.replaceAll(RegExp(r'[AaPpMm]'), '').split(':');
+          if (parts.length >= 2) {
+            int hour = int.tryParse(parts[0].trim()) ?? 12;
+            int minute = int.tryParse(parts[1].trim()) ?? 0;
+            if (event.eventTime.toLowerCase().contains('pm') && hour < 12) hour += 12;
+            if (event.eventTime.toLowerCase().contains('am') && hour == 12) hour = 0;
+            _selectedTime = TimeOfDay(hour: hour.clamp(0, 23), minute: minute.clamp(0, 59));
+          }
+        } catch (_) {}
+      });
+    });
   }
 
   Future<void> _loadFightingStyles() async {
@@ -312,7 +352,7 @@ class _CreateEventViewState extends State<CreateEventView> {
       return;
     }
 
-    if (_thumbnailImage == null) {
+    if (!_isEditMode && _thumbnailImage == null) {
       Utils.tosatMassage('Please upload thumbnail image');
       return;
     }
@@ -325,24 +365,27 @@ class _CreateEventViewState extends State<CreateEventView> {
     try {
       final userId = Utils.getCurrentUid();
 
-      // Upload images
+      // Upload images (or use existing when editing)
       String? thumbnailUrl;
       String? referenceUrl;
 
       if (_thumbnailImage != null) {
         thumbnailUrl = await _uploadImage(_thumbnailImage!, 'thumbnails');
-        if (thumbnailUrl == null) {
+        if (thumbnailUrl == null && !_isEditMode) {
           throw Exception('Failed to upload thumbnail image');
         }
+      } else if (_isEditMode) {
+        thumbnailUrl = widget.existingEvent!.thumbnailImageUrl;
       }
 
       if (_referenceImage != null) {
         referenceUrl = await _uploadImage(_referenceImage!, 'references');
+      } else if (_isEditMode) {
+        referenceUrl = widget.existingEvent!.referenceImageUrl;
       }
 
-      // Create event
       final event = EventModel(
-        id: '', // Will be set by Firestore
+        id: _isEditMode ? widget.existingEvent!.id : '',
         promoterId: userId,
         promoterName: _promoterName ?? 'Unknown Promoter',
         promoterProfileImage: _promoterProfileImage,
@@ -359,14 +402,22 @@ class _CreateEventViewState extends State<CreateEventView> {
         ageLimit: _ageLimitController.text.trim(),
         fightingStylePreferred: _selectedFightingStyle ?? '',
         deadlineToApply: _selectedDeadline!,
-        createdAt: DateTime.now(),
+        createdAt: _isEditMode ? widget.existingEvent!.createdAt : DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
-      await _eventService.createEvent(event);
-
-      if (mounted) {
-        Utils.tosatMassage('Event created successfully!');
-        Navigator.pop(context);
+      if (_isEditMode) {
+        await _eventService.updateEvent(widget.existingEvent!.id, event);
+        if (mounted) {
+          Utils.tosatMassage('Event updated successfully!');
+          Navigator.pop(context);
+        }
+      } else {
+        await _eventService.createEvent(event);
+        if (mounted) {
+          Utils.tosatMassage('Event created successfully!');
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       setState(() {
@@ -408,7 +459,7 @@ class _CreateEventViewState extends State<CreateEventView> {
                         ),
                       ),
                       Text(
-                        "Create Event",
+                        _isEditMode ? "Edit Event" : "Create Event",
                         style: TextStyle(
                           fontSize: Responsive.textScaleFactor * 24,
                           color: AppColor.white,
@@ -504,8 +555,36 @@ class _CreateEventViewState extends State<CreateEventView> {
                               child: Image.file(
                                 _thumbnailImage!,
                                 fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
                               ),
                             )
+                          : _isEditMode &&
+                                  widget.existingEvent?.thumbnailImageUrl !=
+                                      null &&
+                                  widget.existingEvent!.thumbnailImageUrl!
+                                      .isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(28),
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                        widget.existingEvent!.thumbnailImageUrl!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    placeholder: (_, __) => Center(
+                                        child:
+                                            CircularProgressIndicator(color: AppColor.red)),
+                                    errorWidget: (_, __, ___) => Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.image_not_supported, color: AppColor.white.withValues(alpha: 0.5), size: 48),
+                                        SizedBox(height: Responsive.h(1)),
+                                        Text("Tap to upload", style: TextStyle(color: AppColor.white.withValues(alpha: 0.7), fontSize: Responsive.sp(14))),
+                                      ],
+                                    ),
+                                  ),
+                                )
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -515,7 +594,7 @@ class _CreateEventViewState extends State<CreateEventView> {
                                 ),
                                 SizedBox(height: Responsive.h(1)),
                                 Text(
-                                  "Upload Thumbnail Image",
+                                  _isEditMode ? "Tap to change thumbnail" : "Upload Thumbnail Image",
                                   style: TextStyle(
                                     fontFamily: AppFonts.appFont,
                                     color: AppColor.white.withValues(
@@ -646,6 +725,7 @@ class _CreateEventViewState extends State<CreateEventView> {
                                 ),
                               ),
                               child: DropdownButtonFormField<String>(
+                                isExpanded: true,
                                 initialValue: _selectedFightingStyle,
                                 decoration: InputDecoration(
                                   hintText:
@@ -676,7 +756,10 @@ class _CreateEventViewState extends State<CreateEventView> {
                                 items: _fightingStyles.map((String style) {
                                   return DropdownMenuItem<String>(
                                     value: style,
-                                    child: Text(style),
+                                    child: Text(
+                                      style,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   );
                                 }).toList(),
                                 onChanged: (String? value) {
@@ -729,20 +812,37 @@ class _CreateEventViewState extends State<CreateEventView> {
                         borderRadius: BorderRadius.circular(28),
                         color: AppColor.white.withValues(alpha: 0.05),
                       ),
-                      child: Row(
-                        children: [
-                          if (_referenceImage != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                _referenceImage!,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          else
-                            SvgPicture.asset(
+                        child: Row(
+                          children: [
+                            if (_referenceImage != null)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  _referenceImage!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            else if (_isEditMode &&
+                                widget.existingEvent?.referenceImageUrl != null &&
+                                widget.existingEvent!.referenceImageUrl!.isNotEmpty)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: CachedNetworkImage(
+                                  imageUrl: widget.existingEvent!.referenceImageUrl!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) => Icon(Icons.image, color: AppColor.white.withValues(alpha: 0.5)),
+                                  errorWidget: (_, __, ___) => SvgPicture.asset(
+                                    "assets/icons/camera-add-02.svg",
+                                    color: AppColor.white.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              )
+                            else
+                              SvgPicture.asset(
                               "assets/icons/camera-add-02.svg",
                               color: AppColor.white.withValues(alpha: 0.7),
                             ),
@@ -769,7 +869,9 @@ class _CreateEventViewState extends State<CreateEventView> {
 
                   // Submit Button
                   Button(
-                    text: _isLoading ? "Creating..." : "Create Event",
+                    text: _isLoading
+                        ? (_isEditMode ? "Updating..." : "Creating...")
+                        : (_isEditMode ? "Update Event" : "Create Event"),
                     onTap: _isLoading ? () {} : _submitEvent,
                     focusNode: _buttonFocus,
                   ),

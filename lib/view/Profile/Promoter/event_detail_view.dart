@@ -1,7 +1,13 @@
 import 'package:cage/models/event_model.dart';
+import 'package:cage/models/promoter_model.dart';
+import 'package:cage/models/user_model.dart';
+import 'package:cage/repository/home_repository.dart';
 import 'package:cage/res/components/app_color.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/routes_name.dart';
+import 'package:cage/utils/routes/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,6 +20,14 @@ class EventDetailView extends StatelessWidget {
     super.key,
     required this.event,
   });
+
+  Future<void> _launchUrl(Uri uri) async {
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +74,28 @@ class EventDetailView extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (Utils.getCurrentUid() == event.promoterId)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            RoutesName.CreateEventView,
+                            arguments: event,
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(Responsive.w(2)),
+                          decoration: BoxDecoration(
+                            color: AppColor.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.edit_outlined,
+                            color: AppColor.red,
+                            size: 20,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -115,7 +151,18 @@ class EventDetailView extends StatelessWidget {
               // Event Content
               Padding(
                 padding: EdgeInsets.all(Responsive.w(4)),
-                child: Column(
+                child: FutureBuilder<UserModel?>(
+                  future: UserRepository.fetchUserById(event.promoterId),
+                  builder: (context, promoterSnapshot) {
+                    PromoterDataModel? promoterData;
+                    if (promoterSnapshot.hasData &&
+                        promoterSnapshot.data != null &&
+                        promoterSnapshot.data!.isPromoter) {
+                      promoterData =
+                          promoterSnapshot.data!.roleData as PromoterDataModel;
+                    }
+
+                    return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Event Title
@@ -186,7 +233,7 @@ class EventDetailView extends StatelessWidget {
                           context,
                           Icons.calendar_today,
                           "Date",
-                          DateFormat('MMMM dd, yyyy').format(event.eventDate),
+                          DateFormat('MMMM dd, yyyy').format(event.eventDate.toLocal()),
                         ),
                         _buildDetailRow(
                           context,
@@ -194,11 +241,19 @@ class EventDetailView extends StatelessWidget {
                           "Time",
                           event.eventTime,
                         ),
-                        _buildDetailRow(
-                          context,
-                          Icons.location_on,
-                          "Location",
-                          event.location,
+                        GestureDetector(
+                          onTap: () {
+                            final uri = Uri.parse(
+                              'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(event.location)}',
+                            );
+                            _launchUrl(uri);
+                          },
+                          child: _buildDetailRow(
+                            context,
+                            Icons.location_on,
+                            "Location",
+                            event.location,
+                          ),
                         ),
                         if (event.weightClass.isNotEmpty)
                           _buildDetailRow(
@@ -232,7 +287,7 @@ class EventDetailView extends StatelessWidget {
                           context,
                           Icons.event_busy,
                           "Deadline to Apply",
-                          DateFormat('MMMM dd, yyyy').format(event.deadlineToApply),
+                          DateFormat('MMMM dd, yyyy').format(event.deadlineToApply.toLocal()),
                         ),
                       ],
                     ),
@@ -250,11 +305,40 @@ class EventDetailView extends StatelessWidget {
                           "Promoter",
                           event.promoterName,
                         ),
+                        if (promoterData?.contactEmail != null &&
+                            promoterData!.contactEmail!.isNotEmpty)
+                          GestureDetector(
+                            onTap: () => _launchUrl(Uri.parse(
+                                'mailto:${Uri.encodeComponent(promoterData!.contactEmail!)}')),
+                            child: _buildDetailRow(
+                              context,
+                              Icons.email_outlined,
+                              "Email",
+                              promoterData.contactEmail!,
+                            ),
+                          ),
+                        if (promoterData?.contactNumber != null &&
+                            promoterData!.contactNumber!.isNotEmpty)
+                          GestureDetector(
+                            onTap: () {
+                              final num = promoterData!.contactNumber!;
+                              _launchUrl(Uri.parse(
+                                  'tel:${num.replaceAll(RegExp(r'[^\d+]'), '')}'));
+                            },
+                            child: _buildDetailRow(
+                              context,
+                              Icons.phone_outlined,
+                              "Contact",
+                              promoterData.contactNumber!,
+                            ),
+                          ),
                       ],
                     ),
 
                     SizedBox(height: Responsive.h(4)),
                   ],
+                );
+                  },
                 ),
               ),
             ],

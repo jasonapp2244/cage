@@ -50,7 +50,7 @@
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs access to your location to show your current position on the map and help you select locations.</string>
 	<key>GMSApiKey</key>
-	<string>AIzaSyDwuHlPVOwjb9LRGPMHwloiZJ0DiEPesMk</string>
+	<string>AIzaSyDKFS3kaSGFiqTXQJC5n0YJFgidYHSMBhA</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>mailto</string>

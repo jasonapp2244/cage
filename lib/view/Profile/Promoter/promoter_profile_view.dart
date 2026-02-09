@@ -207,57 +207,46 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
                           );
                         }
 
+                        final promoter = user.roleData as PromoterDataModel;
                         final userId = user.id;
-                        final eventService = EventService();
 
-                        // Count events dynamically and calculate average rating
-                        return StreamBuilder<List<EventModel>>(
-                          stream: eventService.getEventsByPromoter(userId),
-                          builder: (context, eventsSnapshot) {
-                            String numberOfEvents = "0";
+                        // Use manually set numberOfEvents from promoter data
+                        final numberOfEvents = (promoter.numberOfEvents ?? 0)
+                            .toString();
 
-                            if (eventsSnapshot.hasData) {
-                              numberOfEvents = eventsSnapshot.data!.length
-                                  .toString();
+                        // Calculate average rating from reviews
+                        return StreamBuilder<List<ReviewModel>>(
+                          stream: ReviewRepository.getPromoterReviews(userId),
+                          builder: (context, reviewsSnapshot) {
+                            String averageRating = "0.0";
+
+                            if (reviewsSnapshot.hasData &&
+                                reviewsSnapshot.data!.isNotEmpty) {
+                              final reviews = reviewsSnapshot.data!;
+                              double totalRating = 0;
+                              for (var review in reviews) {
+                                totalRating += review.rating;
+                              }
+                              averageRating = (totalRating / reviews.length)
+                                  .toStringAsFixed(1);
                             }
 
-                            // Calculate average rating from reviews
-                            return StreamBuilder<List<ReviewModel>>(
-                              stream: ReviewRepository.getPromoterReviews(
-                                userId,
-                              ),
-                              builder: (context, reviewsSnapshot) {
-                                String averageRating = "0.0";
-
-                                if (reviewsSnapshot.hasData &&
-                                    reviewsSnapshot.data!.isNotEmpty) {
-                                  final reviews = reviewsSnapshot.data!;
-                                  double totalRating = 0;
-                                  for (var review in reviews) {
-                                    totalRating += review.rating;
-                                  }
-                                  averageRating = (totalRating / reviews.length)
-                                      .toStringAsFixed(1);
-                                }
-
-                                return Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildStatCard(
-                                        "No of Event Managed",
-                                        numberOfEvents,
-                                      ),
-                                    ),
-                                    SizedBox(width: Responsive.w(2)),
-                                    Expanded(
-                                      child: _buildStatCard(
-                                        "Average Rating",
-                                        averageRating,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: _buildStatCard(
+                                    "No of Event Managed",
+                                    numberOfEvents,
+                                  ),
+                                ),
+                                SizedBox(width: Responsive.w(2)),
+                                Expanded(
+                                  child: _buildStatCard(
+                                    "Average Rating",
+                                    averageRating,
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         );
@@ -1142,81 +1131,94 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileImageUploadView()),
-            );
-          },
-          child: CircleAvatar(
-            radius: 35,
-            backgroundColor: AppColor.white.withValues(alpha: 0.1),
-            child:
-                promoter.profileImageUrl != null &&
-                    promoter.profileImageUrl!.isNotEmpty
-                ? ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: promoter.profileImageUrl!,
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Image(
-                        image: AssetImage("assets/images/Ellipse 24 (1).png"),
-                      ),
-                      errorWidget: (context, url, error) => Image(
-                        image: AssetImage("assets/images/Ellipse 24 (1).png"),
-                      ),
-                    ),
-                  )
-                : Image(image: AssetImage("assets/images/Ellipse 24 (1).png")),
-          ),
-        ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
           children: [
-            Text(
-              promoter.companyName ?? "Company Name",
-              style: TextStyle(
-                fontSize: Responsive.textScaleFactor * 14,
-                color: AppColor.white,
-                fontFamily: AppFonts.appFont,
-                fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileImageUploadView(),
+                  ),
+                );
+              },
+              child: CircleAvatar(
+                radius: 35,
+                backgroundColor: AppColor.white.withValues(alpha: 0.1),
+                child:
+                    promoter.profileImageUrl != null &&
+                        promoter.profileImageUrl!.isNotEmpty
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: promoter.profileImageUrl!,
+                          width: 70,
+                          height: 70,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Image(
+                            image: AssetImage(
+                              "assets/images/Ellipse 24 (1).png",
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Image(
+                            image: AssetImage(
+                              "assets/images/Ellipse 24 (1).png",
+                            ),
+                          ),
+                        ),
+                      )
+                    : Image(
+                        image: AssetImage("assets/images/Ellipse 24 (1).png"),
+                      ),
               ),
-            ),
-            Row(
+            ),SizedBox(width: 10,),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SvgPicture.asset("assets/icons/call.svg"),
-                SizedBox(width: Responsive.w(1)),
                 Text(
-                  promoter.contactNumber ?? "Phone not set",
+                  promoter.companyName ?? "Company Name",
                   style: TextStyle(
-                    fontSize: Responsive.textScaleFactor * 12,
+                    fontSize: Responsive.textScaleFactor * 14,
                     color: AppColor.white,
                     fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.normal,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
-            ),
-            Row(
-              children: [
-                SvgPicture.asset("assets/icons/mail-02.svg"),
-                SizedBox(width: Responsive.w(1)),
-                Text(
-                  promoter.contactEmail ?? "Email not set",
-                  style: TextStyle(
-                    fontSize: Responsive.textScaleFactor * 12,
-                    color: AppColor.white,
-                    fontFamily: AppFonts.appFont,
-                    fontWeight: FontWeight.normal,
-                  ),
+                Row(
+                  children: [
+                    SvgPicture.asset("assets/icons/call.svg"),
+                    SizedBox(width: Responsive.w(1)),
+                    Text(
+                      promoter.contactNumber ?? "Phone not set",
+                      style: TextStyle(
+                        fontSize: Responsive.textScaleFactor * 12,
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    SvgPicture.asset("assets/icons/mail-02.svg"),
+                    SizedBox(width: Responsive.w(1)),
+                    Text(
+                      promoter.contactEmail ?? "Email not set",
+                      style: TextStyle(
+                        fontSize: Responsive.textScaleFactor * 12,
+                        color: AppColor.white,
+                        fontFamily: AppFonts.appFont,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ],
         ),
+
         GestureDetector(
           onTap: () {
             Navigator.push(
@@ -1403,60 +1405,105 @@ class _PromoterProfileViewState extends State<PromoterProfileView> {
                     ),
                   ),
                 ),
-                // Delete Icon (Top Right) - Only for active events
+                // Edit & Delete Icons (Top Right) - Only for active events
                 if (!isHistory)
                   Positioned(
                     top: 12,
                     right: 12,
-                    child: GestureDetector(
-                      onTap: () {
-                        // Show delete confirmation dialog
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            backgroundColor: AppColor.black,
-                            title: Text(
-                              'Delete Event?',
-                              style: TextStyle(color: AppColor.white),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              RoutesName.CreateEventView,
+                              arguments: event,
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(8),
+                            margin: EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: AppColor.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            content: Text(
-                              'Are you sure you want to delete this event?',
-                              style: TextStyle(color: AppColor.white),
+                            child: Icon(
+                              Icons.edit_outlined,
+                              color: AppColor.white,
+                              size: 20,
                             ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text(
-                                  'Cancel',
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: AppColor.black,
+                                title: Text(
+                                  'Delete Event?',
                                   style: TextStyle(color: AppColor.white),
                                 ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  // TODO: Implement delete event functionality
-                                  Navigator.pop(context);
-                                },
-                                child: Text(
-                                  'Delete',
-                                  style: TextStyle(color: AppColor.red),
+                                content: Text(
+                                  'Are you sure you want to delete this event?',
+                                  style: TextStyle(color: AppColor.white),
                                 ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: Text(
+                                      'Cancel',
+                                      style: TextStyle(color: AppColor.white),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: Text(
+                                      'Delete',
+                                      style: TextStyle(color: AppColor.red),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            );
+                            if (confirm == true) {
+                              try {
+                                await EventService().deleteEvent(event.id);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Event deleted'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Failed to delete: $e'),
+                                      backgroundColor: AppColor.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColor.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.delete_outline,
+                              color: AppColor.white,
+                              size: 20,
+                            ),
                           ),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColor.black.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(
-                          Icons.delete_outline,
-                          color: AppColor.white,
-                          size: 20,
-                        ),
-                      ),
+                      ],
                     ),
                   ),
                 // Event Title Overlay (Center Bottom of Image)

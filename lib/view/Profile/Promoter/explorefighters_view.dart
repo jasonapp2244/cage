@@ -1,9 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cage/models/fighter_filter_model.dart';
 import 'package:cage/models/fighter_model.dart';
+import 'package:cage/models/user_model.dart';
 import 'package:cage/provider/fighter_provider.dart';
 import 'package:cage/repository/review_repository.dart';
 import 'package:cage/res/components/app_color.dart';
+import 'package:cage/utils/location_helper.dart';
 import 'package:cage/utils/routes/responsive.dart';
+import 'package:cage/utils/routes/utils.dart';
+import 'package:cage/view/Profile/Promoter/fighter_filter_dialog.dart';
 import 'package:cage/view/Profile/fighter/fighter_personal_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -18,13 +23,120 @@ class ExploreFightersView extends StatefulWidget {
 }
 
 class _FightersViewState extends State<ExploreFightersView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  FighterFilterModel _filter = FighterFilterModel();
+  List<UserModel> _filteredFighters = [];
+  bool _isFiltering = false;
+  double? _userLatitude;
+  double? _userLongitude;
+
   @override
   void initState() {
     super.initState();
     // Fetch fighters when widget initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FighterProvider>().fetchFighters();
+      _loadUserLocation();
     });
+    
+    // Listen to search field changes
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+  }
+
+  Future<void> _loadUserLocation() async {
+    try {
+      final uid = Utils.getCurrentUid();
+      final location = await LocationHelper.getSavedLocation(uid);
+      if (location != null && mounted) {
+        setState(() {
+          _userLatitude = location.latitude;
+          _userLongitude = location.longitude;
+        });
+      }
+    } catch (e) {
+      print('Error loading user location: $e');
+    }
+  }
+
+  Future<void> _showFilterDialog() async {
+    final result = await showDialog<FighterFilterModel>(
+      context: context,
+      builder: (context) => FighterFilterDialog(
+        currentFilter: _filter,
+        userLatitude: _userLatitude,
+        userLongitude: _userLongitude,
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _filter = result;
+        // Update location if provided in filter
+        if (result.userLatitude != null && result.userLongitude != null) {
+          _userLatitude = result.userLatitude;
+          _userLongitude = result.userLongitude;
+        }
+      });
+      await _applyFilters();
+    }
+  }
+
+  Future<void> _applyFilters() async {
+    if (!_filter.hasActiveFilters) {
+      setState(() {
+        _filteredFighters = [];
+        _isFiltering = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isFiltering = true;
+    });
+
+    try {
+      final fighterProvider = context.read<FighterProvider>();
+      final allFighters = fighterProvider.fighters;
+      
+      // Apply search first
+      final searchFiltered = _searchQuery.isEmpty
+          ? allFighters
+          : fighterProvider.searchFighters(_searchQuery);
+
+      // Then apply other filters
+      final filtered = await fighterProvider.filterFighters(
+        fighters: searchFiltered,
+        filter: _filter.copyWith(
+          userLatitude: _userLatitude ?? _filter.userLatitude,
+          userLongitude: _userLongitude ?? _filter.userLongitude,
+        ),
+      );
+
+      if (mounted) {
+        setState(() {
+          _filteredFighters = filtered;
+          _isFiltering = false;
+        });
+      }
+    } catch (e) {
+      print('Error applying filters: $e');
+      if (mounted) {
+        setState(() {
+          _isFiltering = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,7 +174,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                 ),
               ),
 
-              // Search Field
+              // Search Field and Filter Button
               Row(
                 children: [
                   Expanded(
@@ -71,13 +183,23 @@ class _FightersViewState extends State<ExploreFightersView> {
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: TextField(
+                          controller: _searchController,
                           scrollController: ScrollController(
                             keepScrollOffset: true,
                           ),
                           style: TextStyle(color: AppColor.white),
                           cursorColor: AppColor.red,
                           cursorErrorColor: AppColor.red,
-                          keyboardType: TextInputType.emailAddress,
+                          keyboardType: TextInputType.text,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                            });
+                            // Apply filters if active, otherwise just search is handled in builder
+                            if (_filter.hasActiveFilters) {
+                              _applyFilters();
+                            }
+                          },
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(
@@ -116,12 +238,51 @@ class _FightersViewState extends State<ExploreFightersView> {
                       ),
                     ),
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColor.black.withValues(alpha: 0.05),
+                  SizedBox(width: Responsive.w(2)),
+                  // Filter Button
+                  GestureDetector(
+                    onTap: _showFilterDialog,
+                    child: Container(
+                      width: Responsive.h(7.0),
+                      height: Responsive.h(7.0),
+                      decoration: BoxDecoration(
+                        color: _filter.hasActiveFilters
+                            ? AppColor.red
+                            : AppColor.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        border: Border.all(
+                          color: _filter.hasActiveFilters
+                              ? AppColor.red
+                              : AppColor.white.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Icon(
+                              Icons.tune,
+                              color: _filter.hasActiveFilters
+                                  ? AppColor.white
+                                  : AppColor.white.withValues(alpha: 0.7),
+                              size: 20,
+                            ),
+                          ),
+                          if (_filter.hasActiveFilters)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: AppColor.white,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    child: SvgPicture.asset("assets/icons/solar_bell-bold.svg"),
                   ),
                 ],
               ),
@@ -179,7 +340,44 @@ class _FightersViewState extends State<ExploreFightersView> {
                       );
                     }
 
-                    final fighters = fighterProvider.fighters;
+                    // Apply filters if active, otherwise just search
+                    List<UserModel> fighters;
+                    
+                    if (_isFiltering) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: AppColor.red),
+                            SizedBox(height: 16),
+                            Text(
+                              "Applying filters...",
+                              style: TextStyle(
+                                color: AppColor.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    
+                    if (_filter.hasActiveFilters && _filteredFighters.isNotEmpty) {
+                      fighters = _filteredFighters;
+                    } else if (_filter.hasActiveFilters) {
+                      // Filters are active but no results yet, trigger filter
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _applyFilters();
+                      });
+                      fighters = [];
+                    } else {
+                      // No filters, just apply search
+                      final allFighters = fighterProvider.fighters;
+                      fighters = _searchQuery.isEmpty
+                          ? allFighters
+                          : fighterProvider.searchFighters(_searchQuery);
+                    }
+                    
                     print('UI: Found ${fighters.length} fighters to display');
 
                     if (fighters.isEmpty) {
@@ -194,7 +392,11 @@ class _FightersViewState extends State<ExploreFightersView> {
                             ),
                             SizedBox(height: 16),
                             Text(
-                              "No fighters found",
+                              _filter.hasActiveFilters
+                                  ? "No fighters match your filters"
+                                  : _searchQuery.isEmpty
+                                      ? "No fighters found"
+                                      : "No fighters match your search",
                               style: TextStyle(
                                 color: AppColor.white,
                                 fontSize: 16,
@@ -202,7 +404,11 @@ class _FightersViewState extends State<ExploreFightersView> {
                             ),
                             SizedBox(height: 8),
                             Text(
-                              "Be the first fighter to join!",
+                              _filter.hasActiveFilters
+                                  ? "Try adjusting your filter criteria"
+                                  : _searchQuery.isEmpty
+                                      ? "Be the first fighter to join!"
+                                      : "Try searching with a different name",
                               style: TextStyle(
                                 color: AppColor.white.withValues(alpha: 0.7),
                                 fontSize: 14,
@@ -275,7 +481,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                         final fighter = user.roleData as FighterDataModel;
 
                         return Container(
-                          padding: const EdgeInsets.all(11),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(22),
                             color: AppColor.black,
@@ -373,7 +579,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                                 ],
                               ),
 
-                              SizedBox(height: Responsive.h(0.8)),
+                              SizedBox(height: Responsive.h(0.6)),
 
                               // Fighter Name
                               Text(
@@ -389,7 +595,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                                 overflow: TextOverflow.ellipsis,
                               ),
 
-                              SizedBox(height: Responsive.h(0.8)),
+                              SizedBox(height: Responsive.h(0.6)),
 
                               // Fighting Style
                               if (fighter.fightingStyle != null &&
@@ -432,7 +638,7 @@ class _FightersViewState extends State<ExploreFightersView> {
                                 ],
                               ),
 
-                              SizedBox(height: Responsive.h(0.8)),
+                              SizedBox(height: Responsive.h(0.6)),
 
                               GestureDetector(
                                 onTap: () {

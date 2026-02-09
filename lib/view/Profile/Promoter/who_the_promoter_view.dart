@@ -106,7 +106,7 @@ class WhoThepromoterView extends StatelessWidget {
                 ],
               ),
 
-              SizedBox(height: 40),
+              Spacer(),
               Button(
                 text: "Next",
                 onTap: () {
@@ -127,6 +127,7 @@ class WhoThepromoterView extends StatelessWidget {
                   }
                 },
               ),
+              SizedBox(height: 40),
             ],
           ),
         ),

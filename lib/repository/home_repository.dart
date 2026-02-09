@@ -1,6 +1,7 @@
 import 'package:cage/models/fighter_model.dart';
 import 'package:cage/models/promoter_model.dart';
 import 'package:cage/models/user_model.dart';
+import 'package:cage/services/firebase_cache_helper.dart';
 import 'package:cage/utils/routes/utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -45,41 +46,31 @@ class UserRepository {
           }
 
           final data = doc.data()!;
+          final fd = data['fighterData'];
+          final pd = data['promoterData'];
 
-          // Safe date parsing
-
-          // }
-
-          // Determine role data with better error handling
           dynamic roleData;
           try {
-            // Usage:
-
-            if (_isValidRoleData(data['fighterData'])) {
-              roleData = FighterDataModel.fromMap(
-                Map<String, dynamic>.from(data['fighterData']),
-              );
-            } else if (_isValidRoleData(data['promoterData'])) {
-              roleData = PromoterDataModel.fromMap(
-                Map<String, dynamic>.from(data['promoterData']),
-              );
+            if (fd is Map<String, dynamic> && _isValidRoleData(fd)) {
+              roleData = FighterDataModel.fromMap(Map<String, dynamic>.from(fd));
+            } else if (pd is Map<String, dynamic> && _isValidRoleData(pd)) {
+              roleData = PromoterDataModel.fromMap(Map<String, dynamic>.from(pd));
             } else {
               roleData = null;
             }
-          } catch (e) {
-            print('Error parsing role data: $e');
+          } catch (_) {
             roleData = null;
           }
 
           return UserModel(
             id: doc.id,
-            email: data['email'] ?? '',
+            email: data['email'] as String? ?? '',
             createdAt: DateTime.now(),
             roleData: roleData,
           );
         })
         .handleError((error) {
-          print('Error in user stream: $error');
+          FirebaseCacheHelper.debugLog('Error in user stream: $error');
           // Return a default user model instead of throwing
           return UserModel(
             id: userId,
@@ -90,47 +81,40 @@ class UserRepository {
         });
   }
 
-  // Alternative: Fetch user data once (faster for initial load)
-  static Future<UserModel> fetchCurrentUserOnce() async {
-    final userId = Utils.getCurrentUid();
-
+  static UserModel _docToUser(DocumentSnapshot doc) {
+    final data = doc.data()! as Map<String, dynamic>;
+    dynamic roleData;
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('userData')
-          .doc(userId)
-          .get();
-
-      if (!doc.exists) {
-        throw Exception('User document not found');
-      }
-
-      final data = doc.data()!;
-
-      // Safe date parsing
-
-      // Usage:
-      dynamic roleData;
-      if (_isValidRoleData(data['fighterData'])) {
-        roleData = FighterDataModel.fromMap(
-          Map<String, dynamic>.from(data['fighterData']),
-        );
-      } else if (_isValidRoleData(data['promoterData'])) {
-        roleData = PromoterDataModel.fromMap(
-          Map<String, dynamic>.from(data['promoterData']),
-        );
+      final fd = data['fighterData'];
+      final pd = data['promoterData'];
+      if (fd is Map<String, dynamic> && _isValidRoleData(fd)) {
+        roleData = FighterDataModel.fromMap(Map<String, dynamic>.from(fd));
+      } else if (pd is Map<String, dynamic> && _isValidRoleData(pd)) {
+        roleData = PromoterDataModel.fromMap(Map<String, dynamic>.from(pd));
       } else {
         roleData = null;
       }
+    } catch (_) {
+      roleData = null;
+    }
+    return UserModel(
+      id: doc.id,
+      email: data['email'] as String? ?? '',
+      createdAt: DateTime.now(),
+      roleData: roleData,
+    );
+  }
 
-      return UserModel(
-        id: doc.id,
-        email: data['email'] ?? '',
-        createdAt: DateTime.now(),
-        roleData: roleData,
-      );
+  /// Fetch current user once: cache-first for fast load.
+  static Future<UserModel> fetchCurrentUserOnce() async {
+    final userId = Utils.getCurrentUid();
+    final ref = FirebaseFirestore.instance.collection('userData').doc(userId);
+    try {
+      final doc = await FirebaseCacheHelper.getDocCacheFirst(ref);
+      if (!doc.exists) throw Exception('User document not found');
+      return _docToUser(doc);
     } catch (e) {
-      print('Error fetching user data: $e');
-      // Return a default user model
+      FirebaseCacheHelper.debugLog('Error fetching user data: $e');
       return UserModel(
         id: userId,
         email: '',
@@ -140,41 +124,17 @@ class UserRepository {
     }
   }
 
-  // Fetch user by ID (for getting reviewer profile pictures)
+  /// Fetch user by ID: cache-first (e.g. reviewer avatars).
   static Future<UserModel?> fetchUserById(String userId) async {
     try {
-      final doc = await FirebaseFirestore.instance
+      final ref = FirebaseFirestore.instance
           .collection('userData')
-          .doc(userId)
-          .get();
-
-      if (!doc.exists) {
-        return null;
-      }
-
-      final data = doc.data()!;
-
-      dynamic roleData;
-      if (_isValidRoleData(data['fighterData'])) {
-        roleData = FighterDataModel.fromMap(
-          Map<String, dynamic>.from(data['fighterData']),
-        );
-      } else if (_isValidRoleData(data['promoterData'])) {
-        roleData = PromoterDataModel.fromMap(
-          Map<String, dynamic>.from(data['promoterData']),
-        );
-      } else {
-        roleData = null;
-      }
-
-      return UserModel(
-        id: doc.id,
-        email: data['email'] ?? '',
-        createdAt: DateTime.now(),
-        roleData: roleData,
-      );
+          .doc(userId);
+      final doc = await FirebaseCacheHelper.getDocCacheFirst(ref);
+      if (!doc.exists) return null;
+      return _docToUser(doc);
     } catch (e) {
-      print('Error fetching user by ID: $e');
+      FirebaseCacheHelper.debugLog('Error fetching user by ID: $e');
       return null;
     }
   }
@@ -186,33 +146,28 @@ class UserRepository {
         .doc(userId)
         .snapshots()
         .map((doc) {
-          if (!doc.exists) {
-            return null;
-          }
+          if (!doc.exists) return null;
 
           final data = doc.data()!;
+          final fd = data['fighterData'];
+          final pd = data['promoterData'];
 
           dynamic roleData;
           try {
-            if (_isValidRoleData(data['fighterData'])) {
-              roleData = FighterDataModel.fromMap(
-                Map<String, dynamic>.from(data['fighterData']),
-              );
-            } else if (_isValidRoleData(data['promoterData'])) {
-              roleData = PromoterDataModel.fromMap(
-                Map<String, dynamic>.from(data['promoterData']),
-              );
+            if (fd is Map<String, dynamic> && _isValidRoleData(fd)) {
+              roleData = FighterDataModel.fromMap(Map<String, dynamic>.from(fd));
+            } else if (pd is Map<String, dynamic> && _isValidRoleData(pd)) {
+              roleData = PromoterDataModel.fromMap(Map<String, dynamic>.from(pd));
             } else {
               roleData = null;
             }
-          } catch (e) {
-            print('Error parsing role data: $e');
+          } catch (_) {
             roleData = null;
           }
 
           return UserModel(
             id: doc.id,
-            email: data['email'] ?? '',
+            email: data['email'] as String? ?? '',
             createdAt: DateTime.now(),
             roleData: roleData,
           );

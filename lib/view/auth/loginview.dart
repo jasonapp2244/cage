@@ -22,6 +22,7 @@ class Loginview extends StatefulWidget {
 class _LoginviewState extends State<Loginview> {
   final ValueNotifier<bool> _obsecurePassword = ValueNotifier<bool>(true);
   bool _rememberMe = false;
+  bool _googleInitScheduled = false;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   FocusNode emailFoucsNode = FocusNode();
@@ -42,6 +43,13 @@ class _LoginviewState extends State<Loginview> {
   Widget build(BuildContext context) {
     // Initialize responsive class
     Responsive.init(context);
+    if (!_googleInitScheduled) {
+      _googleInitScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        AuthViewmodel.ensureGoogleSignInReady();
+      });
+    }
     final authViewmodel = Provider.of<AuthViewmodel>(context);
 
     return Scaffold(
@@ -93,7 +101,7 @@ class _LoginviewState extends State<Loginview> {
                 ),
                 SizedBox(height: Responsive.h(3)),
                 TextFormField(
-                  style: TextStyle(color: AppColor.white),
+                  style: TextStyle(color: AppColor.black),
                   controller: emailController,
                   focusNode: emailFoucsNode,
                   cursorColor: AppColor.red,
@@ -119,10 +127,10 @@ class _LoginviewState extends State<Loginview> {
                       child: SvgPicture.asset("assets/icons/mail-02.svg"),
                     ),
                     filled: true,
-                    fillColor: AppColor.white.withValues(alpha: 0.08),
+                    fillColor: AppColor.white.withValues(alpha: 0.9),
                     hintText: "Email Address",
                     hintStyle: GoogleFonts.dmSans(
-                      color: AppColor.white,
+                      color: AppColor.black.withValues(alpha: 0.5),
                       fontWeight: FontWeight.normal,
                       fontSize: Responsive.sp(15),
                     ),
@@ -140,7 +148,7 @@ class _LoginviewState extends State<Loginview> {
                   valueListenable: _obsecurePassword,
                   builder: (context, value, child) {
                     return TextFormField(
-                      style: TextStyle(color: AppColor.white),
+                      style: TextStyle(color: AppColor.black),
                       controller: passwordController,
                       focusNode: passwordFoucsNode,
                       cursorColor: AppColor.red,
@@ -150,10 +158,10 @@ class _LoginviewState extends State<Loginview> {
                       decoration: InputDecoration(
                         focusColor: AppColor.white,
                         filled: true,
-                        fillColor: AppColor.white.withValues(alpha: 0.08),
+                        fillColor: AppColor.white.withValues(alpha: 0.9),
                         hintText: "Password",
                         hintStyle: GoogleFonts.dmSans(
-                          color: AppColor.white,
+                          color: AppColor.black.withValues(alpha: 0.5),
                           fontWeight: FontWeight.normal,
                           fontSize: Responsive.sp(15),
                         ),
@@ -193,7 +201,7 @@ class _LoginviewState extends State<Loginview> {
                     );
                   },
                 ),
-                SizedBox(height: Responsive.h(1.5)),
+                SizedBox(height: Responsive.h(1)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -222,7 +230,10 @@ class _LoginviewState extends State<Loginview> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        _showForgotPasswordBottomSheet(context, emailController);
+                        _showForgotPasswordBottomSheet(
+                          context,
+                          emailController,
+                        );
                       },
                       child: Text(
                         "Forgot Password?",
@@ -235,7 +246,7 @@ class _LoginviewState extends State<Loginview> {
                     ),
                   ],
                 ),
-                SizedBox(height: Responsive.h(2.5)),
+                SizedBox(height: Responsive.h(2.0)),
                 AuthButton(
                   buttontext: "Login",
                   loading: authViewmodel.loading,
@@ -246,10 +257,9 @@ class _LoginviewState extends State<Loginview> {
                       context,
                       rememberMe: _rememberMe,
                     );
-                    
                   },
                 ),
-                SizedBox(height: Responsive.h(5)),
+                SizedBox(height: Responsive.h(3)),
                 Row(
                   children: [
                     Expanded(child: Divider(color: AppColor.white)),
@@ -269,45 +279,50 @@ class _LoginviewState extends State<Loginview> {
                     Expanded(child: Divider(color: AppColor.white)),
                   ],
                 ),
-                SizedBox(height: Responsive.h(5)),
+                SizedBox(height: Responsive.h(3)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     AbsorbPointer(
-                      absorbing: authViewmodel.loading,
+                      absorbing: authViewmodel.socialLoading,
                       child: SocialButton(
                         iconPath: 'assets/icons/google.svg',
-                        ontap: () =>
-                            authViewmodel.performGoogleSignIn(context),
+                        loading: authViewmodel.socialLoading,
+                        ontap: () => authViewmodel.performGoogleSignIn(context),
                       ),
                     ),
                     _buildSocialButton("assets/icons/facebook.svg"),
                     _buildSocialButton("assets/icons/apple.svg"),
                   ],
                 ),
-                SizedBox(height: Responsive.h(5)),
-                Text.rich(
-                  textAlign: TextAlign.center,
-                  TextSpan(
-                    text: "New here? ",
-                    style: TextStyle(
-                      color: AppColor.white,
-                      fontSize: Responsive.sp(10),
-                    ),
-                    children: [
-                      TextSpan(
-                        text: "Create an account",
-                        style: TextStyle(
-                          color: AppColor.red,
-                          fontSize: Responsive.sp(10),
-                          fontWeight: FontWeight.bold,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.pushNamed(context, RoutesName.signup);
-                          },
+                SizedBox(height: Responsive.h(3)),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.signup);
+                  },
+                  child: Text.rich(
+                    textAlign: TextAlign.center,
+                    TextSpan(
+                      text: "New here? ",
+                      style: TextStyle(
+                        color: AppColor.white,
+                        fontSize: Responsive.sp(10),
                       ),
-                    ],
+                      children: [
+                        TextSpan(
+                          text: "Create an account",
+                          style: TextStyle(
+                            color: AppColor.red,
+                            fontSize: Responsive.sp(10),
+                            fontWeight: FontWeight.bold,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pushNamed(context, RoutesName.signup);
+                            },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -378,7 +393,7 @@ void _showForgotPasswordBottomSheet(
             SizedBox(
               height: Responsive.h(6),
               child: TextFormField(
-                style: TextStyle(color: AppColor.white),
+                style: TextStyle(color: AppColor.black),
                 controller: email,
                 cursorColor: AppColor.red,
                 cursorErrorColor: AppColor.red,
@@ -403,10 +418,10 @@ void _showForgotPasswordBottomSheet(
                     child: SvgPicture.asset("assets/icons/mail-02.svg"),
                   ),
                   filled: true,
-                  fillColor: AppColor.white.withValues(alpha: 0.08),
+                  fillColor: AppColor.white.withValues(alpha: 0.9),
                   hintText: "Email Address",
                   hintStyle: GoogleFonts.dmSans(
-                    color: AppColor.white,
+                    color: AppColor.black.withValues(alpha: 0.5),
                     fontWeight: FontWeight.normal,
                     fontSize: Responsive.sp(15),
                   ),

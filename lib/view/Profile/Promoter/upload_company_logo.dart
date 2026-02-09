@@ -59,12 +59,14 @@ class UploadCompanyLogo extends StatelessWidget {
                   ),
                 ],
               ),
+              Spacer(),
               Button(
                 text: "Next",
                 onTap: () {
                   Navigator.pushNamed(context, RoutesName.PromotorBottomNavBar);
                 },
               ),
+              SizedBox(height: 40),
             ],
           ),
         ),

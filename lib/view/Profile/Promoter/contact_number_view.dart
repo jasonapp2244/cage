@@ -94,7 +94,7 @@ class ContactNumberView extends StatelessWidget {
                 ],
               ),
 
-              SizedBox(height: 40),
+              Spacer(),
               Button(
                 text: "Next",
                 onTap: () {
@@ -110,10 +110,11 @@ class ContactNumberView extends StatelessWidget {
                       fieldName: 'contactNumber',
                       value: contactNumberController.text.toString(),
                     );
-                    Navigator.pushNamed(context, RoutesName.UploadCompanyLogo);
+                    Navigator.pushNamed(context, RoutesName.selectLocation);
                   }
                 },
               ),
+              SizedBox(height: 40),
             ],
           ),
         ),

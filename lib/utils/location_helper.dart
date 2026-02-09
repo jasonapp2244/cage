@@ -88,8 +88,6 @@ class LocationHelper {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             Text('Address: ${locationData.address}'),
-            Text('Latitude: ${locationData.latitude.toStringAsFixed(6)}'),
-            Text('Longitude: ${locationData.longitude.toStringAsFixed(6)}'),
             Text('Saved: ${locationData.timestamp}'),
           ],
         );

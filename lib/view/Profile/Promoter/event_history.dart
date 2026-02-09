@@ -65,7 +65,7 @@ class EventHistory extends StatelessWidget {
                     // focusNode: emailFoucsNode,
                     cursorColor: AppColor.red,
                     cursorErrorColor: AppColor.red,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(
@@ -95,7 +95,7 @@ class EventHistory extends StatelessWidget {
                 ],
               ),
 
-              SizedBox(height: 40),
+              Spacer(),
               Button(
                 text: "Next",
                 onTap: () {
@@ -115,6 +115,7 @@ class EventHistory extends StatelessWidget {
                   }
                 },
               ),
+              SizedBox(height: 40),
             ],
           ),
         ),

@@ -67,8 +67,7 @@ class AboutCompanayName extends StatelessWidget {
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(22
-                        ), // 6% of width
+                        borderRadius: BorderRadius.circular(22), // 6% of width
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       errorBorder: OutlineInputBorder(
@@ -105,7 +104,7 @@ class AboutCompanayName extends StatelessWidget {
 
               SizedBox(height: 40),
               Button(
-                text: "Next",
+                text: "Nex",
                 onTap: () {
                   if (fullNameController.text.isEmpty) {
                     Utils.flushBarErrorMassage(
@@ -127,6 +126,7 @@ class AboutCompanayName extends StatelessWidget {
                   }
                 },
               ),
+              SizedBox(height: 40),
             ],
           ),
         ),

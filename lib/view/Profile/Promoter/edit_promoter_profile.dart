@@ -5,6 +5,7 @@ import 'package:cage/view/Profile/fighter/profile_pic.dart';
 import 'package:cage/widgets/button.dart';
 import 'package:cage/widgets/edit_profile_textfeild.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cage/models/promoter_model.dart';
 import 'package:cage/viewmodel/promoter_profile_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -50,7 +51,21 @@ class _EditPromoterProfileContent extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: SingleChildScrollView(
                 child: Column(
+                  spacing: 10,
                   children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 12, top: 8),
+                          child: SvgPicture.asset(
+                            "assets/icons/arrow-left-01.svg",
+                            color: AppColor.red,
+                          ),
+                        ),
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: ProfilePic(),
@@ -83,12 +98,14 @@ class _EditPromoterProfileContent extends StatelessWidget {
                     ),
                     EditProfileTextfeild(
                       text: 'Contact Number',
+                      keyboardType: TextInputType.number,
                       controller: profileProvider.contactNumberController,
                       focusNode: profileProvider.contactNumberFocusNode,
                       nextfocusNode: profileProvider.numberOfEventsFocusNode,
                     ),
                     EditProfileTextfeild(
                       text: 'Number of Events',
+                      keyboardType: TextInputType.number,
                       controller: profileProvider.numberOfEventsController,
                       focusNode: profileProvider.numberOfEventsFocusNode,
                       nextfocusNode: profileProvider.locationFocusNode,

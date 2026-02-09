@@ -121,7 +121,7 @@ class EnterNameView extends StatelessWidget {
                       fieldName: 'fullName',
                       value: fullNameController.text.toString(),
                     );
-                    Navigator.pushNamed(context, RoutesName.poseImageUploadView);
+                    Navigator.pushNamed(context, RoutesName.profileImageUploadSignupView);
                   }
                 },
               ),

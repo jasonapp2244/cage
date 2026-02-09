@@ -69,18 +69,16 @@ class AboutCompanyNameView extends StatelessWidget {
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          Responsive.w(12),
-                        ), // 6% of width
+                        borderRadius: BorderRadius.circular(12), // 6% of width
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: AppColor.red),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: AppColor.red),
-                        borderRadius: BorderRadius.circular(Responsive.w(12)),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       // prefixIcon: Padding(
                       //   padding: EdgeInsets.all(Responsive.w(3)), // 2% of width
@@ -105,8 +103,9 @@ class AboutCompanyNameView extends StatelessWidget {
                   ),
                 ],
               ),
+              Spacer(),
 
-              SizedBox(height: 40),
+              // SizedBox(height: 40),
               Button(
                 text: "Next",
                 onTap: () {
@@ -126,6 +125,7 @@ class AboutCompanyNameView extends StatelessWidget {
                   }
                 },
               ),
+              SizedBox(height: 40),
             ],
           ),
         ),
